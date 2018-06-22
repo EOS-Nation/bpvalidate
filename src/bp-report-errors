@@ -7,6 +7,8 @@ use JSON;
 use Data::Dumper;
 use Getopt::Long;
 
+binmode(STDOUT, ":utf8");
+
 my $infile = undef;
 GetOptions('input=s' => \$infile) || exit 1;
 die "$0: filename not given" if (! $infile);

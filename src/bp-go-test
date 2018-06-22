@@ -6,8 +6,8 @@ rm -f /tmp/report-endpoints.txt
 rm -f /tmp/report-errors.txt
 rm -f /tmp/bp.json
 
-#./bp-validate --output=/tmp/bp.json --limit=30 --debug --producer=eosnationftw
-./bp-validate --output=/tmp/bp.json --limit=20 --debug
+./bp-validate --output=/tmp/bp.json --limit=1000 --debug --producer=acroeos12345
+#./bp-validate --output=/tmp/bp.json --limit=20 --debug
 ./bp-report-errors --input=/tmp/bp.json > /tmp/report-errors.txt
 ./bp-report-endpoints --input=/tmp/bp.json > /tmp/report-endpoints.txt
 ./bp-report-resources --input=/tmp/bp.json > /tmp/report-resources.txt

@@ -9,6 +9,8 @@ use EOSN::UA qw(eosn_ua get_table);
 use Date::Format qw(time2str);
 use Getopt::Long;
 
+binmode(STDOUT, ":utf8");
+
 my $filter_producer = undef;
 my $outfile = undef;
 my $limit = 1000;

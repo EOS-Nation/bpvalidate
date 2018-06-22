@@ -7,6 +7,8 @@ use JSON;
 use Data::Dumper;
 use Getopt::Long;
 
+binmode(STDOUT, ":utf8");
+
 my %map;
 $map{p2p} = 'p2p-peer-address';
 $map{bnet} = 'bnet-connect';
