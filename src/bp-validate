@@ -1,0 +1,58 @@
+#!/usr/bin/perl -w
+
+use strict;
+use utf8;
+use JSON;
+use EOSN::Producer;
+use EOSN::Util qw(write_file);
+use EOSN::UA qw(eosn_ua get_table);
+use Date::Format qw(time2str);
+use Getopt::Long;
+
+my $filter_producer = undef;
+my $outfile = undef;
+my $limit = 1000;
+my $debug = 0;
+GetOptions('producer=s' => \$filter_producer, 'output=s' => \$outfile, 'limit=i' => \$limit, 'debug' => \$debug) || exit 1;
+
+my $ua = eosn_ua();
+my $producer_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_producers", limit => $limit);
+my @results;
+my %cache;
+
+if (! $producer_list) {
+	die "$0: cannot get producer list";
+}
+
+#foreach my $entry (sort {-1 * ($$a{total_votes} . ' ' . $$a{owner} cmp $$b{total_votes} . ' ' . $$b{owner})} @{$producer_list}) {
+foreach my $entry (sort {$$a{owner} cmp $$b{owner}}@{$producer_list}) {
+	if ($cache{$$entry{owner}}) {
+		warn "$0: already processed: $$entry{owner}\n";
+		next;
+	}
+	$cache{$$entry{owner}} = 1;
+	warn ">> Processing: $$entry{owner}\n" if ($debug);
+
+	if ($filter_producer) {
+		next if ($$entry{owner} ne $filter_producer);
+	}
+
+	my $producer = new EOSN::Producer (ua => $ua, properties => $entry);
+	my $results = $producer->validate;
+
+	push (@results, $results);
+}
+
+my $final_result = to_json ({
+	meta => {generated_at => time2str("%C", time), maintainer => 'matthew@eosnation.io'},
+	producers => \@results
+}, {
+	pretty => 1,
+	canonical => 1
+});
+
+if ($outfile) {
+	write_file($outfile, $final_result);
+} else {
+	print $final_result;
+}

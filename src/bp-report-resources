@@ -1,0 +1,49 @@
+#!/usr/bin/perl -w
+
+use strict;
+use utf8;
+use EOSN::Util qw(read_file write_file);
+use JSON;
+use Data::Dumper;
+use Getopt::Long;
+
+my $infile = undef;
+GetOptions('input=s' => \$infile) || exit 1;
+die "$0: filename not given" if (! $infile);
+my $data = from_json(read_file($infile) || die "$0: no data read");
+
+my %endpoints;
+foreach my $entry (@{$$data{producers}}) {
+#	print Dumper ($entry);
+
+	my $producer = $$entry{regproduce}{owner};
+	foreach my $kind (sort keys %{$$entry{output}{resources}}) {
+		foreach my $resource (@{$$entry{output}{resources}{$kind}}) {
+			$$resource{producer} = $producer;
+			push (@{$endpoints{$kind}}, $resource);
+		}
+	}
+}
+
+print "Last Update: $$data{meta}{generated_at}\n";
+while (<DATA>) {
+	print;
+}
+print "\n";
+
+foreach my $kind (sort keys %endpoints) {
+	print "==== $kind ====\n";
+	foreach my $entry (@{$endpoints{$kind}}) {
+		my $producer = $$entry{producer};
+		my $address = $$entry{address};
+		print sprintf ("%s, %s\n", $$entry{producer}, $$entry{address});
+	}
+	print "\n";
+}
+
+__DATA__
+Notes:
+ - this list is updated approximately hourly, generated from those who ran regproduce
+ - BPCs: if your endpoint does not appear here, check the error report
+ - for comments/questions/concerns, contact matthew@eosnation.io or @mdarwin on telegram
+   or post to telegram: EOS Validation (EMLG)
