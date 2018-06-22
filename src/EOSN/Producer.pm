@@ -448,12 +448,17 @@ sub validate_url {
 
 	my $json;
 	if ($content_type eq 'json') {
+		#printf ("%v02X", $content);
+		if ($content =~ /^\xEF\xBB\xBF/) {
+			$self->add_message('err', "remove BOM (byte order mark) from start of json for url=<$url>");
+			$content =~ s/^\xEF\xBB\xBF//;
+		}			
 		eval {
 			$json = from_json ($content, {utf8 => 1});
 		};
 
 		if ($@) {
-			$self->add_message('err', "invalid json for url=<$url>");
+			$self->add_message('err', "invalid json for url=<$url> error=<$@>");
 			#print $content;
 			return undef;
 		}
