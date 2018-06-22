@@ -1,2 +1,2 @@
 # bpvalidate
-Tools validate BPs have set up their public configuration correctly
+Tools to validate BPs have set up their public configuration correctly
