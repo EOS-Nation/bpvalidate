@@ -157,6 +157,14 @@ sub run_validate {
 	# ---------- check basic things
 
 	my $error = 0;
+	if (! ref $$json{org}) {
+		$self->add_message('err', "field=<org> is not a object");
+		return undef;
+	}	
+	if (! ref $$json{org}{location}) {
+		$self->add_message('err', "field=<org.location> is not a object");
+		return undef;
+	}
 	$self->validate_string($$json{org}{location}{name}, 'org.location.name') || $error++;
 	$self->validate_string($$json{org}{location}{country}, 'org.location.country') || $error++;
 	$self->validate_string($$json{org}{location}{latitude}, 'org.location.latitude') || $error++;
