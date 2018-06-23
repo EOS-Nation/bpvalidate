@@ -149,7 +149,7 @@ sub run_validate {
 		return undef;
 	}
 
-	my $json = $self->validate_url("$url/bp.json", "bp info json url", content_type => 'json', cors => 'on', add_to_list => 'resources/bpjson');
+	my $json = $self->validate_url("$url/bp.json", "bp info json url", content_type => 'json', cors => 'should', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;
@@ -302,7 +302,7 @@ sub validate_url {
 	#print ">> check url=[$url]\n";
 	my $content_type = $options{content_type} || die "content_type not provided";
 	my $ssl = $options{ssl} || 'either'; # either, on, off
-	my $cors = $options{cors} || 'either'; #either, on, off
+	my $cors = $options{cors} || 'either'; #either, on, off, should
 	my $url_ext = $options{url_ext} || '';
 
 	if (! $url) {
@@ -400,18 +400,29 @@ sub validate_url {
 		return undef;
 	}
 
+	my $server_header = $res->header('Server');
+	if ($server_header && $server_header =~ /cloudflare/) {
+		$self->add_message('err', "cloudflare restricts some client use making this endpoint not appropriate for some use cases for url=<$url>");
+		return undef;
+	}
 	my $cors_header = $res->header('Access-Control-Allow-Origin');
 	if ($cors eq 'either') {
 		# do nothing
+	} elsif ($cors eq 'should') {
+		if (! $cors_header) {
+			# error, but not fatal, but not ok either
+			$self->add_message('err', "missing Access-Control-Allow-Origin header for field=<$type> for url=<$url>; see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS");
+			delete $options{add_to_list};
+		}	
 	} elsif ($cors eq 'on') {
 		if (! $cors_header) {
 			$self->add_message('err', "missing Access-Control-Allow-Origin header for field=<$type> for url=<$url>; see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS");
-			#return undef;
+			return undef;
 		}	
 	} elsif ($cors eq 'off') {
 		if ($cors_header) {
 			$self->add_message('err', "Access-Control-Allow-Origin header returned when should not be for field=<$type> for url=<$url>");
-			#return undef;
+			return undef;
 		}	
 	} else {
 		die "unknown cors option";
