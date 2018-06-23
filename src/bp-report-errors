@@ -37,5 +37,5 @@ Notes:
  - /v1/chain/get_info is added to api endpoint urls within the meta data for validation
  - make sure all URLs start with http:// or https://
  - for comments/questions/concerns, contact matthew@eosnation.io or @mdarwin on telegram
-   or post to telegram: EOS Validation (EMLG)
  - specification: https://github.com/eosrio/bp-info-standard
+ - contract: https://github.com/EOS-Mainnet/governance/blob/master/eosio.system/eosio.system-regproducer-rc.md
