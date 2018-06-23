@@ -503,8 +503,10 @@ sub validate_url {
 		};
 
 		if ($@) {
-			chomp ($@);
-			$self->add_message('err', "invalid json for url=<$url> error=<$@>");
+			my $message = $@;
+			chomp ($message);
+			$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
+			$self->add_message('err', "invalid json for url=<$url> error=<$message>");
 			#print $content;
 			return undef;
 		}
