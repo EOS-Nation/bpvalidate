@@ -145,7 +145,7 @@ sub run_validate {
 	#print ">> [$name][$key][$url][$votes]\n";
 
 	if ($url !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
-		$self->add_message('err', "invalid configured url for url=<$url>");
+		$self->add_message('crit', "invalid configured url for url=<$url>");
 		return undef;
 	}
 
@@ -210,7 +210,7 @@ sub run_validate {
 	};
 
 	if (! @nodes) {
-		$self->add_message('err', "no nodes configured");
+		$self->add_message('crit', "no nodes configured");
 		return undef;
 	}
 
@@ -267,18 +267,18 @@ sub run_validate {
 		}
 
 		if (! $found_something) {
-			$self->add_message('err', "no endpoints provided in field=<node[$node_number]> (useless section)");
+			$self->add_message('crit', "no endpoints provided in field=<node[$node_number]> (useless section)");
 		}
 			
 		$node_number++;
 	}
 
 	if (! $api_endpoint) {
-		$self->add_message('err', "no API endpoints provided either api_endpoint or ssl_endpoint");
+		$self->add_message('crit', "no API endpoints provided either api_endpoint or ssl_endpoint");
 		$error++;
 	}
 	if (! $peer_endpoint) {
-		$self->add_message('err', "no p2p or bnet endpoints provided");
+		$self->add_message('crit', "no p2p or bnet endpoints provided");
 		$error++;
 	}
 
@@ -512,13 +512,23 @@ sub validate_url {
 	} elsif ($content_type eq 'svg') {
 	}
 
+	my $return;
+	if ($json) {
+		$return = $json;
+	} else {
+		$return = $res;
+	}
+
+	if ($options{extra_check}) {
+		my $function = $options{extra_check};
+		if (! $self->$function ($return, $url, $type, %options)) {
+			return undef;
+		}
+	}
+
 	$self->add_to_list($url, $type, result => $json, %options) if ($options{add_to_list});
 
-	if ($json) {
-		return $json;
-	} else {
-		return $res;
-	}
+	return $return;
 }
 
 sub validate_connection {
@@ -574,26 +584,27 @@ sub validate_connection {
 sub validate_api {
 	my ($self, $url, $type, %options) = @_;
 
-	my $result = $self->validate_url($url, $type, url_ext => '/v1/chain/get_info', content_type => 'json', cors => 'on', api_checks => 'on', add_result_to_list => 'response', %options);
+	return $self->validate_url($url, $type, url_ext => '/v1/chain/get_info', content_type => 'json', cors => 'on', api_checks => 'on', extra_check => 'validate_api_extra_check', add_result_to_list => 'response', %options);
+}
+
+sub validate_api_extra_check {
+	my ($self, $result, $url, $type, %options) = @_;
+
 	my $errors;
-
-	if (! $result) {
-		return undef;
-	}
-
+	
 	if (! $$result{chain_id}) {
-		$self->add_message('err', "cannot find chain_id in response for url=<$url> for field=<$type>");
+		$self->add_message('crit', "cannot find chain_id in response for url=<$url> for field=<$type>");
 		$errors++;
 	}
 
 	if ($$result{chain_id} ne 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906') {
-		$self->add_message('err', "invalid chain_id=<$$result{chain_id}> for url=<$url> for field=<$type>");
+		$self->add_message('crit', "invalid chain_id=<$$result{chain_id}> for url=<$url> for field=<$type>");
 		$errors++;
 	}
 
 
 	if (! $$result{head_block_time}) {
-		$self->add_message('err', "cannot find head_block_time in response for url=<$url> for field=<$type>");
+		$self->add_message('crit', "cannot find head_block_time in response for url=<$url> for field=<$type>");
 		$errors++;
 	}
 
@@ -603,30 +614,31 @@ sub validate_api {
 	if ($delta > 10) {
 		my $val = Time::Seconds->new($delta);
 		my $deltas = $val->pretty;
-		#$self->add_message('err', "last block is off=<$$result{head_block_time}> delta=<$deltas> for url=<$url> for field=<$type>");
-		$self->add_message('err', "last block is not up-to-date with timestamp=<$$result{head_block_time}> for url=<$url> for field=<$type>");
+		#$self->add_message('crit', "last block is off=<$$result{head_block_time}> delta=<$deltas> for url=<$url> for field=<$type>");
+		$self->add_message('crit', "last block is not up-to-date with timestamp=<$$result{head_block_time}> for url=<$url> for field=<$type>");
 		$errors++;
 	}
 
 	if ($errors) {
 		return undef;
 	}
-	return $result;
+
+	return 1;
 }
 
 sub validate_port {
 	my ($self, $port, $type) = @_;
 
 	if (! defined $port) {
-		$self->add_message('err', "port is not provided for field=<$type>");
+		$self->add_message('crit', "port is not provided for field=<$type>");
 		return undef;
 	}
 	if (! defined is_integer ($port)) {
-		$self->add_message('err', "port=<$port> is not a valid integer for field=<$type>");
+		$self->add_message('crit', "port=<$port> is not a valid integer for field=<$type>");
 		return undef;
 	}
 	if (! is_between ($port, 1, 65535)) {
-		$self->add_message('err', "port=<$port> is not a valid integer in range 1 to 65535 for field=<$type>");
+		$self->add_message('crit', "port=<$port> is not a valid integer in range 1 to 65535 for field=<$type>");
 		return undef;
 	}
 
@@ -648,7 +660,7 @@ sub validate_ip {
 	my ($self, $ip, $type) = @_;
 
 	if (! is_public_ip($ip)) {
-		$self->add_message('err', "not a valid ip address=<$ip> for field=<$type>");
+		$self->add_message('crit', "not a valid ip address=<$ip> for field=<$type>");
 		return undef;
 	}
 
@@ -665,7 +677,7 @@ sub validate_dns {
 		$value = "$a.$b.$c.$d";
 		return $self->validate_ip($value, $type);
 	} else {
-		$self->add_message('err', "cannot resolve DNS name=<$value> for field=<$type>");
+		$self->add_message('crit', "cannot resolve DNS name=<$value> for field=<$type>");
 		return undef;
 	}
 }
@@ -733,7 +745,7 @@ sub test_patreonous {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message('err', "invalid patreonous filter for field=<$type> for url=<$url> message=<$status_message>; see https://github.com/EOSIO/patroneos/issues/36");
+		$self->add_message('crit', "invalid patreonous filter for field=<$type> for url=<$url> message=<$status_message>; see https://github.com/EOSIO/patroneos/issues/36");
 		return undef;
 	}
 
