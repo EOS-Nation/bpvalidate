@@ -416,7 +416,7 @@ sub validate_url {
 
 		if ($ssl eq 'on') {
 			# LWP doesn't seem to support HTTP2, so make an extra call
-			my $check_http2 = `curl "https://api.eosn.io/v1/chain/get_info" --verbose --max-time 1 --stderr -`;
+			my $check_http2 = `curl '$url$url_ext' --verbose --max-time 1 --stderr -`;
 			if ($check_http2 =~ m#HTTP/2 200#) {
 				$options{add_to_list} .= '2';
 			} else {
