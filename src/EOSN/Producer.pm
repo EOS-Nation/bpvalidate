@@ -389,6 +389,7 @@ sub validate_url {
 	}
 
 	my $req = HTTP::Request->new('GET', $url . $url_ext);
+	$req->header('Origin', 'https://example.com');
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -414,22 +415,34 @@ sub validate_url {
 		}
 	}
 
-	my $cors_header = $res->header('Access-Control-Allow-Origin');
+	my @cors_headers = $res->header('Access-Control-Allow-Origin');
 	if ($cors eq 'either') {
 		# do nothing
 	} elsif ($cors eq 'should') {
-		if (! $cors_header) {
-			# error, but not fatal, but not ok either
+		# error, but not fatal, but not ok either
+		if (! @cors_headers) {
 			$self->add_message('err', "missing Access-Control-Allow-Origin header for field=<$type> for url=<$url>; see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS");
+			delete $options{add_to_list};
+		} elsif (@cors_headers > 1) {
+			$self->add_message('err', "multiple Access-Control-Allow-Origin headers=<@cors_headers> for field=<$type> for url=<$url>; see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS");
+			delete $options{add_to_list};
+		} elsif ($cors_headers[0] ne '*') {
+			$self->add_message('err', "inappropriate Access-Control-Allow-Origin header=<@cors_headers> for field=<$type> for url=<$url>; see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS");
 			delete $options{add_to_list};
 		}	
 	} elsif ($cors eq 'on') {
-		if (! $cors_header) {
+		if (! @cors_headers) {
 			$self->add_message('err', "missing Access-Control-Allow-Origin header for field=<$type> for url=<$url>; see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS");
+			return undef;
+		} elsif (@cors_headers > 1) {
+			$self->add_message('err', "multiple Access-Control-Allow-Origin headers=<@cors_headers> for field=<$type> for url=<$url>; see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS");
+			return undef;
+		} elsif ($cors_headers[0] ne '*') {
+			$self->add_message('err', "inappropriate Access-Control-Allow-Origin header=<@cors_headers> for field=<$type> for url=<$url>; see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS");
 			return undef;
 		}	
 	} elsif ($cors eq 'off') {
-		if ($cors_header) {
+		if (@cors_headers) {
 			$self->add_message('err', "Access-Control-Allow-Origin header returned when should not be for field=<$type> for url=<$url>");
 			return undef;
 		}	
