@@ -310,13 +310,13 @@ sub validate_url {
 		return undef;
 	}
 
-	$url =~ s/#.*$//;
-
 	if ($self->{urls}{$url}) {
 		$self->add_message('err', "duplicate url=<$url> for field=<$type>");		
 		return undef;
 	}
 	$self->{urls}{$url} = 1;
+
+	$url =~ s/#.*$//;
 
 	if ($url !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
 		$self->add_message('err', "invalid url=<$url> for field=<$type>");
