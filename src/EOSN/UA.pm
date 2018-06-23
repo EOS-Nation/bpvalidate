@@ -16,7 +16,7 @@ sub eosn_ua {
 	my $ua = new LWP::UserAgent::Paranoid;
 	$ua->agent("curl/7.58.0");
 	$ua->protocols_allowed(["http", "https"]);
-	$ua->request_timeout(10);
+	$ua->request_timeout(5);
 
 	return $ua;
 }
