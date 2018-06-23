@@ -438,14 +438,16 @@ sub validate_url {
 	}
 
 	if (! $response_content_type) {
-		$self->add_message('warn', "did not receive content_type header for field=<$type> for url=<$url>");	
+		$self->add_message('err', "did not receive content_type header for field=<$type> for url=<$url>");	
+		return undef;
 	} elsif ($content_type && $content_types{$content_type}) {
 		my $found = 0;
 		foreach my $x (@{$content_types{$content_type}}) {
 			$found = 1 if ($x eq $response_content_type);
 		}
 		if (! $found) {
-			$self->add_message('warn', "received unexpected content_type=<$response_content_type> for field=<$type> for url=<$url>");
+			$self->add_message('err', "received unexpected content_type=<$response_content_type> for field=<$type> for url=<$url>");
+			return undef;
 		}
 	}
 
