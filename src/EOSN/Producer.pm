@@ -400,11 +400,20 @@ sub validate_url {
 		return undef;
 	}
 
-	my $server_header = $res->header('Server');
-	if ($server_header && $server_header =~ /cloudflare/) {
-		$self->add_message('err', "cloudflare restricts some client use making this endpoint not appropriate for some use cases for url=<$url>");
-		return undef;
+	if ($options{api_checks}) {
+		my $server_header = $res->header('Server');
+		if ($server_header && $server_header =~ /cloudflare/) {
+			$self->add_message('err', "cloudflare restricts some client use making this endpoint not appropriate for some use cases for url=<$url>");
+			return undef;
+		}
+
+		my $cookie_header = $res->header('Set-Cookie');
+		if ($cookie_header) {
+			$self->add_message('err', "api nodes must not set cookies for url=<$url>");
+			return undef;
+		}
 	}
+
 	my $cors_header = $res->header('Access-Control-Allow-Origin');
 	if ($cors eq 'either') {
 		# do nothing
@@ -539,7 +548,7 @@ sub validate_connection {
 sub validate_api {
 	my ($self, $url, $type, %options) = @_;
 
-	my $result = $self->validate_url($url, $type, url_ext => '/v1/chain/get_info', content_type => 'json', cors => 'on', add_result_to_list => 'response', %options);
+	my $result = $self->validate_url($url, $type, url_ext => '/v1/chain/get_info', content_type => 'json', cors => 'on', api_checks => 'on', add_result_to_list => 'response', %options);
 	my $errors;
 
 	if (! $result) {
