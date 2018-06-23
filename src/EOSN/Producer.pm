@@ -480,6 +480,7 @@ sub validate_url {
 		};
 
 		if ($@) {
+			chomp ($@);
 			$self->add_message('err', "invalid json for url=<$url> error=<$@>");
 			#print $content;
 			return undef;
