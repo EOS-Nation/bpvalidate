@@ -413,6 +413,16 @@ sub validate_url {
 			$self->add_message('err', "api nodes must not set cookies for url=<$url>");
 			return undef;
 		}
+
+		if ($ssl eq 'on') {
+			# LWP doesn't seem to support HTTP2, so make an extra call
+			my $check_http2 = `curl "https://api.eosn.io/v1/chain/get_info" --verbose --max-time 1 --stderr -`;
+			if ($check_http2 =~ m#HTTP/2 200#) {
+				$options{add_to_list} .= '2';
+			} else {
+				$self->add_message('warn', "https api nodes should use HTTP/2 for url=<$url>");
+			}
+		}
 	}
 
 	my @cors_headers = $res->header('Access-Control-Allow-Origin');

@@ -34,7 +34,7 @@ while (<DATA>) {
 print "\n";
 
 foreach my $kind (sort keys %endpoints) {
-	next if (($kind ne 'api_http') && ($kind ne 'api_https'));
+	next if (($kind ne 'api_http') && ($kind ne 'api_https') && ($kind ne 'api_https2'));
 	print "==== $kind ====\n";
 	foreach my $entry (@{$endpoints{$kind}}) {
 		my $producer = $$entry{producer};
