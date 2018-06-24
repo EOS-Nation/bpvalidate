@@ -9,6 +9,7 @@ use Data::Validate qw(is_integer is_numeric is_between);
 use Data::Validate::IP qw(is_public_ip);
 use IO::Socket;
 use Data::Dumper;
+use Date::Format qw(time2str);
 use Date::Parse qw(str2time);
 use Time::Seconds;
 
@@ -119,12 +120,16 @@ sub validate {
 
 	$self->{results}{regproduce} = $self->{properties};
 
+	my $start_time = time;
 	$self->run_validate;
+	my $end_time = time;
 
 	if (! $self->{messages}) {
 		$self->add_message('ok', "checks passed");
 	}
 	$self->{results}{messages} = $self->messages;
+	$self->{results}{meta}{generated_at} = time2str("%C", time);
+	$self->{results}{meta}{elapsed_time} = $end_time - $start_time;
 
 	return $self->{results};
 }
@@ -299,11 +304,12 @@ sub validate_string {
 sub validate_url {
 	my ($self, $url, $type, %options) = @_;
 
-	#print ">> check url=[$url]\n";
 	my $content_type = $options{content_type} || die "content_type not provided";
 	my $ssl = $options{ssl} || 'either'; # either, on, off
 	my $cors = $options{cors} || 'either'; #either, on, off, should
 	my $url_ext = $options{url_ext} || '';
+
+	#print ">> check url=[GET $url$url_ext]\n";
 
 	if (! $url) {
 		$self->add_message('err', "no url given for field=<$type>");
@@ -536,6 +542,8 @@ sub validate_url {
 sub validate_connection {
 	my ($self, $peer, $type, %options) = @_;
 
+	#print ">> peer=[$peer]\n";
+
 	if ($self->{urls}{$peer}) {
 		$self->add_message('err', "duplicate peer=<$peer> for field=<$type>");
 		return undef;
@@ -571,7 +579,7 @@ sub validate_connection {
 	}
 
 	#print ">> check connection to [$host]:[$port]\n";
-	my $sh = new IO::Socket::INET (PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timemout => 5);
+	my $sh = new IO::Socket::INET (PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5);
 	if (! $sh) {
 		$self->add_message('err', "cannot connect to peer=<$host:$port> for field=<$type>");
 		return undef;
@@ -593,7 +601,7 @@ sub validate_api_extra_check {
 	my ($self, $result, $url, $type, %options) = @_;
 
 	my $errors;
-	
+
 	if (! $$result{chain_id}) {
 		$self->add_message('crit', "cannot find chain_id in response for url=<$url> for field=<$type>");
 		$errors++;
