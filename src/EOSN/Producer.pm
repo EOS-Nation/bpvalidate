@@ -19,8 +19,10 @@ $content_types{png_jpg} = ['image/png', 'image/jpeg'];
 $content_types{svg} = ['image/svg+xml'];
 
 our %versions;
-$versions{db031363} = 'mainnet-1.0.5';
-$versions{db570801} = 'mainnet-1.0.6';
+$versions{db031363}{name} = 'mainnet-1.0.5';
+$versions{db031363}{current} = 1;
+$versions{db570801}{name} = 'mainnet-1.0.6';
+$versions{db570801}{current} = 1;
 
 # --------------------------------------------------------------------------
 # Class Methods
@@ -645,7 +647,12 @@ sub validate_api_extra_check {
 	if (! $versions{$$result{server_version}}) {
 		$self->add_message('warn', "unknown server version=<$$result{server_version}> in response for url=<$url> for field=<$type>");
 	} else {
-		$info{server_version} = $versions{$$result{server_version}};
+		my $name = $versions{$$result{server_version}}{name};
+		my $current = $versions{$$result{server_version}}{current};
+		$info{server_version} = $name;
+		if (! $current) {
+			$self->add_message('warn', "server version=<$name> is out of date in response for url=<$url> for field=<$type>");
+		}
 	}
 
 	if (! $self->test_patreonous ($url, $type)) {
