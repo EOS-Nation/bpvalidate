@@ -20,6 +20,7 @@ $content_types{svg} = ['image/svg+xml'];
 
 our %versions;
 $versions{db031363} = 'mainnet-1.0.5';
+$versions{db570801} = 'mainnet-1.0.6';
 
 # --------------------------------------------------------------------------
 # Class Methods
