@@ -21,8 +21,8 @@ $content_types{svg} = ['image/svg+xml'];
 our %versions;
 $versions{db031363}{name} = 'mainnet-1.0.5';
 $versions{db031363}{current} = 1;
-$versions{db570801}{name} = 'mainnet-1.0.6';
-$versions{db570801}{current} = 1;
+$versions{aa351733}{name} = 'mainnet-1.0.6';
+$versions{aa351733}{current} = 1;
 
 # --------------------------------------------------------------------------
 # Class Methods
