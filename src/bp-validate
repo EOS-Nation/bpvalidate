@@ -3,58 +3,118 @@
 use strict;
 use utf8;
 use JSON;
+use Parallel::ForkManager;
+use EOSN::SQL qw(do_connect);
 use EOSN::Producer;
 use EOSN::Util qw(write_file);
 use EOSN::UA qw(eosn_ua get_table);
 use Date::Format qw(time2str);
 use Getopt::Long;
+use DBI;
 
 binmode(STDOUT, ":utf8");
 
+my $max_processes = 8;
 my $filter_producer = undef;
 my $outfile = undef;
 my $limit = 1000;
 my $debug = 0;
-GetOptions('producer=s' => \$filter_producer, 'output=s' => \$outfile, 'limit=i' => \$limit, 'debug' => \$debug) || exit 1;
 
-my $ua = eosn_ua();
-my $producer_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_producers", limit => $limit);
-my @results;
-my %cache;
+GetOptions('max_processes=i' => \$max_processes, 'producer=s' => \$filter_producer, 'output=s' => \$outfile, 'limit=i' => \$limit, 'debug' => \$debug) || exit 1;
 
-if (! $producer_list) {
-	die "$0: cannot get producer list";
-}
+$max_processes = 1 if ($filter_producer);
 
-#foreach my $entry (sort {-1 * ($$a{total_votes} . ' ' . $$a{owner} cmp $$b{total_votes} . ' ' . $$b{owner})} @{$producer_list}) {
-foreach my $entry (sort {$$a{owner} cmp $$b{owner}}@{$producer_list}) {
-	if ($cache{$$entry{owner}}) {
-		warn "$0: already processed: $$entry{owner}\n";
-		next;
-	}
-	$cache{$$entry{owner}} = 1;
-	warn ">> Processing: $$entry{owner}\n" if ($debug);
+setup_jobs();
+run_validation();
+write_results();
 
-	if ($filter_producer) {
-		next if ($$entry{owner} ne $filter_producer);
+sub setup_jobs {
+	my %cache;
+	my $ua = eosn_ua();
+	my $dbh = do_connect('validate');
+
+	my $producer_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_producers", limit => $limit);
+
+	if (! $producer_list) {
+		die "$0: cannot get producer list";
 	}
 
-	my $producer = new EOSN::Producer (ua => $ua, properties => $entry);
-	my $results = $producer->validate;
+	foreach my $entry (sort {$$a{owner} cmp $$b{owner}}@{$producer_list}) {
+		if ($cache{$$entry{owner}}) {
+			#warn "$0: already processed: $$entry{owner}\n";
+			next;
+		}
+		$cache{$$entry{owner}} = 1;
 
-	push (@results, $results);
+		$dbh->do('insert ignore into producer (producer, regproducer_data, status, reproducer_at) values (?, ?, ?, ?)', {}, $$entry{owner}, to_json ($entry), 'check', time);
+		if ((! $filter_producer) || ($filter_producer && ($$entry{owner} eq $filter_producer))) {
+			my $limit = time - 1700;
+			$limit = time if ($filter_producer);
+			$dbh->do('update producer set status = ?, reproducer_at = ?, regproducer_data = ? where producer = ? and checked_at < ?', {}, 'check', time, to_json ($entry), $$entry{owner}, $limit);
+		} else {
+			$dbh->do('update producer set thread_id = null, status = ? where producer = ?', {}, 'done', $$entry{owner});
+		}
+		$dbh->do('delete from producer where checked_at < ?', {}, time - (3600 * 9));
+	}
 }
 
-my $final_result = to_json ({
-	meta => {generated_at => time2str("%C", time), maintainer => 'matthew@eosnation.io'},
-	producers => \@results
-}, {
-	pretty => 1,
-	canonical => 1
-});
+sub run_validation {
+	my $dbh = do_connect('validate');
+	if ($max_processes == 1) {
+		doit (0);
+	} else {
+		my $pm = Parallel::ForkManager->new($max_processes);
+		foreach my $thread_id (0 .. ($max_processes - 1)) {
+			$pm->start and next; # do the fork
+			warn "[$thread_id] start worker\n" if ($debug);
+			doit ($thread_id);
+			warn "[$thread_id] end worker\n" if ($debug);
+			$pm->finish; # do the exit in the child process
+		}
+		$pm->wait_all_children;
+	}
+}
 
-if ($outfile) {
-	write_file($outfile, $final_result);
-} else {
-	print $final_result;
+sub doit {
+	my ($thread_id) = @_;
+
+	while (1) {
+		my $dbh = do_connect('validate');
+		$dbh->do('update producer set thread_id = ? where status = ? and thread_id is null order by producer limit 1', {}, $thread_id, 'check');
+		my $entry = $dbh->selectrow_hashref ('select * from producer where thread_id = ? and status = ?', {}, $thread_id, 'check');
+		if (! $entry) {
+			# nothing left to do
+			return;
+		}
+		warn "[$thread_id] processing: $$entry{producer}\n" if ($debug);
+		my $ua = eosn_ua();
+		my $producer = new EOSN::Producer (ua => $ua, properties => from_json ($$entry{regproducer_data}));
+		my $results = $producer->validate;
+		#print ">>> ", to_json ($results), "\n";
+		$dbh->do('update producer set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?', {}, 'done', time, to_json ($results), $$entry{id});
+	}
+}
+
+sub write_results {
+	my $dbh = do_connect('validate');
+	my @results;
+	my $data = $dbh->selectall_arrayref('select * from producer where not results_data is null order by producer', { Slice => {}});
+	foreach my $entry (@$data) {
+		next unless ((! $filter_producer) || ($filter_producer && ($$entry{producer} eq $filter_producer)));
+		push (@results, from_json ($$entry{results_data}));
+	}
+
+	my $final_result = to_json ({
+		meta => {generated_at => time2str("%C", time), maintainer => 'matthew@eosnation.io'},
+		producers => \@results
+	}, {
+		pretty => 1,
+		canonical => 1
+	});
+
+	if ($outfile) {
+		write_file($outfile, $final_result);
+	} else {
+		print $final_result;
+	}
 }

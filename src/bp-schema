@@ -1,0 +1,26 @@
+#!/usr/bin/perl -w
+
+use strict;
+use utf8;
+use JSON;
+use Parallel::ForkManager;
+use EOSN::SQL qw(do_connect);
+use EOSN::Producer;
+use EOSN::Util qw(write_file);
+use EOSN::UA qw(eosn_ua get_table);
+use Date::Format qw(time2str);
+use Getopt::Long;
+use DBI;
+
+my $dbh = do_connect('validate');
+my $prefix = "alter table producer add column if not exists";
+#$dbh->do("drop table producer");
+$dbh->do("create table if not exists producer (id int(11) unsigned not null primary key auto_increment) character set utf8mb4");
+$dbh->do("$prefix producer varchar(20)");
+$dbh->do("$prefix thread_id int(11) unsigned");
+$dbh->do("$prefix status varchar(20)");
+$dbh->do("$prefix regproducer_data text");
+$dbh->do("$prefix results_data text");
+$dbh->do("$prefix reproducer_at int(11)");
+$dbh->do("$prefix checked_at int(11)");
+$dbh->do("create unique index if not exists i_producer on producer (producer)");
