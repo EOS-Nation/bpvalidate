@@ -39,7 +39,7 @@ foreach my $kind (sort keys %endpoints) {
 	foreach my $entry (@{$endpoints{$kind}}) {
 		my $producer = $$entry{producer};
 		my $address = $$entry{address};
-		print sprintf ("%s, %10s %9s: %s\n", $$entry{producer}, hex('0x'. $$entry{response}{server_version}), $$entry{response}{server_version}, $$entry{address});
+		print sprintf ("%s, %10s %9s %15s: %s\n", $$entry{producer}, hex('0x'. $$entry{response}{server_version}), $$entry{response}{server_version}, ($$entry{info}{server_version} || 'unknown'), $$entry{address});
 	}
 	print "\n";
 }
