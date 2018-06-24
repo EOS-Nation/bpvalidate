@@ -5,6 +5,7 @@ use strict;
 use Exporter;
 use LWP::UserAgent::Paranoid;
 use JSON qw(from_json to_json);
+use Data::Dumper;
 
 use parent qw(Exporter);
 our @EXPORT_OK = qw(eosn_ua get_table);
@@ -28,10 +29,10 @@ sub get_table {
 	$parameters{json} = JSON::true;
 
 	my $more = "first";
-	my @rows;
+	my $rows;
 
 	while ($more) {
-		print "DEBUG: get table $url: ", to_json (\%parameters), "\n";
+		#print ">> get table $url: ", to_json (\%parameters), "\n";
 		my $req = HTTP::Request->new('POST', $url, undef, to_json (\%parameters));
 		my $res = $ua->request($req);
 		my $status_code = $res->code;
@@ -55,14 +56,16 @@ sub get_table {
 			return undef;
 		}
 
-		push (@rows, @{$$json{rows}});
-
+		$rows = $$json{rows};
 		$more = $$json{more};
 		$parameters{more} = $more;
-		last if (scalar @rows >= $limit);
+
+		#print ">> row count: ", scalar (@$rows), ", more: $more\n";
+
+		last if (scalar @$rows >= $limit);
 	}
 
-	return \@rows;
+	return $rows;
 }
 
 1;
