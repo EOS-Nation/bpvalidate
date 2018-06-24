@@ -18,6 +18,9 @@ $content_types{json} = ['application/json'];
 $content_types{png_jpg} = ['image/png', 'image/jpeg'];
 $content_types{svg} = ['image/svg+xml'];
 
+our %versions;
+$versions{db031363} = 'mainnet-1.0.5';
+
 # --------------------------------------------------------------------------
 # Class Methods
 
@@ -229,11 +232,7 @@ sub run_validate {
 			$found_something++;
 			my $result = $self->validate_api($$node{api_endpoint}, "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', location => $location);
 			if ($result) {
-				if ($self->test_patreonous ($$node{api_endpoint}, "node[$node_number].api_endpoint")) {
-					$api_endpoint++;
-				} else {
-					$error++;
-				}
+				$api_endpoint++;
 			} else {
 				$error++;
 			}
@@ -243,11 +242,7 @@ sub run_validate {
 			$found_something++;
 			my $result = $self->validate_api($$node{ssl_endpoint}, "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', location => $location);
 			if ($result) {
-				if ($self->test_patreonous ($$node{ssl_endpoint}, "node[$node_number].ssl_endpoint")) {
-					$api_endpoint++;
-				} else {
-					$error++;
-				}
+				$api_endpoint++;
 			} else {
 				$error++;
 			}
@@ -308,6 +303,7 @@ sub validate_url {
 	my $ssl = $options{ssl} || 'either'; # either, on, off
 	my $cors = $options{cors} || 'either'; #either, on, off, should
 	my $url_ext = $options{url_ext} || '';
+	my $non_standard_port = $options{non_standard_port}; # true/false
 
 	#print ">> check url=[GET $url$url_ext]\n";
 
@@ -358,20 +354,28 @@ sub validate_url {
 	#print ">> [$host_port]\n";
 	my ($host, $port) = split (/:/, $host_port, 2);
 
-	if ($protocol eq 'http' && $port && $port == 80) {
-		$self->add_message('warn', "port 80 is not required in url=<$url> for field=<$type>");
-	} elsif ($protocol eq 'https' && $port && $port == 443) {
-		$self->add_message('warn', "port 443 ist not required in url=<$url> for field=<$type>");
-	}
-	if ($location && $location eq '/') {
-		$self->add_message('warn', "trailing slash is not required in url=<$url> for field=<$type>");
-	}
-
 	if (defined $port) {
 		if (! $self->validate_port($port, $type)) {
 			return undef;
 		}
 	}
+
+	if ($protocol eq 'http' && $port && $port == 80) {
+		$self->add_message('warn', "port=<80> is not required in url=<$url> for field=<$type>");
+	} elsif ($protocol eq 'https' && $port && $port == 443) {
+		$self->add_message('warn', "port=<443> is not required in url=<$url> for field=<$type>");
+	}
+	if ($non_standard_port) {
+		if ($protocol eq 'http' && $port && $port != 80) {
+			$self->add_message('warn', "port=<$port> is non-standard and may be unusable by some applications in url=<$url> for field=<$type>");
+		} elsif ($protocol eq 'https' && $port && $port != 443) {
+			$self->add_message('warn', "port=<$port> is non-standard and may be unusable by some applications in url=<$url> for field=<$type>");
+		}
+	}
+	if ($location && $location eq '/') {
+		$self->add_message('warn', "trailing slash is not required in url=<$url> for field=<$type>");
+	}
+
 	if (! $self->validate_ip_dns($host, $type)) {
 		return undef;
 	}	
@@ -527,14 +531,16 @@ sub validate_url {
 		$return = $res;
 	}
 
+	my $info;
 	if ($options{extra_check}) {
 		my $function = $options{extra_check};
-		if (! $self->$function ($return, $url, $type, %options)) {
+		$info = $self->$function ($return, $url, $type, %options);
+		if (! $info) {
 			return undef;
 		}
 	}
 
-	$self->add_to_list($url, $type, result => $json, %options) if ($options{add_to_list});
+	$self->add_to_list($url, $type, info => $info, result => $json, %options) if ($options{add_to_list});
 
 	return $return;
 }
@@ -594,12 +600,13 @@ sub validate_connection {
 sub validate_api {
 	my ($self, $url, $type, %options) = @_;
 
-	return $self->validate_url($url, $type, url_ext => '/v1/chain/get_info', content_type => 'json', cors => 'on', api_checks => 'on', extra_check => 'validate_api_extra_check', add_result_to_list => 'response', %options);
+	return $self->validate_url($url, $type, url_ext => '/v1/chain/get_info', content_type => 'json', cors => 'on', api_checks => 'on', non_standard_port => 1, extra_check => 'validate_api_extra_check', add_result_to_list => 'response', add_info_to_list => 'info', %options);
 }
 
 sub validate_api_extra_check {
 	my ($self, $result, $url, $type, %options) = @_;
 
+	my %info;
 	my $errors;
 
 	if (! $$result{chain_id}) {
@@ -624,8 +631,23 @@ sub validate_api_extra_check {
 	if ($delta > 10) {
 		my $val = Time::Seconds->new($delta);
 		my $deltas = $val->pretty;
-		#$self->add_message('crit', "last block is off=<$$result{head_block_time}> delta=<$deltas> for url=<$url> for field=<$type>");
+		#$self->add_message('crit', "last block is not up-to-date with timestamp=<$$result{head_block_time}> delta=<$deltas> for url=<$url> for field=<$type>");
 		$self->add_message('crit', "last block is not up-to-date with timestamp=<$$result{head_block_time}> for url=<$url> for field=<$type>");
+		$errors++;
+	}
+
+	if (! $$result{server_version}) {
+		$self->add_message('crit', "cannot find server_version in response for url=<$url> for field=<$type>");
+		$errors++;
+	}
+
+	if (! $versions{$$result{server_version}}) {
+		$self->add_message('warn', "unknown server version=<$$result{server_version}> in response for url=<$url> for field=<$type>");
+	} else {
+		$info{server_version} = $versions{$$result{server_version}};
+	}
+
+	if (! $self->test_patreonous ($url, $type)) {
 		$errors++;
 	}
 
@@ -633,7 +655,7 @@ sub validate_api_extra_check {
 		return undef;
 	}
 
-	return 1;
+	return \%info;
 }
 
 sub validate_port {
@@ -784,12 +806,15 @@ sub add_to_list {
 	my %data;
 	$data{address} = $host;
 
-	my $result;
-	my $key;
 	if ($options{add_result_to_list} && $options{result}) {
-		$key = $options{add_result_to_list};
-		$result = $options{result};
+		my $key = $options{add_result_to_list};
+		my $result = $options{result};
 		$data{$key} = $result;
+	}
+	if ($options{add_info_to_list} && $options{info}) {
+		my $key = $options{add_info_to_list};
+		my $info = $options{info};
+		$data{$key} = $info;
 	}
 	if ($options{location}) {
 		$data{location} = $options{location};
