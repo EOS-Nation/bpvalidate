@@ -272,7 +272,7 @@ sub run_validate {
 		}
 
 		if (! $found_something) {
-			$self->add_message('crit', "no endpoints provided in field=<node[$node_number]> (useless section)");
+			$self->add_message('warn', "no endpoints provided in field=<node[$node_number]> (useless section)");
 		}
 			
 		$node_number++;
