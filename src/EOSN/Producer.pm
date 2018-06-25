@@ -160,7 +160,7 @@ sub run_validate {
 		return undef;
 	}
 
-	my $json = $self->validate_url("$url/bp.json", "bp info json url", content_type => 'json', cors => 'should', add_to_list => 'resources/bpjson');
+	my $json = $self->validate_url("$url/bp.json", "bp info json url", content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;
@@ -199,12 +199,12 @@ sub run_validate {
 		$self->add_message('err', "field=<producer_account_name> does not match between bp.json and regproducer");
 	}
 
-	$self->validate_url($$json{org}{website}, 'org.website', content_type => 'html', add_to_list => 'resources/website') || $error++;
-	$self->validate_url($$json{org}{code_of_conduct}, 'org.code_of_conduct', content_type => 'html', add_to_list => 'resources/conduct') || $error++;
-	$self->validate_url($$json{org}{ownership_disclosure}, 'org.ownership_disclosure', content_type => 'html', add_to_list => 'resources/ownership') || $error++;
-	$self->validate_url($$json{org}{branding}{logo_256}, 'org.branding.logo_256', content_type => 'png_jpg', add_to_list => 'resources/social_logo_256') || $error++;
-	$self->validate_url($$json{org}{branding}{logo_1024}, 'org.branding.logo_1024', content_type => 'png_jpg', add_to_list => 'resources/social_logo_1024') || $error++;
-	$self->validate_url($$json{org}{branding}{logo_svg}, 'org.branding.logo_svg', content_type => 'svg', add_to_list => 'resources/social_logo_svg') || $error++;
+	$self->validate_url($$json{org}{website}, 'org.website', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn') || $error++;
+	$self->validate_url($$json{org}{code_of_conduct}, 'org.code_of_conduct', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn') || $error++;
+	$self->validate_url($$json{org}{ownership_disclosure}, 'org.ownership_disclosure', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn') || $error++;
+	$self->validate_url($$json{org}{branding}{logo_256}, 'org.branding.logo_256', content_type => 'png_jpg', add_to_list => 'resources/social_logo_256', dupe => 'warn') || $error++;
+	$self->validate_url($$json{org}{branding}{logo_1024}, 'org.branding.logo_1024', content_type => 'png_jpg', add_to_list => 'resources/social_logo_1024', dupe => 'warn') || $error++;
+	$self->validate_url($$json{org}{branding}{logo_svg}, 'org.branding.logo_svg', content_type => 'svg', add_to_list => 'resources/social_logo_svg', dupe => 'warn') || $error++;
 
 	foreach my $key (sort keys %{$$json{org}{social}}) {
 		my $value = $$json{org}{social}{$key};
@@ -307,6 +307,8 @@ sub validate_url {
 	my $cors = $options{cors} || 'either'; #either, on, off, should
 	my $url_ext = $options{url_ext} || '';
 	my $non_standard_port = $options{non_standard_port}; # true/false
+	my $dupe = $options{dupe} || die "$0: dupe checking not specified"; # err or warn
+	my $timeout = $options{timeout} || 10;
 
 	#print ">> check url=[GET $url$url_ext]\n";
 
@@ -316,8 +318,8 @@ sub validate_url {
 	}
 
 	if ($self->{urls}{$url}) {
-		$self->add_message('err', "duplicate url=<$url> for field=<$type>");		
-		return undef;
+		$self->add_message($dupe, "duplicate url=<$url> for field=<$type>");		
+		return undef if ($dupe eq 'err');
 	}
 	$self->{urls}{$url} = 1;
 
@@ -403,6 +405,7 @@ sub validate_url {
 
 	my $req = HTTP::Request->new('GET', $url . $url_ext);
 	$req->header('Origin', 'https://example.com');
+	$self->ua->timeout($timeout);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -603,7 +606,19 @@ sub validate_connection {
 sub validate_api {
 	my ($self, $url, $type, %options) = @_;
 
-	return $self->validate_url($url, $type, url_ext => '/v1/chain/get_info', content_type => 'json', cors => 'on', api_checks => 'on', non_standard_port => 1, extra_check => 'validate_api_extra_check', add_result_to_list => 'response', add_info_to_list => 'info', %options);
+	return $self->validate_url($url, $type, 
+		url_ext => '/v1/chain/get_info',
+		content_type => 'json',
+		cors => 'on',
+		api_checks => 'on',
+		non_standard_port => 1,
+		extra_check => 'validate_api_extra_check',
+		add_result_to_list => 'response',
+		add_info_to_list => 'info',
+		dupe => 'err',
+		timeout => 3,
+		%options
+	);
 }
 
 sub validate_api_extra_check {
@@ -747,16 +762,21 @@ sub validate_location {
 	if ((! defined $latitude) || (! defined $longitude)) {
 		$latitude = undef;
 		$longitude = undef;
-	} else {
-		if ($latitude > 90 || $latitude < -90) {
-			$self->add_message('err', "field=<$type> has latitude out of range");
-		}		
-		if ($longitude > 180 || $longitude < -180) {
-			$self->add_message('err', "field=<$type> has longitude out of range");
-		}
-		if ($latitude == 0 && $longitude == 0) {
-			$self->add_message('err', "field=<$type> has lat/long of 0,0");
-		}
+	}
+	if ((defined $latitude) && ($latitude > 90 || $latitude < -90)) {
+		$self->add_message('err', "field=<$type> has latitude out of range");
+		$latitude = undef;
+		$longitude = undef;
+	}
+	if ((defined $longitude) && ($longitude > 180 || $longitude < -180)) {
+		$self->add_message('err', "field=<$type> has longitude out of range");
+		$latitude = undef;
+		$longitude = undef;
+	}
+	if (defined $latitude && defined $longitude && $latitude == 0 && $longitude == 0) {
+		$self->add_message('err', "field=<$type> has lat/long of 0,0");
+		$latitude = undef;
+		$longitude = undef;
 	}
 
 	my %return;
