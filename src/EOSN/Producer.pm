@@ -124,7 +124,7 @@ sub name {
 sub validate {
 	my ($self) = @_;
 
-	$self->{results}{regproduce} = $self->{properties};
+	$self->{results}{regproducer} = $self->{properties};
 
 	my $start_time = time;
 	$self->run_validate;

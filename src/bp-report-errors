@@ -23,7 +23,7 @@ print "\n";
 foreach my $entry (@{$$data{producers}}) {
 #	print Dumper ($entry);
 
-	my $producer = $$entry{regproduce}{owner};
+	my $producer = $$entry{regproducer}{owner};
 	foreach my $message (@{$$entry{messages}}) {
 		print sprintf ("%12s: %4s: %s\n", $producer, $$message{kind}, $$message{detail});
 	}
@@ -32,8 +32,8 @@ foreach my $entry (@{$$data{producers}}) {
 
 __DATA__
 Notes:
- - this list is updated approximately hourly, generated from those who ran regproduce
- - /bp.json is appended to whatever url is used in the regproduce call to get the meta data
+ - this list is updated approximately hourly, generated from those who ran regproducer
+ - /bp.json is appended to whatever url is used in the regproducer call to get the meta data
  - /v1/chain/get_info is added to api endpoint urls within the meta data for validation
  - make sure all URLs start with http:// or https://
  - for comments/questions/concerns, contact matthew@eosnation.io or @mdarwin on telegram

@@ -18,7 +18,7 @@ my %endpoints;
 foreach my $entry (@{$$data{producers}}) {
 #	print Dumper ($entry);
 
-	my $producer = $$entry{regproduce}{owner};
+	my $producer = $$entry{regproducer}{owner};
 	foreach my $kind (sort keys %{$$entry{output}{resources}}) {
 		foreach my $resource (@{$$entry{output}{resources}{$kind}}) {
 			$$resource{producer} = $producer;
@@ -45,6 +45,6 @@ foreach my $kind (sort keys %endpoints) {
 
 __DATA__
 Notes:
- - this list is updated approximately hourly, generated from those who ran regproduce
+ - this list is updated approximately hourly, generated from those who ran regproducer
  - BPCs: if your endpoint does not appear here, check the error report
  - for comments/questions/concerns, contact matthew@eosnation.io or @mdarwin on telegram
