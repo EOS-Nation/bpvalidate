@@ -727,8 +727,6 @@ sub validate_location {
 
 	my $country = $self->validate_country($$location{country}, $type);
 	my $name = $$location{name};
-#	my $latitude = is_between ($$location{latitude}, -90, 90);
-#	my $longitude = is_between ($$location{longitude}, -180, 180);  # not working?????
 	my $latitude = is_numeric ($$location{latitude});
 	my $longitude = is_numeric ($$location{longitude});
 
@@ -749,6 +747,16 @@ sub validate_location {
 	if ((! defined $latitude) || (! defined $longitude)) {
 		$latitude = undef;
 		$longitude = undef;
+	} else {
+		if ($latitude > 90 || $latitude < -90) {
+			$self->add_message('err', "field=<$type> has latitude out of range");
+		}		
+		if ($longitude > 180 || $longitude < -180) {
+			$self->add_message('err', "field=<$type> has longitude out of range");
+		}
+		if ($latitude == 0 && $longitude == 0) {
+			$self->add_message('err', "field=<$type> has lat/long of 0,0");
+		}
 	}
 
 	my %return;
