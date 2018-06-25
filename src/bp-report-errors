@@ -32,7 +32,7 @@ foreach my $entry (@{$$data{producers}}) {
 
 __DATA__
 Notes:
- - this list is updated approximately hourly, generated from those who ran regproducer
+ - this list is updated approximately every 30 minutes, generated from those who ran regproducer
  - /bp.json is appended to whatever url is used in the regproducer call to get the meta data
  - /v1/chain/get_info is added to api endpoint urls within the meta data for validation
  - make sure all URLs start with http:// or https://

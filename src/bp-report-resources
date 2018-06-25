@@ -45,6 +45,6 @@ foreach my $kind (sort keys %endpoints) {
 
 __DATA__
 Notes:
- - this list is updated approximately hourly, generated from those who ran regproducer
+ - this list is updated approximately every 30 minutes, generated from those who ran regproducer
  - BPCs: if your endpoint does not appear here, check the error report
  - for comments/questions/concerns, contact matthew@eosnation.io or @mdarwin on telegram
