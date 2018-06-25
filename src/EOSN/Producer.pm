@@ -277,11 +277,11 @@ sub run_validate {
 	}
 
 	if (! $api_endpoint) {
-		$self->add_message('crit', "no API endpoints provided either api_endpoint or ssl_endpoint");
+		$self->add_message('crit', "no API endpoints provided (that do not have errors noted) of either api_endpoint or ssl_endpoint");
 		$error++;
 	}
 	if (! $peer_endpoint) {
-		$self->add_message('crit', "no p2p or bnet endpoints provided");
+		$self->add_message('crit', "no p2p or bnet endpoints provided (that do not have errors noted)");
 		$error++;
 	}
 
@@ -433,7 +433,7 @@ sub validate_url {
 			if ($check_http2 =~ m#HTTP/2 200#) {
 				$options{add_to_list} .= '2';
 			} else {
-				$self->add_message('warn', "https api nodes should use HTTP/2 for url=<$url>");
+				$self->add_message('warn', "https api nodes would have better performance by using HTTP/2 for url=<$url>; see https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages");
 			}
 		}
 	}
