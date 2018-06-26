@@ -655,7 +655,7 @@ sub validate_api_extra_check {
 	}
 
 	if (! $$result{server_version}) {
-		$self->add_message('crit', "cannot find server_version in response for url=<$url> for field=<$type>");
+		$self->add_message('crit', "cannot find server_version in response for url=<$url> for field=<$type>; contact \@mdarwin on telegram and provide your information");
 		$errors++;
 	}
 
