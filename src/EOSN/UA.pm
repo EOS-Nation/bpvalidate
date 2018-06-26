@@ -3,7 +3,7 @@ package EOSN::UA;
 use utf8;
 use strict;
 use Exporter;
-use LWP::UserAgent::Paranoid;
+use LWPx::ParanoidAgent;
 use JSON qw(from_json to_json);
 use Data::Dumper;
 
@@ -14,10 +14,10 @@ our @EXPORT_OK = qw(eosn_ua get_table);
 # Subroutines
 
 sub eosn_ua {
-	my $ua = new LWP::UserAgent::Paranoid;
+	my $ua = new LWPx::ParanoidAgent;
 	$ua->agent("curl/7.58.0");
 	$ua->protocols_allowed(["http", "https"]);
-	$ua->request_timeout(5);
+	$ua->timeout(10);
 
 	return $ua;
 }
