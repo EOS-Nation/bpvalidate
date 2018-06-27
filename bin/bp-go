@@ -1,5 +1,7 @@
 #!/bin/sh
 
+/etc/init.d/apache2 start
+
 while [ 1 ]
 do
 	bp-validate --output=/tmp/bp.json.tmp.$$ --limit=1000
