@@ -1,36 +1,28 @@
 #!/bin/sh
 
-export PATH=$PATH:/local/bin
-. /etc/database-environment
+while [ 1 ]
+	bp-validate --output=/tmp/bp.json.tmp.$$ --limit=1000
+	mv /tmp/bp.json.tmp.$$ /var/www/html/bp.json
 
-date
+	echo "---- Errors ----"
+	bp-report-errors --input=/var/www/html/bp.json > /tmp/report-errors.txt.tmp.$$
+	diff /var/www/html/report-errors.txt /tmp/report-errors.txt.tmp.$$ | egrep ">|<" | grep -v "Last Update"
+	mv /tmp/report-errors.txt.tmp.$$ /var/www/html/report-errors.txt
 
-echo ""
+	bp-report-endpoints --input=/var/www/html/bp.json > /tmp/report-endpoints.txt.tmp.$$
+	mv /tmp/report-endpoints.txt.tmp.$$ /var/www/html/report-endpoints.txt
 
-#cp /var/www/html/bp.json /tmp/bp.json.tmp.$$
-bp-validate --output=/tmp/bp.json.tmp.$$ --limit=1000
-mv /tmp/bp.json.tmp.$$ /var/www/html/bp.json
+	bp-report-resources --input=/var/www/html/bp.json > /tmp/report-resources.txt.tmp.$$
+	mv /tmp/report-resources.txt.tmp.$$ /var/www/html/report-resources.txt
 
-echo "---- Errors ----"
-bp-report-errors --input=/var/www/html/bp.json > /tmp/report-errors.txt.tmp.$$
-diff /var/www/html/report-errors.txt /tmp/report-errors.txt.tmp.$$ | egrep ">|<" | grep -v "Last Update"
-mv /tmp/report-errors.txt.tmp.$$ /var/www/html/report-errors.txt
+	bp-report-config --input=/var/www/html/bp.json > /tmp/report-config.txt.tmp.$$
+	mv /tmp/report-config.txt.tmp.$$ /var/www/html/report-config.txt
 
-bp-report-endpoints --input=/var/www/html/bp.json > /tmp/report-endpoints.txt.tmp.$$
-mv /tmp/report-endpoints.txt.tmp.$$ /var/www/html/report-endpoints.txt
+	bp-report-versions --input=/var/www/html/bp.json > /tmp/report-versions.txt.tmp.$$
+	mv /tmp/report-versions.txt.tmp.$$ /var/www/html/report-versions.txt
 
-bp-report-resources --input=/var/www/html/bp.json > /tmp/report-resources.txt.tmp.$$
-mv /tmp/report-resources.txt.tmp.$$ /var/www/html/report-resources.txt
+	echo "----- Summary ----"
+	wc -l /var/www/html/report*
 
-bp-report-config --input=/var/www/html/bp.json > /tmp/report-config.txt.tmp.$$
-mv /tmp/report-config.txt.tmp.$$ /var/www/html/report-config.txt
-
-bp-report-versions --input=/var/www/html/bp.json > /tmp/report-versions.txt.tmp.$$
-mv /tmp/report-versions.txt.tmp.$$ /var/www/html/report-versions.txt
-
-echo "----- Summary ----"
-wc -l /var/www/html/report*
-
-echo ""
-
+	sleep 900
 date
