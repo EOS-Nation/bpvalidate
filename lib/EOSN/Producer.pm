@@ -23,6 +23,8 @@ $versions{db031363}{name} = 'mainnet-1.0.5';
 $versions{db031363}{current} = 1;
 $versions{aa351733}{name} = 'mainnet-1.0.6';
 $versions{aa351733}{current} = 1;
+$versions{b195012b}{name} = 'mainnet-1.0.7';
+$versions{b195012b}{current} = 1;
 
 # --------------------------------------------------------------------------
 # Class Methods
