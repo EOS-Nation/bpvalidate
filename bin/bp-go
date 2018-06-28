@@ -4,24 +4,24 @@
 
 while [ 1 ]
 do
-	bp-validate --output=/tmp/bp.json.tmp.$$ --limit=1000
-	mv /tmp/bp.json.tmp.$$ /var/www/html/bp.json
+	bp-validate --output=/tmp/bps.json.tmp.$$ --limit=1000
+	mv /tmp/bps.json.tmp.$$ /var/www/html/bps.json
 
 	echo "---- Errors ----"
-	bp-report-errors --input=/var/www/html/bp.json > /tmp/report-errors.txt.tmp.$$
+	bp-report-errors --input=/var/www/html/bps.json > /tmp/report-errors.txt.tmp.$$
 	diff /var/www/html/report-errors.txt /tmp/report-errors.txt.tmp.$$ | egrep ">|<" | grep -v "Last Update"
 	mv /tmp/report-errors.txt.tmp.$$ /var/www/html/report-errors.txt
 
-	bp-report-endpoints --input=/var/www/html/bp.json > /tmp/report-endpoints.txt.tmp.$$
+	bp-report-endpoints --input=/var/www/html/bps.json > /tmp/report-endpoints.txt.tmp.$$
 	mv /tmp/report-endpoints.txt.tmp.$$ /var/www/html/report-endpoints.txt
 
-	bp-report-resources --input=/var/www/html/bp.json > /tmp/report-resources.txt.tmp.$$
+	bp-report-resources --input=/var/www/html/bps.json > /tmp/report-resources.txt.tmp.$$
 	mv /tmp/report-resources.txt.tmp.$$ /var/www/html/report-resources.txt
 
-	bp-report-config --input=/var/www/html/bp.json > /tmp/report-config.txt.tmp.$$
+	bp-report-config --input=/var/www/html/bps.json > /tmp/report-config.txt.tmp.$$
 	mv /tmp/report-config.txt.tmp.$$ /var/www/html/report-config.txt
 
-	bp-report-versions --input=/var/www/html/bp.json > /tmp/report-versions.txt.tmp.$$
+	bp-report-versions --input=/var/www/html/bps.json > /tmp/report-versions.txt.tmp.$$
 	mv /tmp/report-versions.txt.tmp.$$ /var/www/html/report-versions.txt
 
 	echo "----- Summary ----"
