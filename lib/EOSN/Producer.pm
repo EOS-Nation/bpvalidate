@@ -233,9 +233,30 @@ sub run_validate {
 	foreach my $node (@{$$json{nodes}}) {
 		my $found_something = 0;
 		my $location = $self->validate_location($$node{location}, "node[$node_number].location");
+		my $node_type = $$node{node_type};
+
+		# ---------- check type of node
+
+		if ($$node{is_producer}) {
+			$self->add_message('warn', "is_producer is deprecated for field=<node[$node_number].is_producer>, use instead 'node_type' with one of the following values ['producer', 'full', 'query']");
+			if ($$node{is_producer} && (! exists $$node{node_type})) {
+				$node_type = 'producer';
+			}
+		}
+
+		if ((! exists $$node{node_type}) || (! defined $$node{node_type})) {
+			$self->add_message('warn', "node_type is not provided for field=<node[$node_number]>, set it to one of the following values ['producer', 'full', 'query']");
+		} elsif (($$node{node_type} ne 'producer') && ($$node{node_type} ne 'full') && ($$node{node_type} ne 'query')) {
+			$self->add_message('err', "node_type is not valid for field=<node[$node_number].node_type>, set it to one of the following values ['producer', 'full', 'query']");
+		} else {
+			$node_type = $$node{node_type};
+		}
+
+		# ---------- check endpoints
+
 		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
 			$found_something++;
-			my $result = $self->validate_api($$node{api_endpoint}, "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', location => $location);
+			my $result = $self->validate_api($$node{api_endpoint}, "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
 			if ($result) {
 				$api_endpoint++;
 			} else {
@@ -245,7 +266,7 @@ sub run_validate {
 
 		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
 			$found_something++;
-			my $result = $self->validate_api($$node{ssl_endpoint}, "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', location => $location);
+			my $result = $self->validate_api($$node{ssl_endpoint}, "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
 			if ($result) {
 				$api_endpoint++;
 			} else {
@@ -255,7 +276,7 @@ sub run_validate {
 
 		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
 			$found_something++;
-			if ($self->validate_connection($$node{p2p_endpoint}, "node[$node_number].p2p_endpoint", connection_type => 'p2p', add_to_list => 'nodes/p2p', location => $location)) {
+			if ($self->validate_connection($$node{p2p_endpoint}, "node[$node_number].p2p_endpoint", connection_type => 'p2p', add_to_list => 'nodes/p2p', node_type => $node_type, location => $location)) {
 				$peer_endpoint++;
 			} else {
 				$error++;
@@ -264,7 +285,7 @@ sub run_validate {
 
 		if ((defined $$node{bnet_endpoint}) && ($$node{bnet_endpoint} ne '')) {
 			$found_something++;
-			if ($self->validate_connection($$node{bnet_endpoint}, "node[$node_number].bnet_endpoint", connection_type => 'bnet', add_to_list => 'nodes/bnet', location => $location)) {
+			if ($self->validate_connection($$node{bnet_endpoint}, "node[$node_number].bnet_endpoint", connection_type => 'bnet', add_to_list => 'nodes/bnet', node_type => $node_type, location => $location)) {
 				$peer_endpoint++;
 			} else {
 				$error++;
@@ -857,9 +878,11 @@ sub add_to_list {
 	if ($options{location}) {
 		$data{location} = $options{location};
 	}
+	if ($options{node_type}) {
+		$data{node_type} = $options{node_type};
+	}
 
 	push (@{$self->{results}{output}{$section}{$list}}, \%data);
 }
 
 1;
-
