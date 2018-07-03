@@ -241,7 +241,7 @@ sub run_validate {
 			$self->add_message('warn', "is_producer is deprecated for field=<node[$node_number].is_producer>, use instead 'node_type' with one of the following values ['producer', 'full', 'query']");
 			if ($$node{is_producer} && (! exists $$node{node_type})) {
 				$node_type = 'producer';
-				$node_type = 'producer'; # set this to avoid the error message below
+				$$node{node_type} = 'producer'; # set this to avoid the error message below
 			}
 		}
 
