@@ -241,6 +241,7 @@ sub run_validate {
 			$self->add_message('warn', "is_producer is deprecated for field=<node[$node_number].is_producer>, use instead 'node_type' with one of the following values ['producer', 'full', 'query']");
 			if ($$node{is_producer} && (! exists $$node{node_type})) {
 				$node_type = 'producer';
+				$node_type = 'producer'; # set this to avoid the error message below
 			}
 		}
 
@@ -395,9 +396,9 @@ sub validate_url {
 	}
 	if ($non_standard_port) {
 		if ($protocol eq 'http' && $port && $port != 80) {
-			$self->add_message('warn', "port=<$port> is non-standard and may be unusable by some applications in url=<$url> for field=<$type>");
+			$self->add_message('warn', "port=<$port> is non-standard (not using 80) and may be unusable by some applications in url=<$url> for field=<$type>");
 		} elsif ($protocol eq 'https' && $port && $port != 443) {
-			$self->add_message('warn', "port=<$port> is non-standard and may be unusable by some applications in url=<$url> for field=<$type>");
+			$self->add_message('warn', "port=<$port> is non-standard (not using 443) and may be unusable by some applications in url=<$url> for field=<$type>");
 		}
 	}
 	if ($location && $location eq '/') {
