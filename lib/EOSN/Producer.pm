@@ -446,8 +446,7 @@ sub validate_url {
 	if ($options{api_checks}) {
 		my $server_header = $res->header('Server');
 		if ($server_header && $server_header =~ /cloudflare/) {
-			$self->add_message('err', "cloudflare restricts some client use making this endpoint not appropriate for some use cases for url=<$url>");
-			return undef;
+			$self->add_message('warn', "cloudflare restricts some client use making this endpoint not appropriate for some use cases for url=<$url>");
 		}
 
 		my $cookie_header = $res->header('Set-Cookie');
