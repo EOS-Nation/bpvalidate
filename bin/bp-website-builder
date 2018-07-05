@@ -1,0 +1,75 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::Util qw(read_file write_file);
+use File::Find;
+use JSON;
+use Getopt::Long;
+
+binmode(STDOUT, ":utf8");
+
+# ---------------------------------------------------------------------------
+# Main
+
+my $infile = undef;
+my $outdir = "/var/www/html";
+my %globals;
+
+GetOptions('input=s' => \$infile, 'output=s' => \$outdir) || exit 1;
+
+die "$0: filename not given" if (! $infile);
+die "$0: filename not given" if (! $infile);
+
+read_globals();
+go();
+
+# ---------------------------------------------------------------------------
+# Subroutines
+
+sub read_globals {
+	$globals{template} = read_file ("$outdir/res/template.html");
+
+	my $data = from_json(read_file($infile) || die "$0: no data read");
+	$globals{last_update} = $$data{meta}{generated_at};
+
+}
+
+sub go {
+	find({wanted => \&generate_content, no_chdir => 1}, $outdir);
+}
+
+sub generate_content {
+	return if ($_ !~ /\.thtml$/);
+	my $filename_in = $File::Find::name;
+	my $filename_out = $filename_in;
+	$filename_out =~ s/\.thtml$/.html/;
+	#print "generate file=<$filename_in>\n";
+	my (@content) = read_file ($filename_in);
+
+	my $header = 1;
+	my %variables;
+	foreach my $line (@content) {
+		if ($line =~ /^$/ && $header) {
+			$header = 0;
+		} elsif ($header) {
+			my ($key, $value) = split (/\s*=\s*/, $line, 2);
+			$variables{$key} = $value;
+		} else {
+			$variables{content} .= "$line\n";
+		}
+	}
+
+	my $output = $globals{template};
+
+	foreach my $key (keys %globals) {
+		my $value = $globals{$key};
+		$output =~ s/%$key%/$value/g;
+	}	
+	foreach my $key (keys %variables) {
+		my $value = $variables{$key};
+		$output =~ s/%$key%/$value/g;
+	}	
+
+	write_file ($filename_out, $output);
+}

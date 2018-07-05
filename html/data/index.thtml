@@ -1,0 +1,29 @@
+title = EOS Block Producer bp.json Validator: Download
+h1 = Download the Block Producer Validator Results
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Introduction
+    </p>
+  </header>
+  <div class="card-content">
+
+All of the parsable input bp.json files as well as the analysis are consolidated into a single output file: bps.json.  You can download the file below.  Feel free to use 
+this file in any projects you may have.
+
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Download
+    </p>
+  </header>
+  <div class="card-content">
+    <a href=/bps.json>JSON Format</a>
+  </div>
+</div>

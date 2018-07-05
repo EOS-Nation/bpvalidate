@@ -1,0 +1,64 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::Report;
+use HTML::Entities;
+use Data::Dumper;
+
+binmode(STDOUT, ":utf8");
+
+my %sev;
+$sev{skip} = 6;
+$sev{crit} = 5;
+$sev{err} = 4;
+$sev{warn} = 3;
+$sev{info} = 2;
+$sev{ok} = 1;
+
+# ---------------------------------------------------------------------------
+# Main
+
+my $data = get_report_options ();
+my @report;
+
+foreach my $entry (@{$$data{producers}}) {
+	my @section;
+
+	my $producer = $$entry{regproducer}{owner};
+	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
+	foreach my $message (@{$$entry{messages}}) {
+		push (@section, ["%4s, %s\n", $$message{kind}, $$message{detail}]);
+	}
+
+	generate_report (data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, icons => 1, outfile => "producers/$producer", text => 1, html => 1);
+}
+
+push (@report, "<div>\n");
+foreach my $entry (@{$$data{producers}}) {
+	my $producer = $$entry{regproducer}{owner};
+	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
+
+	my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';
+	$logo = '' if ($logo !~ m#https://#);
+	if ($logo) {
+		$logo = "<figure class=\"image is-24x24\"><img src=\"$logo\"></figure>\n";
+	} else {
+		$logo = "<figure class=\"image is-24x24\"></figure>\n";
+	}
+	my $sev = 'ok';
+	foreach my $message (@{$$entry{messages}}) {
+		my $code = $$message{kind};
+		if ($sev{$code} > $sev{$sev}) {
+			$sev = $code;
+		}
+	}
+	my $sev_html = sev_html($sev);
+	push (@report, "<div style=\"display: inline-block; margin: 5px; padding: 5px; border: solid 1px; border-color: grey; width: 200px; height: 70px; overflow: hidden\">\n");
+	push (@report, "<div><div style=\"display: inline-block; width: 32px\">$logo</div><div style=\"display: inline-block; width: 124px\"></div><div style=\"display: inline-block; width: 32px\">$sev_html</div></div>\n");
+	push (@report, "<div><a href=\"$producer.html\">$producer_name_html</a></div>\n");
+	push (@report, "</div>\n");
+}
+push (@report, "</div>\n");
+
+write_report_thtml (content => \@report, title => 'Producer Scorecard', outfile => "producers/index");

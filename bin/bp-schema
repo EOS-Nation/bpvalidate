@@ -1,16 +1,12 @@
 #!/usr/bin/perl -w
 
-use strict;
 use utf8;
+use strict;
 use JSON;
-use Parallel::ForkManager;
 use EOSN::SQL qw(do_connect);
-use EOSN::Producer;
-use EOSN::Util qw(write_file);
-use EOSN::UA qw(eosn_ua get_table);
-use Date::Format qw(time2str);
-use Getopt::Long;
-use DBI;
+
+# ---------------------------------------------------------------------------
+# Main
 
 my $dbh = do_connect('validate');
 my $prefix = "alter table producer add column if not exists";

@@ -1,27 +1,23 @@
 #!/usr/bin/perl -w
 
-use strict;
 use utf8;
-use EOSN::Util qw(read_file write_file);
-use JSON;
-use Data::Dumper;
-use Getopt::Long;
+use strict;
+use EOSN::Report;
 
 binmode(STDOUT, ":utf8");
+
+# ---------------------------------------------------------------------------
+# Main
 
 my %map;
 $map{p2p} = 'p2p-peer-address';
 $map{bnet} = 'bnet-connect';
 
-my $infile = undef;
-GetOptions('input=s' => \$infile) || exit 1;
-die "$0: filename not given" if (! $infile);
-my $data = from_json(read_file($infile) || die "$0: no data read");
-
+my $data = get_report_options ();
+my @report;
 my %endpoints;
-foreach my $entry (@{$$data{producers}}) {
-#	print Dumper ($entry);
 
+foreach my $entry (@{$$data{producers}}) {
 	my $producer = $$entry{regproducer}{owner};
 	foreach my $kind (sort keys %{$$entry{output}{nodes}}) {
 		foreach my $node (@{$$entry{output}{nodes}{$kind}}) {
@@ -31,20 +27,21 @@ foreach my $entry (@{$$data{producers}}) {
 	}
 }
 
-print "# Last Update: $$data{meta}{generated_at}\n";
-print "\n";
-
 foreach my $kind (sort keys %endpoints) {
 	next if (! $map{$kind});
-	print "# ==== $kind ====\n\n";
+	my @section;
+
 	foreach my $entry (@{$endpoints{$kind}}) {
 		my $producer = $$entry{producer};
 		my $location_name = $$entry{location}{name} || "Unknown";
 		my $location_country = $$entry{location}{country} || "??";
 		my $address = $$entry{address};
-		print sprintf ("# %s: %s, %s\n", $producer, $location_country, $location_name);
-		print sprintf ("%s = %s\n", $map{$kind}, $$entry{address});
-		print "\n";
+		push (@section, ["# %s: %s, %s\n", $producer, $location_country, $location_name]);
+		push (@section, ["%s = %s\n", $map{$kind}, $$entry{address}]);
+		push (@section, ["\n"]);
 	}
-	print "\n\n";
+
+	push (@report, {name => $kind, rows => \@section, name_prefix => '# ', section_divider => 2});
 }
+
+generate_report (data => $data, report => \@report, title => 'Endpoints config.ini', columns => 0, outfile => "reports/config", text => 1, html => 1);

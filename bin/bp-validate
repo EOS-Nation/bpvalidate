@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
-use strict;
 use utf8;
+use strict;
 use JSON;
 use Parallel::ForkManager;
 use EOSN::SQL qw(do_connect);
@@ -10,9 +10,11 @@ use EOSN::Util qw(write_file);
 use EOSN::UA qw(eosn_ua get_table);
 use Date::Format qw(time2str);
 use Getopt::Long;
-use DBI;
 
 binmode(STDOUT, ":utf8");
+
+# ---------------------------------------------------------------------------
+# Main
 
 my $max_processes = 8;
 my $filter_producer = undef;
@@ -27,6 +29,9 @@ $max_processes = 1 if ($filter_producer);
 setup_jobs();
 run_validation();
 write_results();
+
+# ---------------------------------------------------------------------------
+# Subroutines
 
 sub setup_jobs {
 	my %cache;

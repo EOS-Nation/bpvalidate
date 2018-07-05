@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%title%</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+<script type="text/javascript" src="/res/main.js"></script>
+<style>
+ul.bullet, li.bullet {
+  margin-left: 5px;
+  padding-left: 10px;
+}
+li.bullet {
+  list-style: initial;
+}
+section.section {
+  padding: 1rem 1.5rem;
+}
+h1.title.is-1 {
+  font-size: 2rem;
+}
+h2.title.is-2 {
+  font-size: 1.5rem;
+}
+footer.footer {
+  background: #eeeeee;
+}
+.has-text-warning2 {
+  color: orange !important;
+}
+</style>
+</head>
+<body>
+<nav class="navbar is-light" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="/">
+      bp.json Validator
+    </a>
+    <a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu" id="navMenu">
+    <a class="navbar-item" href="/producers/">
+      Producer Scorecard
+    </a>
+    <a class="navbar-item" href="/reports/">
+      Reports
+    </a>
+    <a class="navbar-item" href="/data/">
+      Data
+    </a>
+    <a class="navbar-item" href="/about/">
+      About
+    </a>
+  </div>
+</nav>
+<section class="section">
+<h1 class="title is-1">%h1%</h1>
+%content%</section>
+<footer class="footer is-light">
+Validator last update: %last_update%
+</footer>
+</body>
+</html>

@@ -1,0 +1,10 @@
+title = EOS Block Producer bp.json Validator: Reports
+h1 = Validator Reports
+
+<ul class="menu-list">
+<li><a href="/reports/endpoints.html">Endpoints Report</a>
+<li><a href="/reports/resources.html">Resources Report</a>
+<li><a href="/reports/versions.html">API Versions Report</a>
+<li><a href="/reports/config.html">Endpoints config.ini</a>
+<li><a href="/reports/errors.html">Errors Report</a>
+</ul>

@@ -1,23 +1,19 @@
 #!/usr/bin/perl -w
 
-use strict;
 use utf8;
-use EOSN::Util qw(read_file write_file);
-use JSON;
-use Data::Dumper;
-use Getopt::Long;
+use strict;
+use EOSN::Report;
 
 binmode(STDOUT, ":utf8");
 
-my $infile = undef;
-GetOptions('input=s' => \$infile) || exit 1;
-die "$0: filename not given" if (! $infile);
-my $data = from_json(read_file($infile) || die "$0: no data read");
+# ---------------------------------------------------------------------------
+# Main
 
+my $data = get_report_options ();
+my @report;
 my %endpoints;
-foreach my $entry (@{$$data{producers}}) {
-#	print Dumper ($entry);
 
+foreach my $entry (@{$$data{producers}}) {
 	my $producer = $$entry{regproducer}{owner};
 	foreach my $kind (sort keys %{$$entry{output}{resources}}) {
 		foreach my $resource (@{$$entry{output}{resources}{$kind}}) {
@@ -27,24 +23,16 @@ foreach my $entry (@{$$data{producers}}) {
 	}
 }
 
-print "Last Update: $$data{meta}{generated_at}\n";
-while (<DATA>) {
-	print;
-}
-print "\n";
-
 foreach my $kind (sort keys %endpoints) {
-	print "==== $kind ====\n";
+	my @section;
+
 	foreach my $entry (@{$endpoints{$kind}}) {
 		my $producer = $$entry{producer};
 		my $address = $$entry{address};
-		print sprintf ("%s, %s\n", $$entry{producer}, $$entry{address});
+		push (@section, ["%s, %s\n", $$entry{producer}, $$entry{address}]);
 	}
-	print "\n";
+
+	push (@report, {name => $kind, rows => \@section});
 }
 
-__DATA__
-Notes:
- - this list is updated approximately every 30 minutes, generated from those who ran regproducer
- - BPCs: if your endpoint does not appear here, check the error report
- - for comments/questions/concerns, contact matthew@eosnation.io or @mdarwin on telegram
+generate_report (data => $data, report => \@report, title => 'Resources Report', columns => 1, outfile => "reports/resources", text => 1, html => 1);

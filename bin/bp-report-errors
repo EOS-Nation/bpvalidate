@@ -1,41 +1,27 @@
 #!/usr/bin/perl -w
 
-use strict;
 use utf8;
-use EOSN::Util qw(read_file write_file);
-use JSON;
-use Data::Dumper;
-use Getopt::Long;
+use strict;
+use EOSN::Report;
+use HTML::Entities;
 
 binmode(STDOUT, ":utf8");
 
-my $infile = undef;
-GetOptions('input=s' => \$infile) || exit 1;
-die "$0: filename not given" if (! $infile);
-my $data = from_json(read_file($infile) || die "$0: no data read");
+# ---------------------------------------------------------------------------
+# Main
 
-print "Last Update: $$data{meta}{generated_at}\n";
-while (<DATA>) {
-	print;
-}
-print "\n";
+my $data = get_report_options ();
+my @report;
 
 foreach my $entry (@{$$data{producers}}) {
-#	print Dumper ($entry);
+	my @section;
 
 	my $producer = $$entry{regproducer}{owner};
 	foreach my $message (@{$$entry{messages}}) {
-		print sprintf ("%12s: %4s: %s\n", $producer, $$message{kind}, $$message{detail});
+		push (@section, ["%4s, %s\n", $$message{kind}, $$message{detail}]);
 	}
-	print "\n";
+
+	push (@report, {name => $producer, rows => \@section});
 }
 
-__DATA__
-Notes:
- - this list is updated approximately every 30 minutes, generated from those who ran regproducer
- - /bp.json is appended to whatever url is used in the regproducer call to get the meta data
- - /v1/chain/get_info is added to api endpoint urls within the meta data for validation
- - make sure all URLs start with http:// or https://
- - for comments/questions/concerns, contact matthew@eosnation.io or @mdarwin on telegram
- - specification: https://github.com/eosrio/bp-info-standard
- - contract: https://github.com/EOS-Mainnet/governance/blob/master/eosio.system/eosio.system-regproducer-rc.md
+generate_report (data => $data, report => \@report, title => 'Errors Report', columns => 1, icons => 1, outfile => "reports/errors", text => 1, html => 1);

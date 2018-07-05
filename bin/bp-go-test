@@ -2,17 +2,12 @@
 
 #script to test that things are working
 
-rm -f /tmp/report-endpoints.txt
-rm -f /tmp/report-errors.txt
-rm -f /tmp/bp.json
-
-./bp-validate --output=/tmp/bp.json --limit=1000 --debug --producer=bpacbpacbpac
-#./bp-validate --output=/tmp/bp.json --limit=20 --debug
-./bp-report-errors --input=/tmp/bp.json > /tmp/report-errors.txt
-./bp-report-endpoints --input=/tmp/bp.json > /tmp/report-endpoints.txt
-./bp-report-resources --input=/tmp/bp.json > /tmp/report-resources.txt
-./bp-report-versions --input=/tmp/bp.json > /tmp/report-versions.txt
-./bp-report-config --input=/tmp/bp.json > /tmp/report-config.txt
-
-cat /tmp/report-endpoints.txt
-cat /tmp/report-errors.txt
+#./bp-validate --output=/var/www/html/bps.json --limit=1000 --debug --producer=eosnationftw
+#./bp-validate --output=/var/www/html/bps.json --limit=1000
+./bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/
+./bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/
+./bp-report-endpoints --input=/var/www/html/bps.json --out=/var/www/html/
+./bp-report-resources --input=/var/www/html/bps.json --out=/var/www/html/
+./bp-report-versions --input=/var/www/html/bps.json --out=/var/www/html/
+./bp-report-config --input=/var/www/html/bps.json --out=/var/www/html/
+./bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/
