@@ -27,6 +27,8 @@ $versions{'b195012b'}{name} = 'mainnet-1.0.7';
 $versions{'b195012b'}{current} = 1;
 $versions{'36a043c5'}{name} = 'mainnet-1.0.8';
 $versions{'36a043c5'}{current} = 1;
+$versions{'6ee30205'}{name} = 'mainnet-1.0.8';
+$versions{'6ee30205'}{current} = 1;
 
 # --------------------------------------------------------------------------
 # Class Methods
