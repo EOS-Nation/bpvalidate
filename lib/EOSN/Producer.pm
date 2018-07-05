@@ -518,7 +518,7 @@ sub validate_url {
 	my $content = $res->content;
 
 	if ($response_url ne ($url . $url_ext)) {
-		$self->add_message('warn', "url=<$url> for field=<$type> was redirected to url=<$response_url>");
+		$self->add_message('info', "url=<$url> for field=<$type> was redirected to url=<$response_url>");
 		if ($ssl eq 'on') {
 			if ($response_url !~ m#^https://#) {
 				$self->add_message('err', "need to specify https instead of http for url=<$response_url> for field=<$type>");
