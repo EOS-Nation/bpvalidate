@@ -4,14 +4,14 @@
 
 while [ 1 ]
 do
-	./bp-validate --output=/var/www/html/bps.json --limit=1000
-	./bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/
-	./bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/
-	./bp-report-endpoints --input=/var/www/html/bps.json --out=/var/www/html/
-	./bp-report-resources --input=/var/www/html/bps.json --out=/var/www/html/
-	./bp-report-versions --input=/var/www/html/bps.json --out=/var/www/html/
-	./bp-report-config --input=/var/www/html/bps.json --out=/var/www/html/
-	./bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/
+	bp-validate --output=/var/www/html/bps.json --limit=1000
+	bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/
+	bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/
+	bp-report-endpoints --input=/var/www/html/bps.json --out=/var/www/html/
+	bp-report-resources --input=/var/www/html/bps.json --out=/var/www/html/
+	bp-report-versions --input=/var/www/html/bps.json --out=/var/www/html/
+	bp-report-config --input=/var/www/html/bps.json --out=/var/www/html/
+	bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/
 
 	sleep 600
 done
