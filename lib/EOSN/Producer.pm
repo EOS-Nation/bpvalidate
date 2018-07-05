@@ -439,7 +439,7 @@ sub validate_url {
 	my $response_content_type = $res->content_type;
 
 	if (! $res->is_success) {
-		$self->add_message('err', "invalid url for field=<$type> for url=<$url> message=<$status_message>");
+		$self->add_message('crit', "invalid url for field=<$type> for url=<$url> message=<$status_message>");
 		return undef;
 	}
 
