@@ -3,6 +3,7 @@ package EOSN::Util;
 use utf8;
 use strict;
 use Exporter;
+use File::Copy;
 
 use parent qw(Exporter);
 our @EXPORT_OK = qw(hostname write_file read_file);
@@ -18,12 +19,15 @@ sub hostname {
 }
 
 sub write_file {
-	my ($filename, $content) = @_;
+	my ($filename, @content) = @_;
 
 	my $fh;
-	open ($fh, ">:utf8", $filename) || die "$0: cannot write to file=<$filename>: $!\n";
-	print $fh $content;
+	open ($fh, ">:utf8", "$filename.$$") || die "$0: cannot write to file=<$filename.$$>: $!\n";
+	foreach my $entry (@content) {
+		print $fh $entry;
+	}
 	close ($fh);
+	move ("$filename.$$", $filename) || die "$0: cannot rename file=<$filename.$$> to file=<$filename>: $!\n";
 }
 
 sub read_file {
