@@ -1,9 +1,11 @@
 #!/bin/sh
 
 /etc/init.d/apache2 start
+cp -pra /var/www/html_template /var/www/html
 
 while [ 1 ]
 do
+	echo "running..."
 	bp-validate --output=/var/www/html/bps.json --limit=1000
 	bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/
@@ -12,6 +14,7 @@ do
 	bp-report-versions --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-config --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/
+	echo "done"
 
 	sleep 600
 done
