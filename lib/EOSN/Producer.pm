@@ -195,12 +195,12 @@ sub run_validate {
 
 	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
 		$error++;
-		$self->add_message('err', "field=<producer_public_key> does not match between bp.json and regproducer");
+		$self->add_message('crit', "field=<producer_public_key> does not match between bp.json and regproducer");
 	}
 
 	if ($$json{producer_account_name} && $$json{producer_account_name} ne $name) {
 		$error++;
-		$self->add_message('err', "field=<producer_account_name> does not match between bp.json and regproducer");
+		$self->add_message('crit', "field=<producer_account_name> does not match between bp.json and regproducer");
 	}
 
 	$self->validate_url($$json{org}{website}, 'org.website', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn') || $error++;
@@ -446,7 +446,7 @@ sub validate_url {
 	if ($options{api_checks}) {
 		my $server_header = $res->header('Server');
 		if ($server_header && $server_header =~ /cloudflare/) {
-			$self->add_message('warn', "cloudflare restricts some client use making this endpoint not appropriate for some use cases for url=<$url>");
+			$self->add_message('info', "cloudflare restricts some client use making this endpoint not appropriate for some use cases for url=<$url>");
 		}
 
 		my $cookie_header = $res->header('Set-Cookie');
