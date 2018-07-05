@@ -398,9 +398,9 @@ sub validate_url {
 	}
 	if ($non_standard_port) {
 		if ($protocol eq 'http' && $port && $port != 80) {
-			$self->add_message('warn', "port=<$port> is non-standard (not using 80) and may be unusable by some applications in url=<$url> for field=<$type>");
+			$self->add_message('info', "port=<$port> is non-standard (not using 80) and may be unusable by some applications in url=<$url> for field=<$type>");
 		} elsif ($protocol eq 'https' && $port && $port != 443) {
-			$self->add_message('warn', "port=<$port> is non-standard (not using 443) and may be unusable by some applications in url=<$url> for field=<$type>");
+			$self->add_message('info', "port=<$port> is non-standard (not using 443) and may be unusable by some applications in url=<$url> for field=<$type>");
 		}
 	}
 	if ($location && $location eq '/') {
