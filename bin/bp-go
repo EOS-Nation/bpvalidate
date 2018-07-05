@@ -17,5 +17,5 @@ do
 	bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/
 	echo "done"
 
-	sleep 600
+	sleep 300
 done
