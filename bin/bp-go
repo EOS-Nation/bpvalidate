@@ -2,6 +2,7 @@
 
 /etc/init.d/apache2 start
 cp -pra /var/www/html_template/* /var/www/html
+mkdir /var/www/html/producers
 
 while [ 1 ]
 do
