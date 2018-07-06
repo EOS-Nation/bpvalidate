@@ -19,16 +19,18 @@ $content_types{png_jpg} = ['image/png', 'image/jpeg'];
 $content_types{svg} = ['image/svg+xml'];
 
 our %versions;
-$versions{'db031363'}{name} = 'mainnet-1.0.5';
+$versions{'db031363'}{name} = 'mainnet-v1.0.5';
 $versions{'db031363'}{current} = 0;
-$versions{'aa351733'}{name} = 'mainnet-1.0.6';
+$versions{'aa351733'}{name} = 'mainnet-v1.0.6';
 $versions{'aa351733'}{current} = 0;
-$versions{'b195012b'}{name} = 'mainnet-1.0.7';
+$versions{'b195012b'}{name} = 'mainnet-v1.0.7';
 $versions{'b195012b'}{current} = 1;
-$versions{'36a043c5'}{name} = 'mainnet-1.0.8';
+$versions{'36a043c5'}{name} = 'mainnet-v1.0.8';
 $versions{'36a043c5'}{current} = 1;
-$versions{'6ee30205'}{name} = 'mainnet-1.0.8';
+$versions{'6ee30205'}{name} = 'mainnet-v1.0.8';
 $versions{'6ee30205'}{current} = 1;
+$versions{'5875549c'}{name} = 'v1.0.8';
+$versions{'5875549c'}{current} = 1;
 
 # --------------------------------------------------------------------------
 # Class Methods
