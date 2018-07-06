@@ -25,7 +25,7 @@ my $debug = 0;
 
 GetOptions('max_processes=i' => \$max_processes, 'producer=s' => \$filter_producer, 'output=s' => \$outfile, 'versions=s' => \$versionsfile, 'limit=i' => \$limit, 'debug' => \$debug) || exit 1;
 
-$max_processes = 1 if ($filter_producer);
+my %filter_producers = map {$_ => 1} split (/,/, $filter_producer || '');
 if (! defined $versionsfile) {
 	die "$0: versions file not provided";
 }
@@ -65,7 +65,7 @@ sub setup_jobs {
 			$state = 'check';
 			$limit = time - 1500;
 
-		} elsif ($filter_producer && ($$entry{owner} eq $filter_producer)) {
+		} elsif (exists $filter_producers{$$entry{owner}}) {
 			print ">> force $$entry{owner}\n" if ($debug);
 			$state = 'check';
 			$limit = time;
@@ -124,7 +124,6 @@ sub write_results {
 	my @results;
 	my $data = $dbh->selectall_arrayref('select * from producer where not results_data is null order by producer', { Slice => {}});
 	foreach my $entry (@$data) {
-		next unless ((! $filter_producer) || ($filter_producer && ($$entry{producer} eq $filter_producer)));
 		push (@results, from_json ($$entry{results_data}));
 	}
 
