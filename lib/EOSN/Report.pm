@@ -108,19 +108,24 @@ sub generate_report_thtml {
 		foreach my $line (@$rows) {
 			my ($sprintf, @data) = @$line;
 			my $formatted = '';
-			$formatted .= "<tr>" if ($columns);
-			foreach my $i (1 .. scalar(@data)) {
-				my $value = $data[$i-1];
-				if ($icons && $i == $icons) {
-					$value = sev_html($value);
-				} elsif ($noescape && $i == $noescape) {
-					# no nothing
-				} else {
-					$value = encode_entities ($value);
+			if ($columns) {
+				$formatted .= "<tr>";
+				foreach my $i (1 .. scalar(@data)) {
+					my $value = $data[$i-1];
+					if ($icons && $i == $icons) {
+						$value = sev_html($value);
+					} elsif ($noescape && $i == $noescape) {
+						# no nothing
+					} else {
+						$value = encode_entities ($value);
+					}
+					$formatted .= "<td>$value</td>" 
 				}
-				$formatted .= "<td>$value</td>" if ($columns);
+				$formatted .= "</tr>";
+			} else {
+				$formatted = sprintf("$sprintf<br>", @data);
 			}
-			$formatted .= "</tr>" if ($columns);
+
 			push (@out, $formatted);
 		}
 
