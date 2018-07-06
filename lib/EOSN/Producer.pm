@@ -153,20 +153,20 @@ sub run_validate {
 	my $is_active = $self->{properties}{is_active};
 
 	if (! $is_active) {
-		$self->add_message(kind => 'skip', detail => 'producer is not active');
+		$self->add_message(kind => 'skip', detail => 'producer is not active', class => 'regproducer');
 		return undef;
 	}
 
 	#print ">> [$name][$key][$url][$votes]\n";
 
 	if ($url !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
-		$self->add_message(kind => 'crit', detail => 'invalid configured url', url => $url);
+		$self->add_message(kind => 'crit', detail => 'invalid configured url', url => $url, class => 'regproducer');
 		return undef;
 	}
 
-	$self->validate_url("$url", 'main web site', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
+	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
 
-	my $json = $self->validate_url("$url/bp.json", 'bp info json url', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
+	my $json = $self->validate_url(url => "$url/bp.json", field => 'bp info json url', class => 'brand', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;
@@ -174,49 +174,49 @@ sub run_validate {
 	# ---------- check basic things
 
 	if (! ref $$json{org}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field => 'org');
+		$self->add_message(kind => 'err', detail => 'not a object', field => 'org', class => 'brand');
 		return undef;
 	}	
 	if (! ref $$json{org}{location}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field =>'org.location');
+		$self->add_message(kind => 'err', detail => 'not a object', field =>'org.location', class => 'brand');
 		return undef;
 	}
-	$self->validate_string($$json{org}{location}{name}, 'org.location.name');
-	$self->validate_string($$json{org}{location}{country}, 'org.location.country');
-	$self->validate_string($$json{org}{location}{latitude}, 'org.location.latitude');
-	$self->validate_string($$json{org}{location}{longitude}, 'org.location.longitude');
-	$self->validate_string($$json{org}{candidate_name}, 'org.candidate_name');
-	$self->validate_string($$json{org}{email}, 'org.email');
-	$self->validate_string($$json{producer_public_key}, 'producer_public_key');
-	$self->validate_string($$json{producer_account_name}, 'producer_account_name');
-	$self->validate_country($$json{org}{location}{country}, 'org.location.country');
+	$self->validate_string(string => $$json{org}{location}{name}, field => 'org.location.name', class => 'brand');
+	$self->validate_string(string => $$json{org}{location}{country}, field => 'org.location.country', class => 'brand');
+	$self->validate_string(string => $$json{org}{location}{latitude}, field => 'org.location.latitude', class => 'brand');
+	$self->validate_string(string => $$json{org}{location}{longitude}, field => 'org.location.longitude', class => 'brand');
+	$self->validate_string(string => $$json{org}{candidate_name}, field => 'org.candidate_name', class => 'brand');
+	$self->validate_string(string => $$json{org}{email}, field => 'org.email', class => 'brand');
+	$self->validate_string(string => $$json{producer_public_key}, field => 'producer_public_key', class => 'brand');
+	$self->validate_string(string => $$json{producer_account_name}, field => 'producer_account_name', class => 'brand');
+	$self->validate_country(country => $$json{org}{location}{country}, field => 'org.location.country', class => 'brand');
 
 	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
-		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_public_key');
+		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'brand');
 	}
 
 	if ($$json{producer_account_name} && $$json{producer_account_name} ne $name) {
-		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_account_name');
+		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_account_name', class => 'brand');
 	}
 
-	$self->validate_url($$json{org}{website}, 'org.website', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn');
-	$self->validate_url($$json{org}{code_of_conduct}, 'org.code_of_conduct', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn');
-	$self->validate_url($$json{org}{ownership_disclosure}, 'org.ownership_disclosure', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn');
-	$self->validate_url($$json{org}{branding}{logo_256}, 'org.branding.logo_256', content_type => 'png_jpg', add_to_list => 'resources/social_logo_256', dupe => 'warn');
-	$self->validate_url($$json{org}{branding}{logo_1024}, 'org.branding.logo_1024', content_type => 'png_jpg', add_to_list => 'resources/social_logo_1024', dupe => 'warn');
-	$self->validate_url($$json{org}{branding}{logo_svg}, 'org.branding.logo_svg', content_type => 'svg', add_to_list => 'resources/social_logo_svg', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{website}, field => 'org.website', class => 'brand', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{code_of_conduct}, field => 'org.code_of_conduct', class => 'brand', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{ownership_disclosure}, field => 'org.ownership_disclosure', class => 'brand', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{branding}{logo_256}, field => 'org.branding.logo_256', class => 'brand', content_type => 'png_jpg', add_to_list => 'resources/social_logo_256', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{branding}{logo_1024}, field => 'org.branding.logo_1024', class => 'brand', content_type => 'png_jpg', add_to_list => 'resources/social_logo_1024', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{branding}{logo_svg}, field => 'org.branding.logo_svg', class => 'brand', content_type => 'svg', add_to_list => 'resources/social_logo_svg', dupe => 'warn');
 
 	foreach my $key (sort keys %{$$json{org}{social}}) {
 		my $value = $$json{org}{social}{$key};
 		if ($value =~ m#https?://#) {
-			$self->add_message(kind => 'err', detail => 'social media references must be relative', field => "org.social.$key");
+			$self->add_message(kind => 'err', detail => 'social media references must be relative', field => "org.social.$key", class => 'brand');
 		}
 	}
 
 	# ---------- check nodes
 
 	if (! ref $$json{nodes}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field => 'nodes');
+		$self->add_message(kind => 'err', detail => 'not a object', field => 'nodes', class => 'brand');
 		return undef;
 	}	
 
@@ -230,13 +230,13 @@ sub run_validate {
 	my $peer_endpoint;
 	foreach my $node (@nodes) {
 		my $found_something = 0;
-		my $location = $self->validate_location($$node{location}, "node[$node_number].location");
+		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'brand');
 		my $node_type = $$node{node_type};
 
 		# ---------- check type of node
 
 		if ($$node{is_producer}) {
-			$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query']", field => "node[$node_number].is_producer");
+			$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query']", field => "node[$node_number].is_producer", class => 'endpoint');
 			if ($$node{is_producer} && (! exists $$node{node_type})) {
 				$node_type = 'producer';
 				$$node{node_type} = 'producer'; # set this to avoid the error message below
@@ -244,9 +244,9 @@ sub run_validate {
 		}
 
 		if ((! exists $$node{node_type}) || (! defined $$node{node_type})) {
-			$self->add_message(kind => 'warn', detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query']", field => "node[$node_number");
+			$self->add_message(kind => 'warn', detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query']", field => "node[$node_number]", class => 'endpoint');
 		} elsif (($$node{node_type} ne 'producer') && ($$node{node_type} ne 'full') && ($$node{node_type} ne 'query')) {
-			$self->add_message(kind => 'err', detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query']", field => "node[$node_number].node_type");
+			$self->add_message(kind => 'err', detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query']", field => "node[$node_number].node_type", class => 'endpoint');
 		} else {
 			$node_type = $$node{node_type};
 		}
@@ -255,7 +255,7 @@ sub run_validate {
 
 		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
 			$found_something++;
-			my $result = $self->validate_api($$node{api_endpoint}, "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
+			my $result = $self->validate_api(url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_field => $node_type, location => $location);
 			if ($result) {
 				$api_endpoint++;
 			}
@@ -263,7 +263,7 @@ sub run_validate {
 
 		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
 			$found_something++;
-			my $result = $self->validate_api($$node{ssl_endpoint}, "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
+			my $result = $self->validate_api(url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_field => $node_type, location => $location);
 			if ($result) {
 				$api_endpoint++;
 			}
@@ -271,14 +271,14 @@ sub run_validate {
 
 		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
 			$found_something++;
-			if ($self->validate_connection($$node{p2p_endpoint}, "node[$node_number].p2p_endpoint", connection_type => 'p2p', add_to_list => 'nodes/p2p', node_type => $node_type, location => $location)) {
+			if ($self->validate_connection(peer => $$node{p2p_endpoint}, field => "node[$node_number].p2p_endpoint", connection_field => 'p2p', add_to_list => 'nodes/p2p', node_field => $node_type, location => $location)) {
 				$peer_endpoint++;
 			}
 		}
 
 		if ((defined $$node{bnet_endpoint}) && ($$node{bnet_endpoint} ne '')) {
 			$found_something++;
-			if ($self->validate_connection($$node{bnet_endpoint}, "node[$node_number].bnet_endpoint", connection_type => 'bnet', add_to_list => 'nodes/bnet', node_type => $node_type, location => $location)) {
+			if ($self->validate_connection(peer => $$node{bnet_endpoint}, field => "node[$node_number].bnet_endpoint", connection_field => 'bnet', add_to_list => 'nodes/bnet', node_field => $node_type, location => $location)) {
 				$peer_endpoint++;
 			}
 		}
@@ -289,11 +289,11 @@ sub run_validate {
 			# cannot check
 		} elsif ($node_type eq 'producer') {
 			if ($found_something) {
-				$self->add_message(kind => 'warn', detail => 'endpoints provided (producer should be private)', field => "node[$node_number]");
+				$self->add_message(kind => 'warn', detail => 'endpoints provided (producer should be private)', field => "node[$node_number]", class => 'endpoint');
 			}
 		} else {
 			if (! $found_something) {
-				$self->add_message(kind => 'warn', detail => 'no endpoints provided (useless section)', field => "node[$node_number]");
+				$self->add_message(kind => 'warn', detail => 'no endpoints provided (useless section)', field => "node[$node_number]", class => 'endpoint');
 			}
 		}
 			
@@ -301,18 +301,22 @@ sub run_validate {
 	}
 
 	if (! $api_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no API endpoints provided (that do not have errors noted) of either api_endpoint or ssl_endpoint');
+		$self->add_message(kind => 'crit', detail => 'no API endpoints provided (that do not have errors noted) of either api_endpoint or ssl_endpoint', class => 'endpoint');
 	}
 	if (! $peer_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no P2P or BNET endpoints provided (that do not have errors noted)');
+		$self->add_message(kind => 'crit', detail => 'no P2P or BNET endpoints provided (that do not have errors noted)', class => 'endpoint');
 	}
 }
 
 sub validate_string {
-	my ($self, $string, $type) = @_;
+	my ($self, %options) = @_;
+
+	my $string = $options{string};
+	my $field = $options{field};
+	my $class = $options{class};
 
 	if (! $string) {
-		$self->add_message(kind => 'err', detail => 'no value given', field => $type);
+		$self->add_message(kind => 'err', detail => 'no value given', field => $field, class => $class);
 		return undef;
 	}
 
@@ -320,8 +324,11 @@ sub validate_string {
 }
 
 sub validate_url {
-	my ($self, $url, $type, %options) = @_;
+	my ($self, %options) = @_;
 
+	my $url = $options{url};
+	my $field = $options{field} || confess "type not provided";
+	my $class = $options{class} || confess "class not provided";
 	my $content_type = $options{content_type} || confess "content_type not provided";
 	my $ssl = $options{ssl} || 'either'; # either, on, off
 	my $cors = $options{cors} || 'either'; #either, on, off, should
@@ -333,13 +340,13 @@ sub validate_url {
 	#print ">> check url=[GET $url$url_ext]\n";
 
 	if (! $url) {
-		$self->add_message(kind => 'err', detail => "no url given", field => $type);
+		$self->add_message(kind => 'err', detail => "no url given", field => $field, class => $class);
 		return undef;
 	}
 
 	if ($dupe ne 'skip') {
 		if ($self->{urls}{$url}) {
-			$self->add_message(kind => $dupe, detail => "duplicate url", field => $type, url => $url);
+			$self->add_message(kind => $dupe, detail => "duplicate url", field => $field, class => $class, url => $url);
 			return undef if ($dupe eq 'err');
 		}
 		$self->{urls}{$url} = 1;
@@ -348,19 +355,19 @@ sub validate_url {
 	$url =~ s/#.*$//;
 
 	if ($url !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
-		$self->add_message(kind => 'err', detail => "invalid url", url => $url, field => $type);
+		$self->add_message(kind => 'err', detail => "invalid url", url => $url, field => $field, class => $class);
 		return undef;
 	}
 	if ($url =~ m#^https?://.*//#) {
-		$self->add_message(kind => 'warn', detail => "double slashes", url => $url, field => $type);
+		$self->add_message(kind => 'warn', detail => "double slashes", url => $url, field => $field, class => $class);
 		$url =~ s#(^https?://.*)//#$1/#;
 	}
 	if ($url =~ m#^https?://localhost#) {
-		$self->add_message(kind => 'err', detail => "localhost", url => $url, field => $type);
+		$self->add_message(kind => 'err', detail => "localhost", url => $url, field => $field, class => $class);
 		return undef;
 	}
 	if ($url =~ m#^https?://127\.#) {
-		$self->add_message(kind => 'err', detail => "localhost", url => $url, field => $type);
+		$self->add_message(kind => 'err', detail => "localhost", url => $url, field => $field, class => $class);
 		return undef;
 	}
 
@@ -382,43 +389,43 @@ sub validate_url {
 	my ($host, $port) = split (/:/, $host_port, 2);
 
 	if (defined $port) {
-		if (! $self->validate_port($port, $type)) {
+		if (! $self->validate_port($port, $field, $class)) {
 			return undef;
 		}
 	}
 
 	if ($protocol eq 'http' && $port && $port == 80) {
-		$self->add_message(kind => 'warn', detail => "port is not required", url => $url, port => 80, field => $type);
+		$self->add_message(kind => 'warn', detail => 'port is not required', url => $url, port => 80, field => $field, class => $class);
 	} elsif ($protocol eq 'https' && $port && $port == 443) {
-		$self->add_message(kind => 'warn', detail => "port is not required", url => $url, port => 443, field => $type);
+		$self->add_message(kind => 'warn', detail => 'port is not required', url => $url, port => 443, field => $field, class => $class);
 	}
 	if ($non_standard_port) {
 		if ($protocol eq 'http' && $port && $port != 80) {
-			$self->add_message(kind => 'info', detail => "port is non-standard (not using 80) and may be unusable by some applications", url => $url, port => $port, field => $type);
+			$self->add_message(kind => 'info', detail => 'port is non-standard (not using 80) and may be unusable by some applications', url => $url, port => $port, field => $field, class => $class);
 		} elsif ($protocol eq 'https' && $port && $port != 443) {
-			$self->add_message(kind => 'info', detail => "portis non-standard (not using 443) and may be unusable by some applications", url => $url, port => $port, field => $type);
+			$self->add_message(kind => 'info', detail => 'port is non-standard (not using 443) and may be unusable by some applications', url => $url, port => $port, field => $field, class => $class);
 		}
 	}
 	if ($location && $location eq '/') {
-		$self->add_message(kind => 'warn', detail => "trailing slash is not required", url => $url, field => $type);
+		$self->add_message(kind => 'warn', detail => 'trailing slash is not required', url => $url, field => $field, class => $class);
 	}
 
-	if (! $self->validate_ip_dns($host, $type)) {
+	if (! $self->validate_ip_dns($host, $field, $class)) {
 		return undef;
 	}	
 
 	if ($ssl eq 'either') {
 		if ($url !~ m#^https://#) {
-			$self->add_message(kind => 'warn', detail => "consider using HTTPS instead of HTTP", url => $url, field => $type);
+			$self->add_message(kind => 'warn', detail => 'consider using HTTPS instead of HTTP', url => $url, field => $field, class => $class);
 		}
 	} elsif ($ssl eq 'on') {
 		if ($url !~ m#^https://#) {
-			$self->add_message(kind => 'err', detail => "need to specify HTTPS instead of HTTP", url => $url, field => $type);
+			$self->add_message(kind => 'err', detail => 'need to specify HTTPS instead of HTTP', url => $url, field => $field, class => $class);
 			return undef;
 		}
 	} elsif ($ssl eq 'off') {
 		if ($url =~ m#^https://#) {
-			$self->add_message(kind => 'err', detail => "need to specify HTTP instead of HTTPS", url => $url, field => $type);
+			$self->add_message(kind => 'err', detail => 'need to specify HTTP instead of HTTPS', url => $url, field => $field, class => $class);
 			return undef;
 		}
 	} else {
@@ -435,19 +442,19 @@ sub validate_url {
 	my $response_content_type = $res->content_type;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => "invalid url message=<$status_message>", url => $url, field => $type);
+		$self->add_message(kind => 'crit', detail => 'invalid url message=<$status_message>', url => $url, field => $field, class => $class);
 		return undef;
 	}
 
 	if ($options{api_checks}) {
 		my $server_header = $res->header('Server');
 		if ($server_header && $server_header =~ /cloudflare/) {
-			$self->add_message(kind => 'info', detail => "cloudflare restricts some client use making this endpoint not appropriate for some use cases", url => $url, field => $type);
+			$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class);
 		}
 
 		my $cookie_header = $res->header('Set-Cookie');
 		if ($cookie_header) {
-			$self->add_message(kind => 'err', detail => "API nodes must not set cookies", url => $url, field => $type);
+			$self->add_message(kind => 'err', detail => 'API nodes must not set cookies', url => $url, field => $field, class => $class);
 			return undef;
 		}
 
@@ -457,7 +464,7 @@ sub validate_url {
 			if ($check_http2 =~ m#HTTP/2 200#) {
 				$options{add_to_list} .= '2';
 			} else {
-				$self->add_message(kind => 'warn', detail => "HTTPS API nodes would have better performance by using HTTP/2", url => $url, field => $type, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
+				$self->add_message(kind => 'warn', detail => 'HTTPS API nodes would have better performance by using HTTP/2', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
 			}
 		}
 	}
@@ -468,29 +475,29 @@ sub validate_url {
 	} elsif ($cors eq 'should') {
 		# error, but not fatal, but not ok either
 		if (! @cors_headers) {
-			$self->add_message(kind => 'err', detail => "missing Access-Control-Allow-Origin header", url => $url, field => $type, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			delete $options{add_to_list};
 		} elsif (@cors_headers > 1) {
-			$self->add_message(kind => 'err', detail => "multiple Access-Control-Allow-Origin headers=<@cors_headers>", url => $url, field => $type, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			delete $options{add_to_list};
 		} elsif ($cors_headers[0] ne '*') {
-			$self->add_message(kind => 'err', detail => "inappropriate Access-Control-Allow-Origin header=<@cors_headers>", url => $url, field => $type, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			delete $options{add_to_list};
 		}	
 	} elsif ($cors eq 'on') {
 		if (! @cors_headers) {
-			$self->add_message(kind => 'err', detail => "missing Access-Control-Allow-Origin header", url => $url, field => $type, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			return undef;
 		} elsif (@cors_headers > 1) {
-			$self->add_message(kind => 'err', detail => "multiple Access-Control-Allow-Origin headers=<@cors_headers>", url => $url, field => $type, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			return undef;
 		} elsif ($cors_headers[0] ne '*') {
-			$self->add_message(kind => 'err', detail => "inappropriate Access-Control-Allow-Origin header=<@cors_headers>", url => $url, field => $type, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			return undef;
 		}	
 	} elsif ($cors eq 'off') {
 		if (@cors_headers) {
-			$self->add_message(kind => 'err', detail => "Access-Control-Allow-Origin header returned when should not be", url => $url, field => $type);
+			$self->add_message(kind => 'err', detail => 'Access-Control-Allow-Origin header returned when should not be', url => $url, field => $field, class => $class);
 			return undef;
 		}	
 	} else {
@@ -498,7 +505,7 @@ sub validate_url {
 	}
 
 	if (! $response_content_type) {
-		$self->add_message(kind => 'err', detail => "did not receive content_type header", url => $url, field => $type);
+		$self->add_message(kind => 'err', detail => 'did not receive content_type header', url => $url, field => $field, class => $class);
 		return undef;
 	} elsif ($content_type && $content_types{$content_type}) {
 		my $found = 0;
@@ -506,7 +513,7 @@ sub validate_url {
 			$found = 1 if ($x eq $response_content_type);
 		}
 		if (! $found) {
-			$self->add_message(kind => 'err', detail => "received unexpected content_type=<$response_content_type>", url => $url, field => $type);
+			$self->add_message(kind => 'err', detail => "received unexpected content_type=<$response_content_type>", url => $url, field => $field, class => $class);
 			return undef;
 		}
 	}
@@ -514,15 +521,15 @@ sub validate_url {
 	my $content = $res->content;
 
 	if ($response_url ne ($url . $url_ext)) {
-		$self->add_message(kind => 'info', detail => "url redirected", url => $url, field => $type, response_url => '' .$response_url);
+		$self->add_message(kind => 'info', detail => 'url redirected', url => $url, field => $field, class => $class, response_url => '' .$response_url);
 		if ($ssl eq 'on') {
 			if ($response_url !~ m#^https://#) {
-				$self->add_message(kind => 'err', detail => "need to specify HTTPS instead of HTTP", url => $url, field => $type, response_url => '' . $response_url);
+				$self->add_message(kind => 'err', detail => 'need to specify HTTPS instead of HTTP', url => $url, field => $field, class => $class, response_url => '' . $response_url);
 				return undef;
 			}
 		} elsif ($ssl eq 'off') {
 			if ($response_url =~ m#^https://#) {
-				$self->add_message(kind => 'err', detail => "need to specify HTTP instead of HTTPS", url => $url, field => $type, response_url => '' . $response_url);
+				$self->add_message(kind => 'err', detail => 'need to specify HTTP instead of HTTPS', url => $url, field => $field, class => $class, response_url => '' . $response_url);
 				return undef;
 			}
 		}
@@ -532,7 +539,7 @@ sub validate_url {
 	if ($content_type eq 'json') {
 		#printf ("%v02X", $content);
 		if ($content =~ /^\xEF\xBB\xBF/) {
-			$self->add_message(kind => 'err', detail => "remove BOM (byte order mark) from start of json", url => $url, field => $type);
+			$self->add_message(kind => 'err', detail => 'remove BOM (byte order mark) from start of JSON', url => $url, field => $field, class => $class);
 			$content =~ s/^\xEF\xBB\xBF//;
 		}			
 		eval {
@@ -543,7 +550,7 @@ sub validate_url {
 			my $message = $@;
 			chomp ($message);
 			$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
-			$self->add_message(kind => 'err', detail => "invalid json error=<$message>", url => $url, field => $type);
+			$self->add_message(kind => 'err', detail => "invalid json error=<$message>", url => $url, field => $field, class => $class);
 			#print $content;
 			return undef;
 		}
@@ -562,30 +569,36 @@ sub validate_url {
 	my $info;
 	if ($options{extra_check}) {
 		my $function = $options{extra_check};
-		$info = $self->$function ($return, $url, $type, %options);
+		$info = $self->$function ($return, %options);
 		if (! $info) {
 			return undef;
 		}
 	}
 
-	$self->add_to_list($url, $type, info => $info, result => $json, %options) if ($options{add_to_list});
+	$self->add_to_list(host => $url, info => $info, result => $json, %options) if ($options{add_to_list});
 
 	return $return;
 }
 
 sub validate_connection {
-	my ($self, $peer, $type, %options) = @_;
+	my ($self, %options) = @_;
+
+	$options{class} = 'endpoint';
+
+	my $peer = $options{peer};
+	my $field = $options{field};
+	my $class = $options{class};
 
 	#print ">> peer=[$peer]\n";
 
 	if ($self->{urls}{$peer}) {
-		$self->add_message(kind => 'err', detail => "duplicate peer", field => $type, host => $peer);
+		$self->add_message(kind => 'err', detail => 'duplicate peer', field => $field, class => $class, host => $peer);
 		return undef;
 	}
 	$self->{urls}{$peer} = 1;
 
 	if ($peer =~ m#^https?://#) {
-		$self->add_message(kind => 'err', detail => "peer cannot begin with http(s)://", field => $type, host => $peer);
+		$self->add_message(kind => 'err', detail => 'peer cannot begin with http(s)://', field => $field, class => $class, host => $peer);
 		return undef;
 	}		
 
@@ -602,12 +615,12 @@ sub validate_connection {
 		($host, $port) = split (/:/, $peer);
 	}
 
-	$port = $self->validate_port ($port, $type);
+	$port = $self->validate_port ($port, $field, $class);
 	if (! $port) {
 		return undef;
 	}
 
-	$host = $self->validate_ip_dns ($host, $type);
+	$host = $self->validate_ip_dns ($host, $field, $class);
 	if (! $host) {
 		return undef;
 	}
@@ -615,20 +628,26 @@ sub validate_connection {
 	#print ">> check connection to [$host]:[$port]\n";
 	my $sh = new IO::Socket::INET (PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5);
 	if (! $sh) {
-		$self->add_message(kind => 'err', detail => "cannot connect to peer", field => $type, host => $host, port => $port);
+		$self->add_message(kind => 'err', detail => 'cannot connect to peer', field => $field, class => $class, host => $host, port => $port);
 		return undef;
 	}	
 	close ($sh);
 
-	$self->add_to_list($peer, $type, %options) if ($options{add_to_list});
+	$self->add_to_list(host => $peer, %options) if ($options{add_to_list});
 
 	return 1;
 }
 
 sub validate_api {
-	my ($self, $url, $type, %options) = @_;
+	my ($self, %options) = @_;
 
-	return $self->validate_url($url, $type,
+	my $url = $options{url};
+	my $field = $options{field};
+
+	return $self->validate_url(
+		url => $url,
+		field => $field,
+		class => 'endpoint',
 		url_ext => '/v1/chain/get_info',
 		content_type => 'json',
 		cors => 'on',
@@ -644,25 +663,29 @@ sub validate_api {
 }
 
 sub validate_api_extra_check {
-	my ($self, $result, $url, $type, %options) = @_;
+	my ($self, $result, %options) = @_;
+
+	my $url = $options{url};
+	my $field = $options{field};
+	my $class = $options{class};
 
 	my %info;
 	my $errors;
 	my $versions = $self->versions;
 
 	if (! $$result{chain_id}) {
-		$self->add_message(kind => 'crit', detail => 'cannot find chain_id in response', url => $url, field => $type);
+		$self->add_message(kind => 'crit', detail => 'cannot find chain_id in response', url => $url, field => $field, class => $class);
 		$errors++;
 	}
 
 	if ($$result{chain_id} ne 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906') {
-		$self->add_message(kind => 'crit', detail => "invalid chain_id=<$$result{chain_id}>", url => $url, field => $type);
+		$self->add_message(kind => 'crit', detail => "invalid chain_id=<$$result{chain_id}>", url => $url, field => $field, class => $class);
 		$errors++;
 	}
 
 
 	if (! $$result{head_block_time}) {
-		$self->add_message(kind => 'crit', detail => 'cannot find head_block_time in response', url => $url, field => $type);
+		$self->add_message(kind => 'crit', detail => 'cannot find head_block_time in response', url => $url, field => $field, class => $class);
 		$errors++;
 	}
 
@@ -672,28 +695,28 @@ sub validate_api_extra_check {
 	if ($delta > 10) {
 		my $val = Time::Seconds->new($delta);
 		my $deltas = $val->pretty;
-		#$self->add_message(kind => 'crit', detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}> delta=<$deltas>", url => $url, field => $type);
-		$self->add_message(kind => 'crit', detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}>", url => $url, field => $type);
+		#$self->add_message(kind => 'crit', detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}> delta=<$deltas>", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}>", url => $url, field => $field, class => $class);
 		$errors++;
 	}
 
 	if (! $$result{server_version}) {
-		$self->add_message(kind => 'crit', detail => "cannot find server_version in response; contact \@mdarwin on telegram and provide the information", url => $url, field => $type);
+		$self->add_message(kind => 'crit', detail => "cannot find server_version in response; contact \@mdarwin on telegram and provide the information", url => $url, field => $field, class => $class);
 		$errors++;
 	}
 
 	if (! $$versions{$$result{server_version}}) {
-		$self->add_message(kind => 'warn', detail => "unknown server version=<$$result{server_version}> in response", url => $url, field => $type);
+		$self->add_message(kind => 'warn', detail => "unknown server version=<$$result{server_version}> in response", url => $url, field => $field, class => $class);
 	} else {
 		my $name = $$versions{$$result{server_version}}{name};
 		my $current = $$versions{$$result{server_version}}{current};
 		$info{server_version} = $name;
 		if (! $current) {
-			$self->add_message(kind => 'warn', detail => "server version=<$name> is out of date in response", url => $url, field => $type);
+			$self->add_message(kind => 'warn', detail => "server version=<$name> is out of date in response", url => $url, field => $field, class => $class);
 		}
 	}
 
-	if (! $self->test_patreonous ($url, $type)) {
+	if (! $self->test_patreonous ($url, $field, $class)) {
 		$errors++;
 	}
 
@@ -705,18 +728,18 @@ sub validate_api_extra_check {
 }
 
 sub validate_port {
-	my ($self, $port, $type) = @_;
+	my ($self, $port, $field, $class) = @_;
 
 	if (! defined $port) {
-		$self->add_message(kind => 'crit', detail => 'port is not provided', field => $type);
+		$self->add_message(kind => 'crit', detail => 'port is not provided', field => $field, class => $class);
 		return undef;
 	}
 	if (! defined is_integer ($port)) {
-		$self->add_message(kind => 'crit', detail => 'port is not a valid integer', field => $type, port => $port);
+		$self->add_message(kind => 'crit', detail => 'port is not a valid integer', field => $field, class => $class, port => $port);
 		return undef;
 	}
 	if (! is_between ($port, 1, 65535)) {
-		$self->add_message(kind => 'crit', detail => 'port is not a valid integer in range 1 to 65535', field => $type, port => $port);
+		$self->add_message(kind => 'crit', detail => 'port is not a valid integer in range 1 to 65535', field => $field, class => $class, port => $port);
 		return undef;
 	}
 
@@ -724,21 +747,21 @@ sub validate_port {
 }
 
 sub validate_ip_dns {
-	my ($self, $host, $type) = @_;
+	my ($self, $host, $field, $class) = @_;
 
 	if (($host =~ /^[\d\.]+$/) || ($host =~ /^[\d\:]+$/)) {
-		$self->add_message(kind => 'warn', detail => 'better to use DNS names instead of IP address', field => $type, host => $host);
-		return $self->validate_ip($host, $type);
+		$self->add_message(kind => 'warn', detail => 'better to use DNS names instead of IP address', field => $field, class => $class, host => $host);
+		return $self->validate_ip($host, $field, $class);
 	} else {
-		return $self->validate_dns($host, $type);
+		return $self->validate_dns($host, $field, $class);
 	}
 }
 
 sub validate_ip {
-	my ($self, $ip, $type) = @_;
+	my ($self, $ip, $field, $class) = @_;
 
 	if (! is_public_ip($ip)) {
-		$self->add_message(kind => 'crit', detail => 'not a valid ip address', field => $type, ip => $ip);
+		$self->add_message(kind => 'crit', detail => 'not a valid ip address', field => $field, class => $class, ip => $ip);
 		return undef;
 	}
 
@@ -746,58 +769,62 @@ sub validate_ip {
 }
 
 sub validate_dns {
-	my ($self, $value, $type) = @_;
+	my ($self, $value, $field, $class) = @_;
 
 	#my ($name, $aliases, $addrtype, $length, @addrs) = gethostbyname($value);
 	my $addr = gethostbyname($value);
 	if ($addr) {
 		my ($a,$b,$c,$d) = unpack('C4',$addr);
 		$value = "$a.$b.$c.$d";
-		return $self->validate_ip($value, $type);
+		return $self->validate_ip($value, $field, $class);
 	} else {
-		$self->add_message(kind => 'crit', detail => 'cannot resolve DNS name', field => $type, dns => $value);
+		$self->add_message(kind => 'crit', detail => 'cannot resolve DNS name', field => $field, class => $class, dns => $value);
 		return undef;
 	}
 }
 
 sub validate_location {
-	my ($self, $location, $type) = @_;
+	my ($self, %options) = @_;
 
-	my $country = $self->validate_country($$location{country}, $type);
+	my $location = $options{location};
+	my $field = $options{field};
+	my $class = $options{class};
+
+	my $country = $self->validate_country(country => $$location{country}, field => $field, class => $class);
 	my $name = $$location{name};
 	my $latitude = is_numeric ($$location{latitude});
 	my $longitude = is_numeric ($$location{longitude});
 
 	if (! defined $name) {
-		$self->add_message(kind => 'err', detail => 'no name', field => $type);
+		$self->add_message(kind => 'err', detail => 'no name', field => $field, class => $class);
 		$name = undef;
 	} elsif ($name eq $self->name) {
-		$self->add_message(kind => 'err', detail => 'same name as producer, should be name of location', field => $type);
+		$self->add_message(kind => 'err', detail => 'same name as producer, should be name of location', field => $field, class => $class);
 		$name = undef;
 	}
 
 	if (! defined $latitude) {
-		$self->add_message(kind => 'err', detail => 'no valid latitude', field => $type);
+		$self->add_message(kind => 'err', detail => 'no valid latitude', field => $field, class => $class);
 	}
 	if (! defined $longitude) {
-		$self->add_message(kind => 'err', detail => 'no valid longitude', field => $type);
+		$self->add_message(kind => 'err', detail => 'no valid longitude', field => $field, class => $class);
 	}
 	if ((! defined $latitude) || (! defined $longitude)) {
 		$latitude = undef;
 		$longitude = undef;
 	}
 	if ((defined $latitude) && ($latitude > 90 || $latitude < -90)) {
-		$self->add_message(kind => 'err', detail => 'latitude out of range', field => $type);
+		$self->add_message(kind => 'err', detail => 'latitude out of range', field => $field, class => $class);
 		$latitude = undef;
 		$longitude = undef;
 	}
 	if ((defined $longitude) && ($longitude > 180 || $longitude < -180)) {
-		$self->add_message(kind => 'err', detail => 'longitude out of range', field => $type);
+		$self->add_message(kind => 'err', detail => 'longitude out of range', field => $field, class => $class);
 		$latitude = undef;
 		$longitude = undef;
 	}
 	if (defined $latitude && defined $longitude && $latitude == 0 && $longitude == 0) {
-		$self->add_message(kind => 'err', detail => 'latitude,longitude is 0,0', field => $type);
+		$self->add_message(kind => 'err', detail => 'latitude,longitude is 0,0', field => $field, class => $class);
 		$latitude = undef;
 		$longitude = undef;
 	}
@@ -812,13 +839,17 @@ sub validate_location {
 }
 
 sub validate_country {
-	my ($self, $country, $type) = @_;
+	my ($self, %options) = @_;
+
+	my $country = $options{country};
+	my $field = $options{field};
+	my $class = $options{class};
 
 	if ($country && $country !~ /^[A-Z]{2}$/) {
-		$self->add_message(kind => 'err', detail => 'not exactly 2 uppercase letters', field => $type);
+		$self->add_message(kind => 'err', detail => 'not exactly 2 uppercase letters', field => $field, class => $class);
 		return undef;
 	} elsif (! code2country($country)) {
-		$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', field => $type);
+		$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', field => $field, class => $class);
 		return undef;
 	}
 
@@ -826,7 +857,7 @@ sub validate_country {
 }
 
 sub test_patreonous {
-	my ($self, $base_url, $type) = @_;
+	my ($self, $base_url, $field, $class) = @_;
 	my $url = "$base_url/v1/chain/get_table_rows";
 
 	my $req = HTTP::Request->new('POST', $url, undef, '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}');
@@ -836,7 +867,7 @@ sub test_patreonous {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => "invalid patreonous filter message=<$status_message>", field => $type, url => $url, explanation => 'https://github.com/EOSIO/patroneos/issues/36');
+		$self->add_message(kind => 'crit', detail => "invalid patreonous filter message=<$status_message>", field => $field, class => $class, url => $url, explanation => 'https://github.com/EOSIO/patroneos/issues/36');
 		return undef;
 	}
 
@@ -848,12 +879,17 @@ sub add_message {
 	
 	my $kind = $options{kind} || confess "missing kind";
 	my $detail = $options{detail} || confess "missing detail";
+	my $class = $options{class} || confess "missing class";
 
 	push (@{$self->{messages}}, \%options);
 }
 
 sub add_to_list {
-	my ($self, $host, $type, %options) = @_;
+	my ($self, %options) = @_;
+
+	my $host = $options{host} || confess "missing host";
+	my $field = $options{field} || confess "missing type";
+	my $class = $options{class} || confess "missing class";
 
 	my ($section, $list) = split (m#/#, $options{add_to_list});
 
@@ -887,7 +923,7 @@ sub add_to_list {
 
 	push (@{$self->{results}{output}{$section}{$list}}, \%data);
 
-	$self->add_message(kind => 'ok', detail => 'basic checks passed', resource => $options{add_to_list}, url => $host, type => $type);
+	$self->add_message(kind => 'ok', detail => 'basic checks passed', resource => $options{add_to_list}, url => $host, field => $field, class => $class);
 }
 
 1;
