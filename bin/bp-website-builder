@@ -2,7 +2,7 @@
 
 use utf8;
 use strict;
-use EOSN::Util qw(read_file write_file);
+use EOSN::FileUtil qw(read_file write_file);
 use File::Find;
 use JSON;
 use Getopt::Long;

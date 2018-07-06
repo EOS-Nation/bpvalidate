@@ -6,7 +6,7 @@ use JSON;
 use Parallel::ForkManager;
 use EOSN::SQL qw(do_connect);
 use EOSN::Producer;
-use EOSN::Util qw(write_file);
+use EOSN::FileUtil qw(write_file);
 use EOSN::UA qw(eosn_ua get_table);
 use Date::Format qw(time2str);
 use Getopt::Long;
@@ -44,23 +44,35 @@ sub setup_jobs {
 		die "$0: cannot get producer list";
 	}
 
-	foreach my $entry (sort {$$a{owner} cmp $$b{owner}}@{$producer_list}) {
+	foreach my $entry (@{$producer_list}) {
 		if ($cache{$$entry{owner}}) {
-			#warn "$0: already processed: $$entry{owner}\n";
+			warn "$0: already processed: $$entry{owner}\n";
 			next;
 		}
 		$cache{$$entry{owner}} = 1;
 
-		$dbh->do('insert ignore into producer (producer, regproducer_data, status, reproducer_at) values (?, ?, ?, ?)', {}, $$entry{owner}, to_json ($entry), 'check', time);
-		if ((! $filter_producer) || ($filter_producer && ($$entry{owner} eq $filter_producer))) {
-			my $limit = time - 1700;
-			$limit = time if ($filter_producer);
-			$dbh->do('update producer set status = ?, reproducer_at = ?, regproducer_data = ? where producer = ? and checked_at < ?', {}, 'check', time, to_json ($entry), $$entry{owner}, $limit);
+		$dbh->do('insert ignore into producer (producer, regproducer_data, status, reproducer_at) values (?, ?, ?, ?)', {}, $$entry{owner}, to_json ($entry), 'hold', time);
+		my $limit = time - 1500;
+		$limit = time if ($filter_producer);
+		my $state = 'check';
+
+		if (! $filter_producer) {
+			# ok, normal update
+
+		} elsif ($filter_producer && ($$entry{owner} eq $filter_producer)) {
+			# force
+			$limit = time;
+
 		} else {
-			$dbh->do('update producer set thread_id = null, status = ? where producer = ?', {}, 'done', $$entry{owner});
+			# do nothing
+			$limit = time;
+			$state = 'hold';
 		}
-		$dbh->do('delete from producer where checked_at < ?', {}, time - (3600 * 9));
+
+		$dbh->do('update producer set status = ?, reproducer_at = ?, regproducer_data = ? where producer = ? and checked_at < ?', {}, $state, time, to_json ($entry), $$entry{owner}, $limit);
 	}
+
+	$dbh->do('delete from producer where checked_at < ?', {}, time - (3600 * 9));
 }
 
 sub run_validation {

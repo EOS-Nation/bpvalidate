@@ -1,22 +1,16 @@
-package EOSN::Util;
+package EOSN::FileUtil;
 
 use utf8;
 use strict;
 use Exporter;
 use File::Copy;
+use Text::CSV;
 
 use parent qw(Exporter);
-our @EXPORT_OK = qw(hostname write_file read_file);
+our @EXPORT_OK = qw(write_file read_file read_csv);
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 # Subroutines
-
-sub hostname {
-	my $hostname = `hostname`;
-	chomp ($hostname);
-	$hostname .= '.eosn.io';
-	return ($hostname);
-}
 
 sub write_file {
 	my ($filename, @content) = @_;
@@ -47,6 +41,25 @@ sub read_file {
 	} else {
 		return join ("\n", @content);
 	}
+}
+
+sub read_csv {
+	my ($filename) = @_;
+
+	my @data;
+
+	my $fh;
+	open ($fh, "<:utf8", $filename) || die "$0: cannot open file=<$filename>: $!\n";
+	my $csv = Text::CSV->new ({ binary => 1}) || die "$0: Text::CSV error: " . Text::CSV->error_diag;
+
+	my @cols = @{$csv->getline ($fh)};
+	$csv->column_names (@cols);
+	while (my $row = $csv->getline_hr ($fh)) {
+		push (@data, $row);
+	}
+	$csv->eof || die $csv->error_diag();
+
+	return \@data;
 }
 
 1;

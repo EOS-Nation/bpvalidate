@@ -2,8 +2,8 @@
 
 #script to test that things are working
 
-#./bp-validate --output=/var/www/html/bps.json --limit=1000 --debug --producer=eosnationftw
-#./bp-validate --output=/var/www/html/bps.json --limit=1000
+./bp-validate --output=/var/www/html/bps.json --limit=100 --debug --producer=eosnationftw
+./bp-validate --output=/var/www/html/bps.json --limit=1000 --debug
 ./bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/
 ./bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/
 ./bp-report-endpoints --input=/var/www/html/bps.json --out=/var/www/html/

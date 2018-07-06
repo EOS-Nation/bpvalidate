@@ -2,7 +2,7 @@ use utf8;
 use strict;
 use HTML::Entities;
 use JSON;
-use EOSN::Util qw(read_file write_file);
+use EOSN::FileUtil qw(read_file write_file);
 use Getopt::Long;
 
 our $infile = undef;
