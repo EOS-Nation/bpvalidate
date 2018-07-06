@@ -3,28 +3,29 @@ use strict;
 use HTML::Entities;
 use JSON;
 use EOSN::FileUtil qw(read_file write_file);
+use Carp qw(confess);
 use Getopt::Long;
 
 our $infile = undef;
 our $outdir_base = undef;
 our %icons;
-$icons{skip} ='<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-ban"></i></span>'; 
+$icons{skip} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-ban"></i></span>';
 $icons{info} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-info-circle"></i></span>';
 $icons{ok} = '<span class="icon is-medium has-text-success"><i class="fas fa-lg fa-check-square"></i></span>';
 $icons{warn} = '<span class="icon is-medium has-text-warning"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{err} = '<span class="icon is-medium has-text-warning2"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{crit} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-stop"></i></span>';
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 # Subroutines
 
 sub get_report_options {
 	GetOptions('input=s' => \$infile, 'output=s' => \$outdir_base) || exit 1;
 
-	die "$0: input filename not given" if (! $infile);
-	die "$0: output filename prefix not given" if (! $outdir_base);
+	confess "$0: input filename not given" if (! $infile);
+	confess "$0: output filename prefix not given" if (! $outdir_base);
 
-	return from_json(read_file($infile) || die "$0: no data read");
+	return from_json(read_file($infile) || confess "$0: no data read");
 }
 
 sub generate_report {
@@ -119,7 +120,7 @@ sub generate_report_thtml {
 					} else {
 						$value = encode_entities ($value);
 					}
-					$formatted .= "<td>$value</td>" 
+					$formatted .= "<td>$value</td>"
 				}
 				$formatted .= "</tr>";
 			} else {
@@ -160,6 +161,42 @@ sub sev_html {
 	my ($value) = @_;
 
 	return $icons{$value} || encode_entities ($value);
+}
+
+sub generate_message {
+	my ($options) = @_;
+
+	my $kind = $$options{kind} || confess "missing kind";
+	my $detail = $$options{detail} || confess "missing detail";
+	my $field = $$options{field};
+	my $resource = $$options{resource};
+	my $url = $$options{url};
+	my $response_url = $$options{response_url};
+	my $host = $$options{host};
+	my $ip = $$options{ip};
+	my $dns = $$options{dns};
+	my $port = $$options{port};
+	my $explanation = $$options{explanation};
+
+	if ($url && $url !~ m#^https?://.#) {
+		$host = $url;
+		$url = undef;
+	}
+	if ($url && $response_url) {
+		$response_url = undef if ($url eq $response_url);
+	}
+
+	$detail .= " for field=<$field>" if ($field);
+	$detail .= " for resource=<$resource>" if ($resource);
+	$detail .= " for url=<$url>" if ($url);
+	$detail .= " redirected to response_url=<$response_url>" if ($response_url);
+	$detail .= " for host=<$host>" if ($host);
+	$detail .= " for ip=<$ip>" if ($ip);
+	$detail .= " for dns=<$dns>" if ($dns);
+	$detail .= " for port=<$port>" if ($port);
+	$detail .= "; see $explanation" if ($explanation);
+
+	return $detail;
 }
 
 1;

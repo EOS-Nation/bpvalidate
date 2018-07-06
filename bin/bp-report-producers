@@ -28,7 +28,7 @@ foreach my $entry (@{$$data{producers}}) {
 	my $producer = $$entry{regproducer}{owner};
 	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
 	foreach my $message (@{$$entry{messages}}) {
-		push (@section, ["%4s, %s\n", $$message{kind}, $$message{detail}]);
+		push (@section, ["%4s, %s\n", $$message{kind}, generate_message($message)]);
 	}
 
 	generate_report (data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, icons => 1, outfile => "producers/$producer", text => 1, html => 1);
