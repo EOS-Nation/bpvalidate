@@ -167,12 +167,12 @@ sub run_validate {
 
 	my $json = $self->validate_url("$url/bp.json", "bp info json url", content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
+	$self->add_message('ok', "bpjson url: $url/bp.json");
 
 	$self->{results}{input} = $json;
 
 	# ---------- check basic things
 
-	my $error = 0;
 	if (! ref $$json{org}) {
 		$self->add_message('err', "field=<org> is not a object");
 		return undef;
@@ -181,35 +181,30 @@ sub run_validate {
 		$self->add_message('err', "field=<org.location> is not a object");
 		return undef;
 	}
-	$self->validate_string($$json{org}{location}{name}, 'org.location.name') || $error++;
-	$self->validate_string($$json{org}{location}{country}, 'org.location.country') || $error++;
-	$self->validate_string($$json{org}{location}{latitude}, 'org.location.latitude') || $error++;
-	$self->validate_string($$json{org}{location}{longitude}, 'org.location.longitude') || $error++;
-	$self->validate_string($$json{org}{candidate_name}, 'org.candidate_name') || $error++;
-	$self->validate_string($$json{org}{email}, 'org.email') || $error++;
-	$self->validate_string($$json{producer_public_key}, 'producer_public_key') || $error++;
-	$self->validate_string($$json{producer_account_name}, 'producer_account_name') || $error++;
-
-	if (! $self->validate_country($$json{org}{location}{country}, 'org.location.country')) {
-		$error++;
-	}
+	$self->validate_string($$json{org}{location}{name}, 'org.location.name');
+	$self->validate_string($$json{org}{location}{country}, 'org.location.country');
+	$self->validate_string($$json{org}{location}{latitude}, 'org.location.latitude');
+	$self->validate_string($$json{org}{location}{longitude}, 'org.location.longitude');
+	$self->validate_string($$json{org}{candidate_name}, 'org.candidate_name');
+	$self->validate_string($$json{org}{email}, 'org.email');
+	$self->validate_string($$json{producer_public_key}, 'producer_public_key');
+	$self->validate_string($$json{producer_account_name}, 'producer_account_name');
+	$self->validate_country($$json{org}{location}{country}, 'org.location.country');
 
 	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
-		$error++;
 		$self->add_message('crit', "field=<producer_public_key> does not match between bp.json and regproducer");
 	}
 
 	if ($$json{producer_account_name} && $$json{producer_account_name} ne $name) {
-		$error++;
 		$self->add_message('crit', "field=<producer_account_name> does not match between bp.json and regproducer");
 	}
 
-	$self->validate_url($$json{org}{website}, 'org.website', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn') || $error++;
-	$self->validate_url($$json{org}{code_of_conduct}, 'org.code_of_conduct', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn') || $error++;
-	$self->validate_url($$json{org}{ownership_disclosure}, 'org.ownership_disclosure', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn') || $error++;
-	$self->validate_url($$json{org}{branding}{logo_256}, 'org.branding.logo_256', content_type => 'png_jpg', add_to_list => 'resources/social_logo_256', dupe => 'warn') || $error++;
-	$self->validate_url($$json{org}{branding}{logo_1024}, 'org.branding.logo_1024', content_type => 'png_jpg', add_to_list => 'resources/social_logo_1024', dupe => 'warn') || $error++;
-	$self->validate_url($$json{org}{branding}{logo_svg}, 'org.branding.logo_svg', content_type => 'svg', add_to_list => 'resources/social_logo_svg', dupe => 'warn') || $error++;
+	$self->validate_url($$json{org}{website}, 'org.website', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn');
+	$self->validate_url($$json{org}{code_of_conduct}, 'org.code_of_conduct', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn');
+	$self->validate_url($$json{org}{ownership_disclosure}, 'org.ownership_disclosure', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn');
+	$self->validate_url($$json{org}{branding}{logo_256}, 'org.branding.logo_256', content_type => 'png_jpg', add_to_list => 'resources/social_logo_256', dupe => 'warn');
+	$self->validate_url($$json{org}{branding}{logo_1024}, 'org.branding.logo_1024', content_type => 'png_jpg', add_to_list => 'resources/social_logo_1024', dupe => 'warn');
+	$self->validate_url($$json{org}{branding}{logo_svg}, 'org.branding.logo_svg', content_type => 'svg', add_to_list => 'resources/social_logo_svg', dupe => 'warn');
 
 	foreach my $key (sort keys %{$$json{org}{social}}) {
 		my $value = $$json{org}{social}{$key};
@@ -263,8 +258,6 @@ sub run_validate {
 			my $result = $self->validate_api($$node{api_endpoint}, "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
 			if ($result) {
 				$api_endpoint++;
-			} else {
-				$error++;
 			}
 		}
 
@@ -273,8 +266,6 @@ sub run_validate {
 			my $result = $self->validate_api($$node{ssl_endpoint}, "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
 			if ($result) {
 				$api_endpoint++;
-			} else {
-				$error++;
 			}
 		}
 
@@ -282,8 +273,6 @@ sub run_validate {
 			$found_something++;
 			if ($self->validate_connection($$node{p2p_endpoint}, "node[$node_number].p2p_endpoint", connection_type => 'p2p', add_to_list => 'nodes/p2p', node_type => $node_type, location => $location)) {
 				$peer_endpoint++;
-			} else {
-				$error++;
 			}
 		}
 
@@ -291,13 +280,21 @@ sub run_validate {
 			$found_something++;
 			if ($self->validate_connection($$node{bnet_endpoint}, "node[$node_number].bnet_endpoint", connection_type => 'bnet', add_to_list => 'nodes/bnet', node_type => $node_type, location => $location)) {
 				$peer_endpoint++;
-			} else {
-				$error++;
 			}
 		}
 
-		if (! $found_something) {
-			$self->add_message('warn', "no endpoints provided in field=<node[$node_number]> (useless section)");
+		# ---------- check if something was found and compare to node type
+
+		if (! defined $node_type) {
+			# cannot check
+		} elsif ($node_type eq 'producer') {
+			if ($found_something) {
+				$self->add_message('warn', "endpoints provided in field=<node[$node_number]> (producer should be private)");
+			}
+		} else {
+			if (! $found_something) {
+				$self->add_message('warn', "no endpoints provided in field=<node[$node_number]> (useless section)");
+			}
 		}
 			
 		$node_number++;
@@ -305,14 +302,10 @@ sub run_validate {
 
 	if (! $api_endpoint) {
 		$self->add_message('crit', "no API endpoints provided (that do not have errors noted) of either api_endpoint or ssl_endpoint");
-		$error++;
 	}
 	if (! $peer_endpoint) {
 		$self->add_message('crit', "no p2p or bnet endpoints provided (that do not have errors noted)");
-		$error++;
 	}
-
-	# ---------- done
 }
 
 sub validate_string {
