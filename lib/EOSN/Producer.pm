@@ -416,7 +416,7 @@ sub validate_url {
 
 	if ($ssl eq 'either') {
 		if ($url !~ m#^https://#) {
-			$self->add_message(kind => 'warn', detail => 'consider using HTTPS instead of HTTP', url => $url, field => $field, class => $class);
+			$self->add_message(kind => 'warn', detail => 'HTTPS is reccomended instead of HTTP', url => $url, field => $field, class => $class, explanation => 'https://security.googleblog.com/2018/02/a-secure-web-is-here-to-stay.html');
 		}
 	} elsif ($ssl eq 'on') {
 		if ($url !~ m#^https://#) {
@@ -432,41 +432,26 @@ sub validate_url {
 		confess "unknown ssl option";
 	}
 
+	my $clock = time;
+
 	my $req = HTTP::Request->new('GET', $url . $url_ext);
 	$req->header('Origin', 'https://example.com');
-	$self->ua->timeout($timeout);
+	$self->ua->timeout($timeout * 2);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
 	my $response_content_type = $res->content_type;
 
+	my $time = time - $clock;
+
 	if (! $res->is_success) {
 		$self->add_message(kind => 'crit', detail => 'invalid URL message=<$status_message>', url => $url, field => $field, class => $class);
 		return undef;
 	}
 
-	if ($options{api_checks}) {
-		my $server_header = $res->header('Server');
-		if ($server_header && $server_header =~ /cloudflare/) {
-			$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class);
-		}
-
-		my $cookie_header = $res->header('Set-Cookie');
-		if ($cookie_header) {
-			$self->add_message(kind => 'err', detail => 'API nodes must not set cookies', url => $url, field => $field, class => $class);
-			return undef;
-		}
-
-		if ($ssl eq 'on') {
-			# LWP doesn't seem to support HTTP2, so make an extra call
-			my $check_http2 = `curl '$url$url_ext' --verbose --max-time 1 --stderr -`;
-			if ($check_http2 =~ m#HTTP/2 200#) {
-				$options{add_to_list} .= '2';
-			} else {
-				$self->add_message(kind => 'warn', detail => 'HTTPS API nodes would have better performance by using HTTP/2', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
-			}
-		}
+	if ($time > $timeout) {
+		$self->add_message(kind => 'err', detail => "reponse took longer than expected time=<$time s> vs expected=<$timeout s>", url => $url, field => $field, class => $class);
 	}
 
 	my @cors_headers = $res->header('Access-Control-Allow-Origin');
@@ -569,7 +554,7 @@ sub validate_url {
 	my $info;
 	if ($options{extra_check}) {
 		my $function = $options{extra_check};
-		$info = $self->$function ($return, %options);
+		$info = $self->$function ($return, $res, %options);
 		if (! $info) {
 			return undef;
 		}
@@ -651,27 +636,50 @@ sub validate_api {
 		url_ext => '/v1/chain/get_info',
 		content_type => 'json',
 		cors => 'on',
-		api_checks => 'on',
 		non_standard_port => 1,
 		extra_check => 'validate_api_extra_check',
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
 		dupe => 'err',
-		timeout => 3,
+		timeout => 2,
 		%options
 	);
 }
 
 sub validate_api_extra_check {
-	my ($self, $result, %options) = @_;
+	my ($self, $result, $res, %options) = @_;
 
 	my $url = $options{url};
 	my $field = $options{field};
 	my $class = $options{class};
+	my $ssl = $options{ssl} || 'either'; # either, on, off
+	my $url_ext = $options{url_ext} || '';
 
 	my %info;
 	my $errors;
 	my $versions = $self->versions;
+
+	my $server_header = $res->header('Server');
+	if ($server_header && $server_header =~ /cloudflare/) {
+		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class);
+		$errors++;
+	}
+
+	my $cookie_header = $res->header('Set-Cookie');
+	if ($cookie_header) {
+		$self->add_message(kind => 'err', detail => 'API nodes must not set cookies', url => $url, field => $field, class => $class);
+		$errors++;
+	}
+
+	if ($ssl eq 'on') {
+		# LWP doesn't seem to support HTTP2, so make an extra call
+		my $check_http2 = `curl '$url$url_ext' --verbose --max-time 3 --stderr -`;
+		if ($check_http2 =~ m#HTTP/2 200#) {
+			$options{add_to_list} .= '2';
+		} else {
+			$self->add_message(kind => 'warn', detail => 'HTTPS API nodes would have better performance by using HTTP/2', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
+		}
+	}
 
 	if (! $$result{chain_id}) {
 		$self->add_message(kind => 'crit', detail => 'cannot find chain_id in response', url => $url, field => $field, class => $class);
