@@ -32,7 +32,6 @@ sub read_globals {
 
 	my $data = from_json(read_file($infile) || die "$0: no data read");
 	$globals{last_update} = $$data{meta}{generated_at};
-
 }
 
 sub go {
