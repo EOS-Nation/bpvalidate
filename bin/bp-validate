@@ -114,7 +114,7 @@ sub doit {
 		my $ua = eosn_ua();
 		my $producer = new EOSN::Producer (ua => $ua, properties => from_json ($$entry{regproducer_data}), versions => $versions);
 		my $results = $producer->validate;
-		#print ">>> ", to_json ($results), "\n";
+		#print "[$thread_id] >>> ", to_json ($results), "\n";
 		$dbh->do('update producer set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?', {}, 'done', time, to_json ($results), $$entry{id});
 	}
 }
