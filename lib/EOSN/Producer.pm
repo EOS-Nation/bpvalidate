@@ -160,13 +160,13 @@ sub run_validate {
 	#print ">> [$name][$key][$url][$votes]\n";
 
 	if ($url !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
-		$self->add_message(kind => 'crit', detail => 'invalid configured url', url => $url, class => 'regproducer');
+		$self->add_message(kind => 'crit', detail => 'invalid configured URL', url => $url, class => 'regproducer');
 		return undef;
 	}
 
 	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
 
-	my $json = $self->validate_url(url => "$url/bp.json", field => 'bp info json url', class => 'brand', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
+	my $json = $self->validate_url(url => "$url/bp.json", field => 'bp info json URL', class => 'brand', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;
@@ -340,13 +340,13 @@ sub validate_url {
 	#print ">> check url=[GET $url$url_ext]\n";
 
 	if (! $url) {
-		$self->add_message(kind => 'err', detail => "no url given", field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'no URL given', field => $field, class => $class);
 		return undef;
 	}
 
 	if ($dupe ne 'skip') {
 		if ($self->{urls}{$url}) {
-			$self->add_message(kind => $dupe, detail => "duplicate url", field => $field, class => $class, url => $url);
+			$self->add_message(kind => $dupe, detail => 'duplicate URL', field => $field, class => $class, url => $url);
 			return undef if ($dupe eq 'err');
 		}
 		$self->{urls}{$url} = 1;
@@ -355,19 +355,19 @@ sub validate_url {
 	$url =~ s/#.*$//;
 
 	if ($url !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
-		$self->add_message(kind => 'err', detail => "invalid url", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'invalid URL', url => $url, field => $field, class => $class);
 		return undef;
 	}
 	if ($url =~ m#^https?://.*//#) {
-		$self->add_message(kind => 'warn', detail => "double slashes", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'warn', detail => 'double slashes in URL', url => $url, field => $field, class => $class);
 		$url =~ s#(^https?://.*)//#$1/#;
 	}
 	if ($url =~ m#^https?://localhost#) {
-		$self->add_message(kind => 'err', detail => "localhost", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'localhost URL is invalid', url => $url, field => $field, class => $class);
 		return undef;
 	}
 	if ($url =~ m#^https?://127\.#) {
-		$self->add_message(kind => 'err', detail => "localhost", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'localhost URL is invalid', url => $url, field => $field, class => $class);
 		return undef;
 	}
 
@@ -442,7 +442,7 @@ sub validate_url {
 	my $response_content_type = $res->content_type;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => 'invalid url message=<$status_message>', url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'invalid URL message=<$status_message>', url => $url, field => $field, class => $class);
 		return undef;
 	}
 
@@ -861,6 +861,7 @@ sub test_patreonous {
 	my $url = "$base_url/v1/chain/get_table_rows";
 
 	my $req = HTTP::Request->new('POST', $url, undef, '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}');
+	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
