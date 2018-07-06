@@ -1,2 +1,2 @@
 # bpvalidate
-Tools to validate BPs have set up their public configuration correctly
+Tools to validate that Block Producers and Standby Block Producers have set up their public configuration in a usable fashion.
