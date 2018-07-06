@@ -18,20 +18,6 @@ $content_types{json} = ['application/json'];
 $content_types{png_jpg} = ['image/png', 'image/jpeg'];
 $content_types{svg} = ['image/svg+xml'];
 
-our %versions;
-$versions{'db031363'}{name} = 'mainnet-v1.0.5';
-$versions{'db031363'}{current} = 0;
-$versions{'aa351733'}{name} = 'mainnet-v1.0.6';
-$versions{'aa351733'}{current} = 0;
-$versions{'b195012b'}{name} = 'mainnet-v1.0.7';
-$versions{'b195012b'}{current} = 1;
-$versions{'36a043c5'}{name} = 'mainnet-v1.0.8';
-$versions{'36a043c5'}{current} = 1;
-$versions{'6ee30205'}{name} = 'mainnet-v1.0.8';
-$versions{'6ee30205'}{current} = 1;
-$versions{'5875549c'}{name} = 'v1.0.8';
-$versions{'5875549c'}{current} = 1;
-
 # --------------------------------------------------------------------------
 # Class Methods
 
@@ -44,6 +30,7 @@ sub new {
 
 sub DESTROY {
         my ($self) = @_;
+        $self->{versions} = undef;
         $self->{dbh} = undef;
         $self->{ua} = undef;
 	$self->{properties} = undef;
@@ -115,6 +102,16 @@ sub dbh {
 	}
 
 	return $self->{dbh};
+}
+
+sub versions {
+	my ($self, $versions) = @_;
+
+	if ($versions) {
+		$self->{versions} = $versions;
+	}
+
+	return $self->{versions};
 }
 
 # --------------------------------------------------------------------------
@@ -655,6 +652,7 @@ sub validate_api_extra_check {
 
 	my %info;
 	my $errors;
+	my $versions = $self->versions;
 
 	if (! $$result{chain_id}) {
 		$self->add_message('crit', "cannot find chain_id in response for url=<$url> for field=<$type>");
@@ -688,11 +686,11 @@ sub validate_api_extra_check {
 		$errors++;
 	}
 
-	if (! $versions{$$result{server_version}}) {
+	if (! $$versions{$$result{server_version}}) {
 		$self->add_message('warn', "unknown server version=<$$result{server_version}> in response for url=<$url> for field=<$type>");
 	} else {
-		my $name = $versions{$$result{server_version}}{name};
-		my $current = $versions{$$result{server_version}}{current};
+		my $name = $$versions{$$result{server_version}}{name};
+		my $current = $$versions{$$result{server_version}}{current};
 		$info{server_version} = $name;
 		if (! $current) {
 			$self->add_message('warn', "server version=<$name> is out of date in response for url=<$url> for field=<$type>");

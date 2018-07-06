@@ -2,12 +2,15 @@
 
 /etc/init.d/apache2 start
 cp -pra /var/www/html_template/* /var/www/html
-mkdir /var/www/html/producers
+if [ ! -e /var/www/html/producers ]
+then
+	mkdir /var/www/html/producers
+fi
 
 while [ 1 ]
 do
 	echo "running..."
-	bp-validate --output=/var/www/html/bps.json --limit=1000
+	bp-validate --versions=/etc/bpvalidate/versions.csv --output=/var/www/html/bps.json --limit=1000
 	bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-endpoints --input=/var/www/html/bps.json --out=/var/www/html/

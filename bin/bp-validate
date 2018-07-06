@@ -6,7 +6,7 @@ use JSON;
 use Parallel::ForkManager;
 use EOSN::SQL qw(do_connect);
 use EOSN::Producer;
-use EOSN::FileUtil qw(write_file);
+use EOSN::FileUtil qw(write_file read_csv_hash);
 use EOSN::UA qw(eosn_ua get_table);
 use Date::Format qw(time2str);
 use Getopt::Long;
@@ -19,12 +19,17 @@ binmode(STDOUT, ":utf8");
 my $max_processes = 8;
 my $filter_producer = undef;
 my $outfile = undef;
+my $versionsfile = undef;
 my $limit = 1000;
 my $debug = 0;
 
-GetOptions('max_processes=i' => \$max_processes, 'producer=s' => \$filter_producer, 'output=s' => \$outfile, 'limit=i' => \$limit, 'debug' => \$debug) || exit 1;
+GetOptions('max_processes=i' => \$max_processes, 'producer=s' => \$filter_producer, 'output=s' => \$outfile, 'versions=s' => \$versionsfile, 'limit=i' => \$limit, 'debug' => \$debug) || exit 1;
 
 $max_processes = 1 if ($filter_producer);
+if (! defined $versionsfile) {
+	die "$0: versions file not provided";
+}
+my $versions = read_csv_hash ($versionsfile, 'hash');
 
 setup_jobs();
 run_validation();
@@ -52,21 +57,23 @@ sub setup_jobs {
 		$cache{$$entry{owner}} = 1;
 
 		$dbh->do('insert ignore into producer (producer, regproducer_data, status, reproducer_at) values (?, ?, ?, ?)', {}, $$entry{owner}, to_json ($entry), 'hold', time);
-		my $limit = time - 1500;
-		$limit = time if ($filter_producer);
-		my $state = 'check';
 
+		my $state;
+		my $limit;
 		if (! $filter_producer) {
-			# ok, normal update
+			print ">> normal $$entry{owner}\n" if ($debug);
+			$state = 'check';
+			$limit = time - 1500;
 
 		} elsif ($filter_producer && ($$entry{owner} eq $filter_producer)) {
-			# force
+			print ">> force $$entry{owner}\n" if ($debug);
+			$state = 'check';
 			$limit = time;
 
 		} else {
-			# do nothing
-			$limit = time;
+			print ">> skip $$entry{owner}\n" if ($debug);
 			$state = 'hold';
+			$limit = time;
 		}
 
 		$dbh->do('update producer set status = ?, reproducer_at = ?, regproducer_data = ? where producer = ? and checked_at < ?', {}, $state, time, to_json ($entry), $$entry{owner}, $limit);
@@ -105,7 +112,7 @@ sub doit {
 		}
 		warn "[$thread_id] processing: $$entry{producer}\n" if ($debug);
 		my $ua = eosn_ua();
-		my $producer = new EOSN::Producer (ua => $ua, properties => from_json ($$entry{regproducer_data}));
+		my $producer = new EOSN::Producer (ua => $ua, properties => from_json ($$entry{regproducer_data}), versions => $versions);
 		my $results = $producer->validate;
 		#print ">>> ", to_json ($results), "\n";
 		$dbh->do('update producer set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?', {}, 'done', time, to_json ($results), $$entry{id});
