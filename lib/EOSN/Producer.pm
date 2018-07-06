@@ -20,6 +20,8 @@ $content_types{png_jpg} = ['image/png', 'image/jpeg'];
 $content_types{svg} = ['image/svg+xml'];
 $content_types{html} = ['text/html'];
 
+our @bad_urls = ('https://google.com', 'https://www.yahoo.com');
+
 # --------------------------------------------------------------------------
 # Class Methods
 
@@ -166,7 +168,7 @@ sub run_validate {
 
 	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
 
-	my $json = $self->validate_url(url => "$url/bp.json", field => 'bp info json URL', class => 'brand', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
+	my $json = $self->validate_url(url => "$url/bp.json", field => 'bp info JSON URL', class => 'brand', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;
@@ -192,7 +194,7 @@ sub run_validate {
 	$self->validate_country(country => $$json{org}{location}{country}, field => 'org.location.country', class => 'brand');
 
 	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
-		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'brand');
+		$self->add_message(kind => 'err', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'brand');
 	}
 
 	if ($$json{producer_account_name} && $$json{producer_account_name} ne $name) {
@@ -344,6 +346,13 @@ sub validate_url {
 		return undef;
 	}
 
+	foreach my $test_url (@bad_urls) {
+		if ($url =~ m#^$test_url#) {
+			$self->add_message(kind => 'err', detail => 'URL not allowed', field => $field, class => $class, url => $url);
+			return undef;
+		}
+	}
+
 	if ($dupe ne 'skip') {
 		if ($self->{urls}{$url}) {
 			$self->add_message(kind => $dupe, detail => 'duplicate URL', field => $field, class => $class, url => $url);
@@ -446,12 +455,12 @@ sub validate_url {
 	my $time = time - $clock;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => 'invalid URL message=<$status_message>', url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'invalid URL', value => $status_message, url => $url, field => $field, class => $class);
 		return undef;
 	}
 
 	if ($time > $timeout) {
-		$self->add_message(kind => 'err', detail => "reponse took longer than expected time=<$time s> vs expected=<$timeout s>", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'response took longer than expected', value => "$time s", target => "$timeout s", url => $url, field => $field, class => $class);
 	}
 
 	my @cors_headers = $res->header('Access-Control-Allow-Origin');
@@ -498,7 +507,7 @@ sub validate_url {
 			$found = 1 if ($x eq $response_content_type);
 		}
 		if (! $found) {
-			$self->add_message(kind => 'err', detail => "received unexpected content_type=<$response_content_type>", url => $url, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'received unexpected content_type', value => $response_content_type, url => $url, field => $field, class => $class);
 			return undef;
 		}
 	}
@@ -535,7 +544,7 @@ sub validate_url {
 			my $message = $@;
 			chomp ($message);
 			$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
-			$self->add_message(kind => 'err', detail => "invalid json error=<$message>", url => $url, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'invalid JSON error', value => $message, url => $url, field => $field, class => $class);
 			#print $content;
 			return undef;
 		}
@@ -687,7 +696,7 @@ sub validate_api_extra_check {
 	}
 
 	if ($$result{chain_id} ne 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906') {
-		$self->add_message(kind => 'crit', detail => "invalid chain_id=<$$result{chain_id}>", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'invalid chain_id', value => $$result{chain_id}, url => $url, field => $field, class => $class);
 		$errors++;
 	}
 
@@ -704,23 +713,23 @@ sub validate_api_extra_check {
 		my $val = Time::Seconds->new($delta);
 		my $deltas = $val->pretty;
 		#$self->add_message(kind => 'crit', detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}> delta=<$deltas>", url => $url, field => $field, class => $class);
-		$self->add_message(kind => 'crit', detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}>", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'last block is not up-to-date', value => $$result{head_block_time}, url => $url, field => $field, class => $class);
 		$errors++;
 	}
 
 	if (! $$result{server_version}) {
-		$self->add_message(kind => 'crit', detail => "cannot find server_version in response; contact \@mdarwin on telegram and provide the information", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'cannot find server_version in response; contact @mdarwin on telegram and provide the information', url => $url, field => $field, class => $class);
 		$errors++;
 	}
 
 	if (! $$versions{$$result{server_version}}) {
-		$self->add_message(kind => 'warn', detail => "unknown server version=<$$result{server_version}> in response", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version}, url => $url, field => $field, class => $class);
 	} else {
 		my $name = $$versions{$$result{server_version}}{name};
 		my $current = $$versions{$$result{server_version}}{current};
 		$info{server_version} = $name;
 		if (! $current) {
-			$self->add_message(kind => 'warn', detail => "server version=<$name> is out of date in response", url => $url, field => $field, class => $class);
+			$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class);
 		}
 	}
 
@@ -876,7 +885,7 @@ sub test_patreonous {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => "invalid patreonous filter message=<$status_message>", field => $field, class => $class, url => $url, explanation => 'https://github.com/EOSIO/patroneos/issues/36');
+		$self->add_message(kind => 'crit', detail => 'invalid patreonous filter message', value => $status_message, field => $field, class => $class, url => $url, explanation => 'https://github.com/EOSIO/patroneos/issues/36');
 		return undef;
 	}
 

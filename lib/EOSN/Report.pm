@@ -166,6 +166,8 @@ sub sev_html {
 sub generate_message {
 	my ($options) = @_;
 
+	my $value = $$options{value};
+	my $target = $$options{target};
 	my $kind = $$options{kind} || confess "missing kind";
 	my $detail = $$options{detail} || confess "missing detail";
 	my $field = $$options{field};
@@ -186,6 +188,8 @@ sub generate_message {
 		$response_url = undef if ($url eq $response_url);
 	}
 
+	$detail .= " value=<$value>" if ($value);
+	$detail .= " target=<$target>" if ($target);
 	$detail .= " for field=<$field>" if ($field);
 	$detail .= " for resource=<$resource>" if ($resource);
 	$detail .= " for url=<$url>" if ($url);
