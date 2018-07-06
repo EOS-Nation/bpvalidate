@@ -76,7 +76,7 @@ sub setup_jobs {
 			$limit = time;
 		}
 
-		$dbh->do('update producer set status = ?, reproducer_at = ?, regproducer_data = ? where producer = ? and checked_at < ?', {}, $state, time, to_json ($entry), $$entry{owner}, $limit);
+		$dbh->do('update producer set status = ?, reproducer_at = ?, regproducer_data = ? where producer = ? and (checked_at < ? or checked_at is null)', {}, $state, time, to_json ($entry), $$entry{owner}, $limit);
 	}
 
 	$dbh->do('delete from producer where checked_at < ?', {}, time - (3600 * 9));
