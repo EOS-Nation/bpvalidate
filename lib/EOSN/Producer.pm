@@ -348,7 +348,7 @@ sub validate_url {
 
 	foreach my $test_url (@bad_urls) {
 		if ($url =~ m#^$test_url#) {
-			$self->add_message(kind => 'err', detail => 'URL not allowed', field => $field, class => $class, url => $url);
+			$self->add_message(kind => 'crit', detail => 'URL not allowed', field => $field, class => $class, url => $url);
 			return undef;
 		}
 	}
