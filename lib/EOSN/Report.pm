@@ -16,6 +16,17 @@ $icons{warn} = '<span class="icon is-medium has-text-warning"><i class="fas fa-l
 $icons{err} = '<span class="icon is-medium has-text-warning2"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{crit} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-stop"></i></span>';
 
+our %labels;
+$labels{regproducer} = 'Regproducer';
+$labels{brand} = 'Branding';
+$labels{endpoint} = 'Endpoints';
+$labels{skip} = 'Skipped';
+$labels{info} = 'Information';
+$labels{ok} = 'OK';
+$labels{warn} = 'Warning';
+$labels{err} = 'Error';
+$labels{crit} = 'Critical Error';
+
 # --------------------------------------------------------------------------
 # Subroutines
 
@@ -83,6 +94,7 @@ sub generate_report_thtml {
 	my $title = $options{title};
 	my $columns = $options{columns};
 	my $icons = $options{icons};
+	my $class = $options{class};
 	my $noescape = $options{noescape};
 	my $outfile = $options{outfile};
 	my $text = $options{text};
@@ -114,7 +126,10 @@ sub generate_report_thtml {
 				foreach my $i (1 .. scalar(@data)) {
 					my $value = $data[$i-1];
 					if ($icons && $i == $icons) {
-						$value = sev_html($value);
+						my $classx = $data[$class - 1];
+						$value = sev_html($value, $classx);
+					} elsif ($class && $i == $class) {
+						$value = $labels{$value} || $value;
 					} elsif ($noescape && $i == $noescape) {
 						# no nothing
 					} else {
@@ -158,9 +173,15 @@ sub write_report_thtml {
 }
 
 sub sev_html {
-	my ($value) = @_;
+	my ($kind, $class) = @_;
 
-	return $icons{$value} || encode_entities ($value);
+	my $html = $icons{$kind} || encode_entities ($kind);
+	my $labelc = $labels{$class} || $class;
+	my $labels = $labels{$kind} || $kind;
+	
+	$html =~ s/ / title="$labelc: $labels" /;
+	
+	return $html;
 }
 
 sub generate_message {
