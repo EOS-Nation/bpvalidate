@@ -4,7 +4,7 @@ use utf8;
 use strict;
 use EOSN::Report;
 use HTML::Entities;
-use Data::Dumper;
+use List::Util qw(shuffle);
 
 binmode(STDOUT, ":utf8");
 
@@ -35,7 +35,7 @@ foreach my $entry (@{$$data{producers}}) {
 }
 
 push (@report, "<div>\n");
-foreach my $entry (@{$$data{producers}}) {
+foreach my $entry (shuffle (@{$$data{producers}})) {
 	my $producer = $$entry{regproducer}{owner};
 	my $rank = $$entry{info}{rank};
 	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
