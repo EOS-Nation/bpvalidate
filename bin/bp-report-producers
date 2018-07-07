@@ -77,7 +77,7 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 		$flag = flag_html($country);
 	}
 
-	push (@report, "<div style=\"display: inline-block; margin: 5px; padding: 5px; border: solid 1px; border-color: grey; width: 220px; height: 70px; overflow: hidden\">\n");
+	push (@report, "<div id=\"bp_$producer\" style=\"display: inline-block; margin: 5px; padding: 5px; border: solid 1px; border-color: grey; width: 220px; height: 70px; overflow: hidden\">\n");
 	push (@report, "<div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\">$flag</div>\n");
