@@ -156,6 +156,7 @@ sub run_validate {
 
 	$self->add_message(kind => 'info', detail => 'voting rank', value => $self->{rank}, class => 'general');
 	$self->{results}{info}{rank} = $self->{rank};
+	$self->{results}{info}{vote_percent} = $self->{vote_percent};
 
 	if (! $is_active) {
 		$self->add_message(kind => 'skip', detail => 'producer is not active', class => 'regproducer');

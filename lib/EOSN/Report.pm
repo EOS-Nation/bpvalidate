@@ -16,6 +16,7 @@ $icons{warn} = '<span class="icon is-medium has-text-warning"><i class="fas fa-l
 $icons{err} = '<span class="icon is-medium has-text-warning2"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{crit} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-stop"></i></span>';
 $icons{selected} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-certificate"></i></span>';
+$icons{standby} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-certificate"></i></span>';
 
 our %labels;
 $labels{general} = 'General Info';
@@ -30,6 +31,7 @@ $labels{warn} = 'Warning';
 $labels{err} = 'Error';
 $labels{crit} = 'Critical Error';
 $labels{selected} = 'Selected Block Producer';
+$labels{selected} = 'Paid Standby Block Producer';
 
 # --------------------------------------------------------------------------
 # Subroutines

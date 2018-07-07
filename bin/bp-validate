@@ -50,11 +50,21 @@ sub setup_jobs {
 		die "$0: cannot get producer list";
 	}
 
+	my $vote_total = 0;
+	foreach my $entry (@{$producer_list}) {
+		next if (! $$entry{is_active});
+		$vote_total += $$entry{total_votes};
+	}
+
 	foreach my $entry (@{$producer_list}) {
 		$rank++;
 
 		$dbh->do('insert ignore into producer (producer, status, regproducer_at) values (?, ?, ?)', {}, $$entry{owner}, 'hold', time);
 
+		my $vote_percent = 0;
+		if ($$entry{is_active}) {
+			$vote_percent = $$entry{total_votes} / $vote_total * 100;
+		}
 		my $state;
 		my $limit;
 		if (! $filter_producer) {
@@ -73,7 +83,7 @@ sub setup_jobs {
 			$limit = time;
 		}
 
-		$dbh->do('update producer set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ? where producer = ? and (checked_at < ? or checked_at is null)', {}, $state, time, to_json ($entry), $rank, $$entry{owner}, $limit);
+		$dbh->do('update producer set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ? where producer = ? and (checked_at < ? or checked_at is null)', {}, $state, time, to_json ($entry), $rank, $vote_percent, $$entry{owner}, $limit);
 	}
 }
 
@@ -111,7 +121,7 @@ sub doit {
 		}
 		warn "[$thread_id] processing: $$entry{producer}\n" if ($debug);
 		my $ua = eosn_ua();
-		my $producer = new EOSN::Producer (ua => $ua, properties => from_json ($$entry{regproducer_data}), versions => $versions, rank => $$entry{regproducer_rank});
+		my $producer = new EOSN::Producer (ua => $ua, properties => from_json ($$entry{regproducer_data}), versions => $versions, rank => $$entry{regproducer_rank}, vote_percent => $$entry{regproducer_vote_percent});
 		my $results = $producer->validate;
 		#print "[$thread_id] >>> ", to_json ($results), "\n";
 		$dbh->do('update producer set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?', {}, 'done', time, to_json ($results), $$entry{id});

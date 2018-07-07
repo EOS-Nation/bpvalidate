@@ -16,6 +16,7 @@ $dbh->do("$prefix producer varchar(20)");
 $dbh->do("$prefix thread_id int(11) unsigned");
 $dbh->do("$prefix status varchar(20)");
 $dbh->do("$prefix regproducer_rank int(11) unsigned");
+$dbh->do("$prefix regproducer_vote_percent float(10,2)");
 $dbh->do("$prefix regproducer_data text");
 $dbh->do("$prefix results_data text");
 $dbh->do("$prefix regproducer_at int(11)");
