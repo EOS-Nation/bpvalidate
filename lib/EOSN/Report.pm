@@ -188,6 +188,7 @@ sub generate_message {
 	my ($options) = @_;
 
 	my $value = $$options{value};
+	my $suggested_value = $$options{suggested_value};
 	my $target = $$options{target};
 	my $kind = $$options{kind} || confess "missing kind";
 	my $detail = $$options{detail} || confess "missing detail";
@@ -210,6 +211,7 @@ sub generate_message {
 	}
 
 	$detail .= " value=<$value>" if ($value);
+	$detail .= " suggested to use value=<$suggested_value>" if ($suggested_value);
 	$detail .= " target=<$target>" if ($target);
 	$detail .= " for field=<$field>" if ($field);
 	$detail .= " for resource=<$resource>" if ($resource);

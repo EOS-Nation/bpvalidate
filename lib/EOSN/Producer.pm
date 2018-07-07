@@ -153,6 +153,7 @@ sub run_validate {
 	my $key = $self->{properties}{producer_key};
 	my $url = $self->{properties}{url};
 	my $is_active = $self->{properties}{is_active};
+	my $location = $self->{properties}{location};
 
 	if (! $is_active) {
 		$self->add_message(kind => 'skip', detail => 'producer is not active', class => 'regproducer');
@@ -166,9 +167,11 @@ sub run_validate {
 		return undef;
 	}
 
+	$self->validate_country_n (country => $location, field => 'main location', class => 'regproducer');
+
 	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
 
-	my $json = $self->validate_url(url => "$url/bp.json", field => 'bp info JSON URL', class => 'brand', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
+	my $json = $self->validate_url(url => "$url/bp.json", field => 'BP info JSON URL', class => 'brand', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;
@@ -183,15 +186,15 @@ sub run_validate {
 		$self->add_message(kind => 'err', detail => 'not a object', field =>'org.location', class => 'brand');
 		return undef;
 	}
+
+	$self->validate_location(location => $$json{org}{location}, field => "org.location", class => 'brand');
+
 	$self->validate_string(string => $$json{org}{location}{name}, field => 'org.location.name', class => 'brand');
-	$self->validate_string(string => $$json{org}{location}{country}, field => 'org.location.country', class => 'brand');
-	$self->validate_string(string => $$json{org}{location}{latitude}, field => 'org.location.latitude', class => 'brand');
-	$self->validate_string(string => $$json{org}{location}{longitude}, field => 'org.location.longitude', class => 'brand');
 	$self->validate_string(string => $$json{org}{candidate_name}, field => 'org.candidate_name', class => 'brand');
-	$self->validate_string(string => $$json{org}{email}, field => 'org.email', class => 'brand');
+	$self->validate_email(string => $$json{org}{email}, field => 'org.email', class => 'brand');
 	$self->validate_string(string => $$json{producer_public_key}, field => 'producer_public_key', class => 'brand');
 	$self->validate_string(string => $$json{producer_account_name}, field => 'producer_account_name', class => 'brand');
-	$self->validate_country(country => $$json{org}{location}{country}, field => 'org.location.country', class => 'brand');
+	$self->validate_country_a2(country => $$json{org}{location}{country}, field => 'org.location.country', class => 'brand');
 
 	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
 		$self->add_message(kind => 'err', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'brand');
@@ -310,6 +313,17 @@ sub run_validate {
 	}
 }
 
+sub validate_email {
+	my ($self, %options) = @_;
+
+	$self->validate_string (%options) || return;
+
+	my $string = $options{string};
+	my ($name, $host) = split (/@/, $string);
+
+	$self->validate_dns($host, $options{field}, $options{class}) || return;
+}
+
 sub validate_string {
 	my ($self, %options) = @_;
 
@@ -317,7 +331,7 @@ sub validate_string {
 	my $field = $options{field};
 	my $class = $options{class};
 
-	if (! $string) {
+	if ((! defined $string) || (length $string == 0)) {
 		$self->add_message(kind => 'err', detail => 'no value given', field => $field, class => $class);
 		return undef;
 	}
@@ -425,7 +439,7 @@ sub validate_url {
 
 	if ($ssl eq 'either') {
 		if ($url !~ m#^https://#) {
-			$self->add_message(kind => 'warn', detail => 'HTTPS is reccomended instead of HTTP', url => $url, field => $field, class => $class, explanation => 'https://security.googleblog.com/2018/02/a-secure-web-is-here-to-stay.html');
+			$self->add_message(kind => 'warn', detail => 'HTTPS is recommended instead of HTTP', url => $url, field => $field, class => $class, explanation => 'https://security.googleblog.com/2018/02/a-secure-web-is-here-to-stay.html');
 		}
 	} elsif ($ssl eq 'on') {
 		if ($url !~ m#^https://#) {
@@ -515,7 +529,7 @@ sub validate_url {
 	my $content = $res->content;
 
 	if ($response_url ne ($url . $url_ext)) {
-		$self->add_message(kind => 'info', detail => 'url redirected', url => $url, field => $field, class => $class, response_url => '' .$response_url);
+		$self->add_message(kind => 'info', detail => 'URL redirected', url => $url, field => $field, class => $class, response_url => '' .$response_url);
 		if ($ssl eq 'on') {
 			if ($response_url !~ m#^https://#) {
 				$self->add_message(kind => 'err', detail => 'need to specify HTTPS instead of HTTP', url => $url, field => $field, class => $class, response_url => '' . $response_url);
@@ -807,7 +821,7 @@ sub validate_location {
 	my $field = $options{field};
 	my $class = $options{class};
 
-	my $country = $self->validate_country(country => $$location{country}, field => $field, class => $class);
+	my $country = $self->validate_country_a2(country => $$location{country}, field => $field, class => $class);
 	my $name = $$location{name};
 	my $latitude = is_numeric ($$location{latitude});
 	my $longitude = is_numeric ($$location{longitude});
@@ -816,27 +830,27 @@ sub validate_location {
 		$self->add_message(kind => 'err', detail => 'no name', field => $field, class => $class);
 		$name = undef;
 	} elsif ($name eq $self->name) {
-		$self->add_message(kind => 'err', detail => 'same name as producer, should be name of location', field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'same name as producer, should be name of location', value => $name, field => $field, class => $class);
 		$name = undef;
 	}
 
 	if (! defined $latitude) {
-		$self->add_message(kind => 'err', detail => 'no valid latitude', field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'no latitude', field => $field, class => $class);
 	}
 	if (! defined $longitude) {
-		$self->add_message(kind => 'err', detail => 'no valid longitude', field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'no longitude', field => $field, class => $class);
 	}
 	if ((! defined $latitude) || (! defined $longitude)) {
 		$latitude = undef;
 		$longitude = undef;
 	}
 	if ((defined $latitude) && ($latitude > 90 || $latitude < -90)) {
-		$self->add_message(kind => 'err', detail => 'latitude out of range', field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'latitude out of range', value => $latitude, field => $field, class => $class);
 		$latitude = undef;
 		$longitude = undef;
 	}
 	if ((defined $longitude) && ($longitude > 180 || $longitude < -180)) {
-		$self->add_message(kind => 'err', detail => 'longitude out of range', field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'longitude out of range', value => $longitude, field => $field, class => $class);
 		$latitude = undef;
 		$longitude = undef;
 	}
@@ -852,21 +866,75 @@ sub validate_location {
 	$return{latitude} = $latitude if (defined $latitude);
 	$return{longitude} = $longitude if (defined $longitude);
 
+	if ($country && $name && $latitude && $longitude) {
+		$self->add_message(kind => 'ok', detail => 'basic checks passed for location', field => $field, class => $class);
+	}
+
 	return \%return;
 }
 
-sub validate_country {
+sub validate_country_a2 {
 	my ($self, %options) = @_;
 
 	my $country = $options{country};
 	my $field = $options{field};
 	my $class = $options{class};
 
-	if ($country && $country !~ /^[A-Z]{2}$/) {
-		$self->add_message(kind => 'err', detail => 'not exactly 2 uppercase letters', field => $field, class => $class);
+	$self->validate_string (string => $country, %options) || return;
+
+	if ($country =~ /^[a-z]{2}$/) {
+		$self->add_message(kind => 'warn', detail => 'country code should be uppercase', value => $country, suggested_value => uc($country), field => $field, class => $class);
+		$country = uc ($country);
+		if (! code2country($country)) {
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class);
+			return undef;
+		} else {
+			# ok
+		}
+	} elsif ($country =~ /^[A-Z]{2}$/) {
+		if (! code2country($country)) {
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class);
+			return undef;
+		} else {
+			# ok
+		}
+	} else {
+		my $code = country2code($country);
+		if ($code) {
+			$self->add_message(kind => 'err', detail => 'not exactly 2 uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class);
+		} else {
+			$self->add_message(kind => 'err', detail => 'not exactly 2 uppercase letters', value => $country, field => $field, class => $class);
+		}
 		return undef;
-	} elsif (! code2country($country)) {
-		$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', field => $field, class => $class);
+	}
+
+	return $country;
+}
+
+sub validate_country_n {
+	my ($self, %options) = @_;
+
+	my $country = $options{country};
+	my $field = $options{field};
+	my $class = $options{class};
+
+	$self->validate_string (string => $country, %options) || return;
+
+	if ($country =~ /^\d\d\d$/) {
+		my $country_validated = code2country($country, LOCALE_CODE_NUMERIC);
+		if (! $country_validated) {
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $country, field => $field, class => $class);
+			return undef;
+		} else {
+			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
+		}
+	} else {
+		my $code = country2code($country, LOCALE_CODE_NUMERIC);
+		if ($code) {
+			$self->add_message(kind => 'err', detail => 'not exactly 3 digits', value => $country, suggested_value => uc($code), field => $field, class => $class);
+		} else {
+			$self->add_message(kind => 'err', detail => 'not exactly 3 digits', value => $country, field => $field, class => $class);
+		}
 		return undef;
 	}
 
