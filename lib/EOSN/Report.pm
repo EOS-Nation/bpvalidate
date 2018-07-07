@@ -20,7 +20,7 @@ $icons{selected} = '<span class="icon is-medium has-text-info"><i class="fas fa-
 our %labels;
 $labels{general} = 'General Info';
 $labels{regproducer} = 'Regproducer';
-$labels{brand} = 'Branding';
+$labels{org} = 'Organization';
 $labels{endpoint} = 'Endpoints';
 $labels{ipv6} = 'IPv6';
 $labels{skip} = 'Skipped';

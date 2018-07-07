@@ -150,8 +150,6 @@ sub validate {
 sub run_validate {
 	my ($self) = @_;
 
-	my $name = $self->{properties}{owner};
-	my $key = $self->{properties}{producer_key};
 	my $url = $self->{properties}{url};
 	my $is_active = $self->{properties}{is_active};
 	my $location = $self->{properties}{location};
@@ -175,57 +173,97 @@ sub run_validate {
 
 	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
 
-	my $json = $self->validate_url(url => "$url/bp.json", field => 'BP info JSON URL', class => 'brand', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
+	my $json = $self->validate_url(url => "$url/bp.json", field => 'BP info JSON URL', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;
 
-	# ---------- check basic things
-
 	if (! ref $$json{org}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field => 'org', class => 'brand');
-		return undef;
-	}	
+		$self->add_message(kind => 'err', detail => 'not a object', field => 'org', class => 'org');
+	} else {
+		$self->check_org_location;
+		$self->check_org_misc;
+		$self->check_org_branding;
+		$self->check_org_social;
+	}
+
+	$self->check_nodes;
+}
+
+sub check_org_location {
+	my ($self) = @_;
+	my $json = $self->{results}{input};
+
 	if (! ref $$json{org}{location}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field =>'org.location', class => 'brand');
+		$self->add_message(kind => 'err', detail => 'not a object', field =>'org.location', class => 'org');
 		return undef;
 	}
 
-	$self->validate_location(location => $$json{org}{location}, field => "org.location", class => 'brand');
+	$self->validate_string(string => $$json{org}{location}{name}, field => 'org.location.name', class => 'org');
+	$self->validate_location(location => $$json{org}{location}, field => 'org.location', class => 'org');
+}
 
-	$self->validate_string(string => $$json{org}{location}{name}, field => 'org.location.name', class => 'brand');
-	$self->validate_string(string => $$json{org}{candidate_name}, field => 'org.candidate_name', class => 'brand');
-	$self->validate_email(string => $$json{org}{email}, field => 'org.email', class => 'brand');
-	$self->validate_string(string => $$json{producer_public_key}, field => 'producer_public_key', class => 'brand');
-	$self->validate_string(string => $$json{producer_account_name}, field => 'producer_account_name', class => 'brand');
-	$self->validate_country_a2(country => $$json{org}{location}{country}, field => 'org.location.country', class => 'brand');
+sub check_org_misc {
+	my ($self) = @_;
+	my $json = $self->{results}{input};
+	my $name = $self->{properties}{owner};
+	my $key = $self->{properties}{producer_key};
+
+	$self->validate_string(string => $$json{org}{candidate_name}, field => 'org.candidate_name', class => 'org');
+	$self->validate_email(string => $$json{org}{email}, field => 'org.email', class => 'org');
+	$self->validate_string(string => $$json{producer_public_key}, field => 'producer_public_key', class => 'org');
+	$self->validate_string(string => $$json{producer_account_name}, field => 'producer_account_name', class => 'org');
 
 	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
-		$self->add_message(kind => 'err', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'brand');
+		$self->add_message(kind => 'err', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'org');
 	}
 
 	if ($$json{producer_account_name} && $$json{producer_account_name} ne $name) {
-		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_account_name', class => 'brand');
+		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_account_name', class => 'org');
 	}
 
-	$self->validate_url(url => $$json{org}{website}, field => 'org.website', class => 'brand', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn');
-	$self->validate_url(url => $$json{org}{code_of_conduct}, field => 'org.code_of_conduct', class => 'brand', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn');
-	$self->validate_url(url => $$json{org}{ownership_disclosure}, field => 'org.ownership_disclosure', class => 'brand', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn');
-	$self->validate_url(url => $$json{org}{branding}{logo_256}, field => 'org.branding.logo_256', class => 'brand', content_type => 'png_jpg', add_to_list => 'resources/social_logo_256', dupe => 'warn');
-	$self->validate_url(url => $$json{org}{branding}{logo_1024}, field => 'org.branding.logo_1024', class => 'brand', content_type => 'png_jpg', add_to_list => 'resources/social_logo_1024', dupe => 'warn');
-	$self->validate_url(url => $$json{org}{branding}{logo_svg}, field => 'org.branding.logo_svg', class => 'brand', content_type => 'svg', add_to_list => 'resources/social_logo_svg', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{website}, field => 'org.website', class => 'org', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{code_of_conduct}, field => 'org.code_of_conduct', class => 'org', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{ownership_disclosure}, field => 'org.ownership_disclosure', class => 'org', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn');
+}
+
+sub check_org_branding {
+	my ($self) = @_;
+	my $json = $self->{results}{input};
+
+	if (! ref $$json{org}{branding}) {
+		$self->add_message(kind => 'err', detail => 'not a object', field =>'org.branding', class => 'org');
+		return;
+	}
+
+	$self->validate_url(url => $$json{org}{branding}{logo_256}, field => 'org.branding.logo_256', class => 'org', content_type => 'png_jpg', add_to_list => 'resources/social_logo_256', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{branding}{logo_1024}, field => 'org.branding.logo_1024', class => 'org', content_type => 'png_jpg', add_to_list => 'resources/social_logo_1024', dupe => 'warn');
+	$self->validate_url(url => $$json{org}{branding}{logo_svg}, field => 'org.branding.logo_svg', class => 'org', content_type => 'svg', add_to_list => 'resources/social_logo_svg', dupe => 'warn');
+}
+
+sub check_org_social {
+	my ($self) = @_;
+	my $json = $self->{results}{input};
+
+	if (! ref $$json{org}{social}) {
+		$self->add_message(kind => 'err', detail => 'not a object', field => 'org.social', class => 'org');
+		return undef;
+	}
 
 	foreach my $key (sort keys %{$$json{org}{social}}) {
 		my $value = $$json{org}{social}{$key};
 		if ($value =~ m#https?://#) {
-			$self->add_message(kind => 'err', detail => 'social media references must be relative', field => "org.social.$key", class => 'brand');
+			$self->add_message(kind => 'err', detail => 'social media references must be relative', field => "org.social.$key", class => 'org');
 		}
 	}
+}
 
-	# ---------- check nodes
+sub check_nodes {
+	my ($self) = @_;
+	my $json = $self->{results}{input};
 
 	if (! ref $$json{nodes}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field => 'nodes', class => 'brand');
+		$self->add_message(kind => 'err', detail => 'not a object', field => 'nodes', class => 'org');
 		return undef;
 	}	
 
@@ -239,7 +277,7 @@ sub run_validate {
 	my $peer_endpoint;
 	foreach my $node (@nodes) {
 		my $found_something = 0;
-		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'brand');
+		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'org');
 		my $node_type = $$node{node_type};
 
 		# ---------- check type of node
@@ -923,7 +961,7 @@ sub validate_location {
 	$return{longitude} = $longitude if (defined $longitude);
 
 	if ($country && $name && $latitude && $longitude) {
-		$self->add_message(kind => 'ok', detail => 'basic checks passed for location', field => $field, class => $class);
+		$self->add_message(kind => 'ok', detail => 'basic checks passed for location', value => "$country, $name", field => $field, class => $class);
 	}
 
 	return \%return;
@@ -941,18 +979,20 @@ sub validate_country_a2 {
 	if ($country =~ /^[a-z]{2}$/) {
 		$self->add_message(kind => 'warn', detail => 'country code should be uppercase', value => $country, suggested_value => uc($country), field => $field, class => $class);
 		$country = uc ($country);
-		if (! code2country($country)) {
+		my $country_validated = code2country($country);
+		if (! $country_validated) {
 			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class);
 			return undef;
 		} else {
-			# ok
+			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
 		}
 	} elsif ($country =~ /^[A-Z]{2}$/) {
-		if (! code2country($country)) {
+		my $country_validated = code2country($country);
+		if (! $country_validated) {
 			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class);
 			return undef;
 		} else {
-			# ok
+			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
 		}
 	} else {
 		my $code = country2code($country);
