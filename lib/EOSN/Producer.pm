@@ -156,6 +156,9 @@ sub run_validate {
 	my $is_active = $self->{properties}{is_active};
 	my $location = $self->{properties}{location};
 
+	$self->add_message(kind => 'info', detail => 'voting rank', value => $self->{rank}, class => 'general');
+	$self->{results}{rank} = $self->{rank};
+
 	if (! $is_active) {
 		$self->add_message(kind => 'skip', detail => 'producer is not active', class => 'regproducer');
 		return undef;

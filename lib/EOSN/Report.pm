@@ -15,8 +15,10 @@ $icons{ok} = '<span class="icon is-medium has-text-success"><i class="fas fa-lg 
 $icons{warn} = '<span class="icon is-medium has-text-warning"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{err} = '<span class="icon is-medium has-text-warning2"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{crit} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-stop"></i></span>';
+$icons{selected} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-certificate"></i></span>';
 
 our %labels;
+$labels{general} = 'General Info';
 $labels{regproducer} = 'Regproducer';
 $labels{brand} = 'Branding';
 $labels{endpoint} = 'Endpoints';
@@ -27,6 +29,7 @@ $labels{ok} = 'OK';
 $labels{warn} = 'Warning';
 $labels{err} = 'Error';
 $labels{crit} = 'Critical Error';
+$labels{selected} = 'Selected Block Producer';
 
 # --------------------------------------------------------------------------
 # Subroutines
@@ -177,10 +180,14 @@ sub sev_html {
 	my ($kind, $class) = @_;
 
 	my $html = $icons{$kind} || encode_entities ($kind);
-	my $labelc = $labels{$class} || $class;
 	my $labels = $labels{$kind} || $kind;
-	
-	$html =~ s/ / title="$labelc: $labels" /;
+
+	if ($class) {
+		my $labelc = $labels{$class} || $class;
+		$html =~ s/ / title="$labelc: $labels" /;
+	} else {
+		$html =~ s/ / title="$labels" /;
+	}
 	
 	return $html;
 }
