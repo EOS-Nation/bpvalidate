@@ -20,6 +20,7 @@ our %labels;
 $labels{regproducer} = 'Regproducer';
 $labels{brand} = 'Branding';
 $labels{endpoint} = 'Endpoints';
+$labels{ipv6} = 'IPv6';
 $labels{skip} = 'Skipped';
 $labels{info} = 'Information';
 $labels{ok} = 'OK';

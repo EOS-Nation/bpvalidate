@@ -9,6 +9,7 @@ use Data::Validate qw(is_integer is_numeric is_between);
 use Data::Validate::IP qw(is_public_ip);
 use IO::Socket;
 use Data::Dumper;
+use Net::DNS;
 use Date::Format qw(time2str);
 use Date::Parse qw(str2time);
 use Carp qw(confess);
@@ -321,7 +322,7 @@ sub validate_email {
 	my $string = $options{string};
 	my ($name, $host) = split (/@/, $string);
 
-	$self->validate_dns($host, $options{field}, $options{class}) || return;
+	$self->validate_mx($host, $options{field}, $options{class}) || return;
 }
 
 sub validate_string {
@@ -628,21 +629,30 @@ sub validate_connection {
 		return undef;
 	}
 
-	$host = $self->validate_ip_dns ($host, $field, $class);
-	if (! $host) {
+	my @hosts = $self->validate_ip_dns ($host, $field, $class);
+	if (! @hosts) {
 		return undef;
 	}
 
-	#print ">> check connection to [$host]:[$port]\n";
-	my $sh = new IO::Socket::INET (PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5);
-	if (! $sh) {
-		$self->add_message(kind => 'err', detail => 'cannot connect to peer', field => $field, class => $class, host => $host, port => $port);
+	# need to be able to connect to at least one host
+
+	my $success = 0;
+	foreach my $host (@hosts) {
+		#print ">> check connection to [$host]:[$port]\n";
+		my $sh = new IO::Socket::INET (PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5);
+		if ($sh) {
+			$success++;
+			close ($sh);
+		} else {
+			$self->add_message(kind => 'err', detail => 'cannot connect to peer', field => $field, class => $class, host => $host, port => $port);
+		}
+	}
+
+	if (! $success) {
 		return undef;
-	}	
-	close ($sh);
+	}
 
 	$self->add_to_list(host => $peer, %options) if ($options{add_to_list});
-
 	return 1;
 }
 
@@ -784,7 +794,7 @@ sub validate_ip_dns {
 		$self->add_message(kind => 'warn', detail => 'better to use DNS names instead of IP address', field => $field, class => $class, host => $host);
 		return $self->validate_ip($host, $field, $class);
 	} else {
-		return $self->validate_dns($host, $field, $class);
+		return $self->validate_dns([$host], $field, $class);
 	}
 }
 
@@ -800,18 +810,61 @@ sub validate_ip {
 }
 
 sub validate_dns {
-	my ($self, $value, $field, $class) = @_;
+	my ($self, $addresses, $field, $class) = @_;
 
-	#my ($name, $aliases, $addrtype, $length, @addrs) = gethostbyname($value);
-	my $addr = gethostbyname($value);
-	if ($addr) {
-		my ($a,$b,$c,$d) = unpack('C4',$addr);
-		$value = "$a.$b.$c.$d";
-		return $self->validate_ip($value, $field, $class);
+	# IPV6 checks are disabled for now
+	# just allow these lintes when you want to test IPv6... right now IPv4 address is required everywhere
+
+	my $res = new Net::DNS::Resolver;
+	$res->tcp_timeout(10);
+	my @results;
+
+	foreach my $address (@$addresses) {
+		my $reply6 = $res->query($address, "AAAA");
+
+		if ($reply6) {
+			foreach my $rr (grep {$_->type eq 'AAAA'} $reply6->answer) {
+#IPV6				push (@results, $rr->address);
+			}
+		} else {
+#IPV6			$self->add_message(kind => 'warn', detail => 'cannot resolve IPv6 DNS name', field => $field, class => 'ipv6', dns => $address);
+		}
+
+		my $reply4 = $res->query($address, "A");
+		if ($reply4) {
+			foreach my $rr (grep {$_->type eq 'A'} $reply4->answer) {
+				push (@results, $rr->address);
+			}
+		} else {
+#IPV6			$self->add_message(kind => 'warn', detail => 'cannot resolve IPv4 DNS name', field => $field, class => $class, dns => $address);
+		}
+	}
+
+	if (! @results) {
+		$self->add_message(kind => 'crit', detail => 'cannot resolve DNS name', field => $field, class => $class, dns => join (',', @$addresses));
+	}
+
+	return @results;
+}
+
+sub validate_mx {
+	my ($self, $address, $field, $class) = @_;
+
+	my $res = new Net::DNS::Resolver;
+	$res->tcp_timeout(10);
+	my @query;
+
+	my $reply = $res->query($address, "MX");
+	if ($reply) {
+		foreach my $rr (grep {$_->type eq 'MX'} $reply->answer) {
+			push (@query, $rr->exchange);
+		}
 	} else {
-		$self->add_message(kind => 'crit', detail => 'cannot resolve DNS name', field => $field, class => $class, dns => $value);
+		$self->add_message(kind => 'crit', detail => 'cannot resolve MX name', field => $field, class => $class, dns => $address);
 		return undef;
 	}
+
+	return $self->validate_dns(\@query, $field, $class);
 }
 
 sub validate_location {
@@ -901,9 +954,9 @@ sub validate_country_a2 {
 	} else {
 		my $code = country2code($country);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not exactly 2 uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class);
 		} else {
-			$self->add_message(kind => 'err', detail => 'not exactly 2 uppercase letters', value => $country, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, field => $field, class => $class);
 		}
 		return undef;
 	}
@@ -931,9 +984,9 @@ sub validate_country_n {
 	} else {
 		my $code = country2code($country, LOCALE_CODE_NUMERIC);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not exactly 3 digits', value => $country, suggested_value => uc($code), field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $country, suggested_value => uc($code), field => $field, class => $class);
 		} else {
-			$self->add_message(kind => 'err', detail => 'not exactly 3 digits', value => $country, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $country, field => $field, class => $class);
 		}
 		return undef;
 	}
