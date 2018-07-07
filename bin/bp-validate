@@ -33,15 +33,16 @@ my $versions = read_csv_hash ($versionsfile, 'hash');
 
 setup_jobs();
 run_validation();
+cleanup();
 write_results();
 
 # ---------------------------------------------------------------------------
 # Subroutines
 
 sub setup_jobs {
-	my %cache;
 	my $ua = eosn_ua();
 	my $dbh = do_connect('validate');
+	my $rank = 0;
 
 	my $producer_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_producers", limit => $limit);
 
@@ -50,13 +51,9 @@ sub setup_jobs {
 	}
 
 	foreach my $entry (@{$producer_list}) {
-		if ($cache{$$entry{owner}}) {
-			warn "$0: already processed: $$entry{owner}\n";
-			next;
-		}
-		$cache{$$entry{owner}} = 1;
+		$rank++;
 
-		$dbh->do('insert ignore into producer (producer, regproducer_data, status, reproducer_at) values (?, ?, ?, ?)', {}, $$entry{owner}, to_json ($entry), 'hold', time);
+		$dbh->do('insert ignore into producer (producer, status, regproducer_at) values (?, ?, ?)', {}, $$entry{owner}, 'hold', time);
 
 		my $state;
 		my $limit;
@@ -76,14 +73,11 @@ sub setup_jobs {
 			$limit = time;
 		}
 
-		$dbh->do('update producer set status = ?, reproducer_at = ?, regproducer_data = ? where producer = ? and (checked_at < ? or checked_at is null)', {}, $state, time, to_json ($entry), $$entry{owner}, $limit);
+		$dbh->do('update producer set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ? where producer = ? and (checked_at < ? or checked_at is null)', {}, $state, time, to_json ($entry), $rank, $$entry{owner}, $limit);
 	}
-
-	$dbh->do('delete from producer where checked_at < ?', {}, time - (3600 * 9));
 }
 
 sub run_validation {
-	my $dbh = do_connect('validate');
 	if ($max_processes == 1) {
 		doit (0);
 	} else {
@@ -99,6 +93,11 @@ sub run_validation {
 	}
 }
 
+sub cleanup {
+	my $dbh = do_connect('validate');
+	$dbh->do('delete from producer where regproducer_at < ?', {}, time - (3600 * 9));
+}
+
 sub doit {
 	my ($thread_id) = @_;
 
@@ -112,7 +111,7 @@ sub doit {
 		}
 		warn "[$thread_id] processing: $$entry{producer}\n" if ($debug);
 		my $ua = eosn_ua();
-		my $producer = new EOSN::Producer (ua => $ua, properties => from_json ($$entry{regproducer_data}), versions => $versions);
+		my $producer = new EOSN::Producer (ua => $ua, properties => from_json ($$entry{regproducer_data}), versions => $versions, rank => $$entry{regproducer_rank});
 		my $results = $producer->validate;
 		#print "[$thread_id] >>> ", to_json ($results), "\n";
 		$dbh->do('update producer set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?', {}, 'done', time, to_json ($results), $$entry{id});

@@ -15,8 +15,9 @@ $dbh->do("create table if not exists producer (id int(11) unsigned not null prim
 $dbh->do("$prefix producer varchar(20)");
 $dbh->do("$prefix thread_id int(11) unsigned");
 $dbh->do("$prefix status varchar(20)");
+$dbh->do("$prefix regproducer_rank int(11) unsigned");
 $dbh->do("$prefix regproducer_data text");
 $dbh->do("$prefix results_data text");
-$dbh->do("$prefix reproducer_at int(11)");
+$dbh->do("$prefix regproducer_at int(11)");
 $dbh->do("$prefix checked_at int(11)");
 $dbh->do("create unique index if not exists i_producer on producer (producer)");
