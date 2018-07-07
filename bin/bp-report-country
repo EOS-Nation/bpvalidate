@@ -1,0 +1,31 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::Report;
+use Data::Dumper;
+
+binmode(STDOUT, ":utf8");
+
+# ---------------------------------------------------------------------------
+# Main
+
+my $data = get_report_options ();
+my @report;
+my %sections;
+
+foreach my $entry (@{$$data{producers}}) {
+	my $producer = $$entry{regproducer}{owner};
+	my $country = $$entry{country};
+	next if ($producer ne 'eosnationftw');
+	print Dumper ($entry);
+	next if (! defined $country);
+	push (@{$sections{$country}}, ["%12s\n", $producer]);
+}
+
+foreach my $key (sort keys %sections) {
+	my $section = $sections{$key};
+	push (@report, {name => $key, rows => $section});
+}
+
+generate_report (data => $data, report => \@report, title => 'Country Report', columns => 1, outfile => "reports/country", text => 1, html => 1);

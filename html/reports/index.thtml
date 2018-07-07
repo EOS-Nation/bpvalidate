@@ -5,6 +5,7 @@ h1 = Validator Reports
 <li><a href="/reports/endpoints.html">Endpoints Report</a>
 <li><a href="/reports/resources.html">Resources Report</a>
 <li><a href="/reports/versions.html">API Versions Report</a>
+<li><a href="/reports/country.html">Country Report</a>
 <li><a href="/reports/config.html">Endpoints config.ini</a>
 <li><a href="/reports/errors.html">Errors Report</a>
 </ul>

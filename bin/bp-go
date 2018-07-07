@@ -18,6 +18,7 @@ do
 	bp-report-endpoints --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-resources --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-versions --input=/var/www/html/bps.json --out=/var/www/html/
+	bp-report-country --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-config --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/
 	echo "done"

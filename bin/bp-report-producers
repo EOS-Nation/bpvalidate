@@ -37,7 +37,7 @@ foreach my $entry (@{$$data{producers}}) {
 push (@report, "<div>\n");
 foreach my $entry (@{$$data{producers}}) {
 	my $producer = $$entry{regproducer}{owner};
-	my $rank = $$entry{rank};
+	my $rank = $$entry{info}{rank};
 	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
 
 	my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';

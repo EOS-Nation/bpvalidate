@@ -155,7 +155,7 @@ sub run_validate {
 	my $location = $self->{properties}{location};
 
 	$self->add_message(kind => 'info', detail => 'voting rank', value => $self->{rank}, class => 'general');
-	$self->{results}{rank} = $self->{rank};
+	$self->{results}{info}{rank} = $self->{rank};
 
 	if (! $is_active) {
 		$self->add_message(kind => 'skip', detail => 'producer is not active', class => 'regproducer');
@@ -169,7 +169,11 @@ sub run_validate {
 		return undef;
 	}
 
-	$self->validate_country_n (country => $location, field => 'main location', class => 'regproducer');
+	my $country = $self->validate_country_n (country => $location, field => 'main location', class => 'regproducer');
+	$country = code2country($country, LOCALE_CODE_NUMERIC);
+	if ($country) {
+		$self->{results}{info}{country} = $country;
+	}
 
 	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
 
