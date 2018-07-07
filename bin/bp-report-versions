@@ -23,17 +23,25 @@ foreach my $entry (@{$$data{producers}}) {
 	}
 }
 
+my %sections;
+
 foreach my $kind (sort keys %endpoints) {
 	next if (($kind ne 'api_http') && ($kind ne 'api_https') && ($kind ne 'api_https2'));
-	my @section;
 
 	foreach my $entry (@{$endpoints{$kind}}) {
 		my $producer = $$entry{producer};
 		my $address = $$entry{address};
-		push (@section, ["%s, %10s, %9s, %15s, %s\n", $$entry{producer}, hex('0x'. $$entry{response}{server_version}), $$entry{response}{server_version}, ($$entry{info}{server_version} || 'unknown'), $$entry{address}]);
+		my $key = $$entry{info}{server_version} || 'zzunknown';
+		push (@{$sections{$key}}, ["%12s, %9s, %10s, %9s, %s\n", $$entry{producer}, $kind, hex('0x'. $$entry{response}{server_version}), $$entry{response}{server_version}, $$entry{address}]);
 	}
 
-	push (@report, {name => $kind, rows => \@section});
+}
+
+foreach my $key (sort keys %sections) {
+	my $section = $sections{$key};
+	my $name = $key;
+	$name = 'Unknown' if ($key eq 'zzunknown');
+	push (@report, {name => $name, rows => $section});
 }
 
 generate_report (data => $data, report => \@report, title => 'API Versions Report', columns => 1, outfile => "reports/versions", text => 1, html => 1);
