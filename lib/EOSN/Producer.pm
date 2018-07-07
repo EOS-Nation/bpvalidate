@@ -170,9 +170,14 @@ sub run_validate {
 	}
 
 	my $country = $self->validate_country_n (country => $location, field => 'main location', class => 'regproducer');
-	$country = code2country($country, LOCALE_CODE_NUMERIC);
 	if ($country) {
-		$self->{results}{info}{country} = $country;
+		$self->{results}{info}{country_number} = $country;
+		my $countryx = code2country($country, LOCALE_CODE_NUMERIC);
+		if ($countryx) {
+			$self->{results}{info}{country_name} = $countryx;
+			my $alpha = country_code2code($country, LOCALE_CODE_NUMERIC, LOCALE_CODE_ALPHA_2);
+			$self->{results}{info}{country_alpha2} = $alpha;
+		}
 	}
 
 	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');

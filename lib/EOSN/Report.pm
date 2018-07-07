@@ -110,7 +110,7 @@ sub generate_report_thtml {
 	}
 
 	foreach my $section (@$report) {
-		my $name = $$section{name};
+		my $name = $$section{title} || $$section{name};
 		my $rows = $$section{rows};
 
 		push (@out, "<div class=\"card\">\n");
@@ -190,6 +190,12 @@ sub sev_html {
 	}
 	
 	return $html;
+}
+
+sub flag_html {
+	my ($alpha2) = @_;
+
+	return "<span class=\"flag-icon flag-icon-$alpha2\"></span>";
 }
 
 sub generate_message {
