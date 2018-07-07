@@ -735,7 +735,7 @@ sub validate_api_extra_check {
 
 	my $server_header = $res->header('Server');
 	if ($server_header && $server_header =~ /cloudflare/) {
-		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class, explanation => 'https://validate.eosnation.io/faq/#cloudflare');
 		$errors++;
 	}
 
@@ -783,18 +783,18 @@ sub validate_api_extra_check {
 	}
 
 	if (! $$result{server_version}) {
-		$self->add_message(kind => 'crit', detail => 'cannot find server_version in response; contact @mdarwin on telegram and provide the information', url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'cannot find server_version in response', url => $url, field => $field, class => $class);
 		$errors++;
 	}
 
 	if (! $$versions{$$result{server_version}}) {
-		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version}, url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version}, url => $url, field => $field, class => $class, explanation => 'https://validate.eosnation.io/faq/#versions');
 	} else {
 		my $name = $$versions{$$result{server_version}}{name};
 		my $current = $$versions{$$result{server_version}}{current};
 		$info{server_version} = $name;
 		if (! $current) {
-			$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class);
+			$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class, explanation => 'https://validate.eosnation.io/faq/#versions');
 		}
 	}
 
