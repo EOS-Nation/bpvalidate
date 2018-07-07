@@ -19,7 +19,7 @@ foreach my $entry (@{$$data{producers}}) {
 	my $producer = $$entry{regproducer}{owner};
 	foreach my $message (@{$$entry{messages}}) {
 		next if ($$message{kind} eq 'ok');
-		push (@section, ["%4s, %s\n", $$message{kind}, generate_message($message)]);
+		push (@section, ["%4s, %11s, %s\n", $$message{kind}, $$message{class}, generate_message($message)]);
 	}
 
 	if (@section) {
@@ -27,4 +27,4 @@ foreach my $entry (@{$$data{producers}}) {
 	}
 }
 
-generate_report (data => $data, report => \@report, title => 'Errors Report', columns => 1, icons => 1, outfile => "reports/errors", text => 1, html => 1);
+generate_report (data => $data, report => \@report, title => 'Errors Report', columns => 1, icons => 1, class => 2, outfile => "reports/errors", text => 1, html => 1);

@@ -28,15 +28,16 @@ foreach my $entry (@{$$data{producers}}) {
 	my $producer = $$entry{regproducer}{owner};
 	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
 	foreach my $message (@{$$entry{messages}}) {
-		push (@section, ["%4s, %s\n", $$message{kind}, generate_message($message)]);
+		push (@section, ["%4s, %11s, %s\n", $$message{kind}, $$message{class}, generate_message($message)]);
 	}
 
-	generate_report (data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, icons => 1, outfile => "producers/$producer", text => 1, html => 1);
+	generate_report (data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, icons => 1, class => 2, outfile => "producers/$producer", text => 1, html => 1);
 }
 
 push (@report, "<div>\n");
 foreach my $entry (@{$$data{producers}}) {
 	my $producer = $$entry{regproducer}{owner};
+	my $rank = $$entry{rank};
 	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
 
 	my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';
@@ -46,16 +47,36 @@ foreach my $entry (@{$$data{producers}}) {
 	} else {
 		$logo = "<figure class=\"image is-24x24\"></figure>\n";
 	}
-	my $sev = 'ok';
+	my %results;
+
 	foreach my $message (@{$$entry{messages}}) {
 		my $code = $$message{kind};
-		if ($sev{$code} > $sev{$sev}) {
-			$sev = $code;
+		my $class = $$message{class};
+		my $sev = $results{$class} || 'ok';
+		if ($sev{$code} >= $sev{$sev}) {
+			$results{$class} = $code;
 		}
 	}
-	my $sev_html = sev_html($sev);
-	push (@report, "<div style=\"display: inline-block; margin: 5px; padding: 5px; border: solid 1px; border-color: grey; width: 200px; height: 70px; overflow: hidden\">\n");
-	push (@report, "<div><div style=\"display: inline-block; width: 32px\">$logo</div><div style=\"display: inline-block; width: 124px\"></div><div style=\"display: inline-block; width: 32px\">$sev_html</div></div>\n");
+
+	foreach my $key (qw (regproducer org endpoint)) {
+		my $html = sev_html($results{$key} || 'skip', $key);
+		$results{$key} = $html;
+	}
+
+	my $selected = '';
+	if ($rank <= 21) {
+		$selected = sev_html('selected');
+	}
+
+	push (@report, "<div style=\"display: inline-block; margin: 5px; padding: 5px; border: solid 1px; border-color: grey; width: 220px; height: 70px; overflow: hidden\">\n");
+	push (@report, "<div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$selected</div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\"></div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$results{regproducer}</div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$results{org}</div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$results{endpoint}</div>\n");
+	push (@report, "</div>\n");
 	push (@report, "<div><a href=\"$producer.html\">$producer_name_html</a></div>\n");
 	push (@report, "</div>\n");
 }
