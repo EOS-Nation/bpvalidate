@@ -38,7 +38,9 @@ push (@report, "<div>\n");
 foreach my $entry (shuffle (@{$$data{producers}})) {
 	my $producer = $$entry{regproducer}{owner};
 	my $rank = $$entry{info}{rank};
+	my $votep = $$entry{info}{vote_percent};
 	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
+	my $country = $$entry{info}{country_alpha2};
 
 	my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';
 	$logo = '' if ($logo !~ m#https://#);
@@ -66,13 +68,20 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 	my $selected = '';
 	if ($rank <= 21) {
 		$selected = sev_html('selected');
+	} elsif ($votep > 0.5) {
+		$selected = sev_html('standby');
+	}
+
+	my $flag = '';
+	if ($country) {
+		$flag = flag_html($country);
 	}
 
 	push (@report, "<div style=\"display: inline-block; margin: 5px; padding: 5px; border: solid 1px; border-color: grey; width: 220px; height: 70px; overflow: hidden\">\n");
 	push (@report, "<div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\">$flag</div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$selected</div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\"></div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$results{regproducer}</div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$results{org}</div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$results{endpoint}</div>\n");
