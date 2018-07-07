@@ -31,7 +31,7 @@ $labels{warn} = 'Warning';
 $labels{err} = 'Error';
 $labels{crit} = 'Critical Error';
 $labels{selected} = 'Selected Block Producer';
-$labels{selected} = 'Paid Standby Block Producer';
+$labels{standby} = 'Paid Standby Block Producer';
 
 # --------------------------------------------------------------------------
 # Subroutines
