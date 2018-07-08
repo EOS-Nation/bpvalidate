@@ -511,6 +511,7 @@ sub validate_url {
 
 	my $req = HTTP::Request->new('GET', $url . $url_ext);
 	$req->header('Origin', 'https://example.com');
+	$req->header("Referer", 'https://validate.eosnation.io');
 	$self->ua->timeout($timeout * 2);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
