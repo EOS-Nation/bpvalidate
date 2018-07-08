@@ -617,7 +617,7 @@ sub validate_url {
 			my $message = $@;
 			chomp ($message);
 			$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
-			$self->add_message(kind => 'err', detail => 'invalid JSON error', value => $message, url => $url, field => $field, class => $class);
+			$self->add_message(kind => 'crit', detail => 'invalid JSON error', value => $message, url => $url, field => $field, class => $class);
 			#print $content;
 			return undef;
 		}
