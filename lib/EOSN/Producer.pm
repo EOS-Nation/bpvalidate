@@ -1027,10 +1027,13 @@ sub validate_country_n {
 
 	$self->validate_string (string => $country, %options) || return;
 
+	if ($country =~ /^\d\d?$/) {
+		$country = sprintf ("%03d", $country);
+	}
 	if ($country =~ /^\d\d\d$/) {
 		my $country_validated = code2country($country, LOCALE_CODE_NUMERIC);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $country, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class);
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1038,9 +1041,9 @@ sub validate_country_n {
 	} else {
 		my $code = country2code($country, LOCALE_CODE_NUMERIC);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $country, suggested_value => uc($code), field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, suggested_value => uc($code), field => $field, class => $class);
 		} else {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $country, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class);
 		}
 		return undef;
 	}
