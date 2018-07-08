@@ -21,7 +21,10 @@ $content_types{png_jpg} = ['image/png', 'image/jpeg'];
 $content_types{svg} = ['image/svg+xml'];
 $content_types{html} = ['text/html'];
 
-our @bad_urls = ('https://google.com', 'https://www.yahoo.com');
+our %bad_urls;
+$bad_urls{'https://google.com'} = {value => 'not a BP specific web site'};
+$bad_urls{'https://www.yahoo.com'} = {value => 'not a BP specific web site'};
+$bad_urls{'https://pbs.twimg.com'} = {value => 'does not load when tracking protection is enabled', explanation => 'https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection'};
 
 # --------------------------------------------------------------------------
 # Class Methods
@@ -412,9 +415,10 @@ sub validate_url {
 		return undef;
 	}
 
-	foreach my $test_url (@bad_urls) {
+	foreach my $test_url (keys %bad_urls) {
+		my $details = $bad_urls{$test_url};
 		if ($url =~ m#^$test_url#) {
-			$self->add_message(kind => 'crit', detail => 'URL not allowed', field => $field, class => $class, url => $url);
+			$self->add_message(kind => 'crit', detail => 'URL not allowed', field => $field, class => $class, url => $url, %$details);
 			return undef;
 		}
 	}
