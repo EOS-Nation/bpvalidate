@@ -186,7 +186,9 @@ sub run_validate {
 
 	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
 
-	my $json = $self->validate_url(url => "$url/bp.json", field => 'BP info JSON URL', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
+	my $xurl = $url;
+	$xurl =~ s#/$##;
+	my $json = $self->validate_url(url => "$xurl/bp.json", field => 'BP info JSON URL', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;
