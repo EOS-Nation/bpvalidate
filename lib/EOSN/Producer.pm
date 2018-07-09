@@ -750,17 +750,18 @@ sub validate_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	my $server_header = $res->header('Server');
-	if ($server_header && $server_header =~ /cloudflare/) {
-		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class, explanation => 'https://validate.eosnation.io/faq/#cloudflare');
-		$errors++;
-	}
-
-	my $cookie_header = $res->header('Set-Cookie');
-	if ($cookie_header) {
-		$self->add_message(kind => 'err', detail => 'API nodes must not set cookies', url => $url, field => $field, class => $class);
-		$errors++;
-	}
+# cookies should not be used for session routing, so this check is not required
+#	my $server_header = $res->header('Server');
+#	if ($server_header && $server_header =~ /cloudflare/) {
+#		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class, explanation => 'https://validate.eosnation.io/faq/#cloudflare');
+#		$errors++;
+#	}
+#
+#	my $cookie_header = $res->header('Set-Cookie');
+#	if ($cookie_header) {
+#		$self->add_message(kind => 'err', detail => 'API nodes must not set cookies', url => $url, field => $field, class => $class);
+#		$errors++;
+#	}
 
 	if ($ssl eq 'on') {
 		# LWP doesn't seem to support HTTP2, so make an extra call

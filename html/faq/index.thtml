@@ -24,6 +24,7 @@ If your version is missing, please generate a pull request or request it be adde
 
 <br>
 
+<!--
 <div class="card" id="cloudflare">
   <header class="card-header">
     <p class="card-header-title">
@@ -39,3 +40,4 @@ If every endpoint uses its own cookies, that's a hassle to deal with.
 </p>
   </div>
 </div>
+-->
