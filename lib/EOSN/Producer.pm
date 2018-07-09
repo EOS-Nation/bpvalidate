@@ -298,7 +298,7 @@ sub check_nodes {
 		# ---------- check type of node
 
 		if ($$node{is_producer}) {
-			$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query']", field => "node[$node_number].is_producer", class => 'endpoint');
+			$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].is_producer", class => 'endpoint');
 			if ($$node{is_producer} && (! exists $$node{node_type})) {
 				$node_type = 'producer';
 				$$node{node_type} = 'producer'; # set this to avoid the error message below
@@ -306,9 +306,9 @@ sub check_nodes {
 		}
 
 		if ((! exists $$node{node_type}) || (! defined $$node{node_type})) {
-			$self->add_message(kind => 'warn', detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query']", field => "node[$node_number]", class => 'endpoint');
-		} elsif (($$node{node_type} ne 'producer') && ($$node{node_type} ne 'full') && ($$node{node_type} ne 'query')) {
-			$self->add_message(kind => 'err', detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query']", field => "node[$node_number].node_type", class => 'endpoint');
+			$self->add_message(kind => 'warn', detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number]", class => 'endpoint');
+		} elsif (($$node{node_type} ne 'producer') && ($$node{node_type} ne 'full') && ($$node{node_type} ne 'query') && ($$node{node_type} ne 'seed')) {
+			$self->add_message(kind => 'err', detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].node_type", class => 'endpoint');
 		} else {
 			$node_type = $$node{node_type};
 		}
