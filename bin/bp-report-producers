@@ -84,7 +84,7 @@ foreach my $entry (@entries1, @entries2, @entries3) {
 		$flag = flag_html($country);
 	}
 
-	push (@report, "<div id=\"bp_$producer\" class=\"scorecard\">\n");
+	push (@report, "<div id=\"bp_$producer\" class=\"scorecard\" onclick=\"window.location.href='$producer.html'\">\n");
 	push (@report, "<div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\">$flag</div>\n");
@@ -93,7 +93,7 @@ foreach my $entry (@entries1, @entries2, @entries3) {
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$$msgsummary{org}</div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$$msgsummary{endpoint}</div>\n");
 	push (@report, "</div>\n");
-	push (@report, "<div><a href=\"$producer.html\">$producer_name_html</a></div>\n");
+	push (@report, "<div>$producer_name_html</div>\n");
 	push (@report, "</div>\n");
 }
 push (@report, "</div>\n");
