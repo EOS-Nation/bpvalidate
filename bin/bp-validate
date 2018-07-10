@@ -140,7 +140,7 @@ sub write_results {
 		meta => {generated_at => time2str("%C", time), maintainer => 'matthew@eosnation.io'},
 		producers => \@results
 	}, {
-		pretty => 1,
+		pretty => 0,
 		canonical => 1
 	});
 
