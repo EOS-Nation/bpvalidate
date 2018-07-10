@@ -196,8 +196,8 @@ sub run_validate {
 	if (! ref $$json{org}) {
 		$self->add_message(kind => 'err', detail => 'not a object', field => 'org', class => 'org');
 	} else {
-		$self->check_org_location;
 		$self->check_org_misc;
+		$self->check_org_location;
 		$self->check_org_branding;
 		$self->check_org_social;
 	}
@@ -229,17 +229,24 @@ sub check_org_misc {
 	$self->validate_string(string => $$json{producer_public_key}, field => 'producer_public_key', class => 'org');
 	$self->validate_string(string => $$json{producer_account_name}, field => 'producer_account_name', class => 'org');
 
+	if ($$json{producer_account_name} && $$json{producer_account_name} ne $name) {
+		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_account_name', class => 'org');
+	} else {
+		if ($$json{org}{candidate_name}) {
+			$self->{results}{info}{name} = $$json{org}{candidate_name};
+		}
+	}
+
 	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
 		$self->add_message(kind => 'err', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'org');
 	}
 
-	if ($$json{producer_account_name} && $$json{producer_account_name} ne $name) {
-		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_account_name', class => 'org');
-	}
 
 	$self->validate_url(url => $$json{org}{website}, field => 'org.website', class => 'org', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn');
 	$self->validate_url(url => $$json{org}{code_of_conduct}, field => 'org.code_of_conduct', class => 'org', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn');
 	$self->validate_url(url => $$json{org}{ownership_disclosure}, field => 'org.ownership_disclosure', class => 'org', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn');
+
+	return 1;
 }
 
 sub check_org_branding {

@@ -26,7 +26,7 @@ foreach my $entry (@{$$data{producers}}) {
 	my @section;
 
 	my $producer = $$entry{regproducer}{owner};
-	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
+	my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
 	foreach my $message (@{$$entry{messages}}) {
 		push (@section, ["%4s, %11s, %s\n", $$message{kind}, $$message{class}, generate_message($message)]);
 	}
@@ -39,7 +39,7 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 	my $producer = $$entry{regproducer}{owner};
 	my $rank = $$entry{info}{rank};
 	my $votep = $$entry{info}{vote_percent};
-	my $producer_name_html = encode_entities($$entry{input}{org}{candidate_name} || $$entry{regproducer}{owner});
+	my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
 	my $country = $$entry{info}{country_alpha2};
 
 	my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';
@@ -77,7 +77,7 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 		$flag = flag_html($country);
 	}
 
-	push (@report, "<div id=\"bp_$producer\" style=\"display: inline-block; margin: 5px; padding: 5px; border: solid 1px; border-color: grey; width: 230px; height: 70px; overflow: hidden\">\n");
+	push (@report, "<div id=\"bp_$producer\" class=\"scorecard\">\n");
 	push (@report, "<div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\">$flag</div>\n");
