@@ -5,10 +5,11 @@ use strict;
 use EOSN::Report;
 use HTML::Entities;
 use List::Util qw(shuffle);
+use Date::Format qw(time2str);
 
 binmode(STDOUT, ":utf8");
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 # Main
 
 my $data = get_report_options ();
@@ -66,10 +67,10 @@ foreach my $entry (@entries1, @entries2, @entries3) {
 	}
 	my %results;
 
-	my $msgsummary = $$entry{message_summary};
+	my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
 	foreach my $key (qw (regproducer org endpoint)) {
-		my $html = sev_html($$msgsummary{$key} || 'skip', $key);
-		$$msgsummary{$key} = $html;
+		my $html = sev_html($msgsummary{$key} || 'skip', $key);
+		$msgsummary{$key} = $html;
 	}
 
 	my $selected = '';
@@ -89,9 +90,9 @@ foreach my $entry (@entries1, @entries2, @entries3) {
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\">$flag</div>\n");
 	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$selected</div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$$msgsummary{regproducer}</div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$$msgsummary{org}</div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$$msgsummary{endpoint}</div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{regproducer}</div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{org}</div>\n");
+	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{endpoint}</div>\n");
 	push (@report, "</div>\n");
 	push (@report, "<div>$producer_name_html</div>\n");
 	push (@report, "</div>\n");
@@ -99,3 +100,35 @@ foreach my $entry (@entries1, @entries2, @entries3) {
 push (@report, "</div>\n");
 
 write_report_thtml (content => \@report, title => 'Producer Scorecard', outfile => "producers/index");
+
+
+my @filter;
+foreach my $entry (@entries1, @entries2, @entries3) {
+	my $producer = $$entry{regproducer}{owner};
+	my $rank = $$entry{info}{rank};
+	my $votep = $$entry{info}{vote_percent};
+
+	my %results;
+	$results{name} = $producer;
+	if ($rank <= 21) {
+		push (@{$results{tags}}, 'top21');
+		push (@{$results{tags}}, 'paid');
+	} elsif ($votep > 0.5) {
+		push (@{$results{tags}}, 'paid');
+	}
+	foreach my $key (qw (regproducer org endpoint)) {
+		push (@{$results{tags}}, $key) if (exists  $$entry{message_summary}{$key} && $$entry{message_summary}{$key} eq 'ok');
+	}
+
+	push (@filter, \%results);
+}
+
+my $final_result = to_json ({
+	meta => {generated_at => time2str("%C", time), maintainer => 'matthew@eosnation.io'},
+	producers => \@filter
+}, {
+	pretty => 0,
+	canonical => 1
+});
+
+report_write_file("producers/filter.json", $final_result);
