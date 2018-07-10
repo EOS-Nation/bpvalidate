@@ -142,12 +142,39 @@ sub validate {
 	my $start_time = time;
 	$self->run_validate;
 	my $end_time = time;
+	$self->summarize_messages;
 
-	$self->{results}{messages} = $self->messages;
 	$self->{results}{meta}{generated_at} = time2str("%C", time);
 	$self->{results}{meta}{elapsed_time} = $end_time - $start_time;
 
 	return $self->{results};
+}
+
+sub summarize_messages {
+	my ($self) = @_;
+
+	my %sev;
+	$sev{skip} = 6;
+	$sev{crit} = 5;
+	$sev{err} = 4;
+	$sev{warn} = 3;
+	$sev{info} = 2;
+	$sev{ok} = 1;
+
+	$self->{results}{messages} = $self->messages;
+
+	my %results;
+
+	foreach my $message (@{$self->{results}{messages}}) {
+		my $code = $$message{kind};
+		my $class = $$message{class};
+		my $sev = $results{$class} || 'ok';
+		if ($sev{$code} >= $sev{$sev}) {
+			$results{$class} = $code;
+		}
+	}
+
+	$self->{results}{message_summary} = \%results;
 }
 
 sub run_validate {
