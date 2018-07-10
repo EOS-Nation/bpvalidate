@@ -89,7 +89,7 @@ sub generate_report_txt {
 		push (@out, "\n");
 	}
 
-	write_file ($outdir_base . "/$outfile.txt", @out);
+	report_write_file ("$outfile.txt", @out);
 }
 
 sub generate_report_thtml {
@@ -175,7 +175,7 @@ sub write_report_thtml {
 	push (@out, "\n");
 	push (@out, @$content);
 
-	write_file ($outdir_base . "/$outfile.thtml", @out);
+	report_write_file ("$outfile.thtml", @out);
 }
 
 sub sev_html {
@@ -240,6 +240,12 @@ sub generate_message {
 	$detail .= "; see $explanation" if ($explanation);
 
 	return $detail;
+}
+
+sub report_write_file {
+	my ($filename, @out) = @_;
+
+	write_file ($outdir_base . "/" . $filename, @out);
 }
 
 1;
