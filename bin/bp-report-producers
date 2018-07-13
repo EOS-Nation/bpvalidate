@@ -99,9 +99,6 @@ foreach my $entry (@entries1, @entries2, @entries3) {
 }
 push (@report, "</div>\n");
 
-write_report_thtml (content => \@report, title => 'Producer Scorecard', outfile => "producers/index");
-
-
 my @filter;
 foreach my $entry (@entries1, @entries2, @entries3) {
 	my $producer = $$entry{regproducer}{owner};
@@ -110,14 +107,21 @@ foreach my $entry (@entries1, @entries2, @entries3) {
 
 	my %results;
 	$results{name} = $producer;
+
 	if ($rank <= 21) {
 		push (@{$results{tags}}, 'top21');
-		push (@{$results{tags}}, 'paid');
 	} elsif ($votep > 0.5) {
 		push (@{$results{tags}}, 'paid');
+	} else {
+		push (@{$results{tags}}, 'notpaid');
 	}
+
 	foreach my $key (qw (regproducer org endpoint)) {
-		push (@{$results{tags}}, $key) if (exists  $$entry{message_summary}{$key} && $$entry{message_summary}{$key} eq 'ok');
+		if (exists $$entry{message_summary}{$key} && $$entry{message_summary}{$key} eq 'ok') {
+				push (@{$results{tags}}, $key);
+			} else {
+				push (@{$results{tags}}, $key . 'x');
+			}
 	}
 
 	push (@filter, \%results);
@@ -131,4 +135,7 @@ my $final_result = to_json ({
 	canonical => 1
 });
 
-report_write_file("producers/filter.json", $final_result);
+push (@report, "<script>\nvar filterData = $final_result\n</script>\n");
+#report_write_file("producers/filter.json", $final_result);
+
+write_report_thtml (content => \@report, title => 'Producer Scorecard', outfile => "producers/index");
