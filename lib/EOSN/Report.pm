@@ -236,8 +236,16 @@ sub generate_message {
 	$detail .= " for host=<$host>" if ($host);
 	$detail .= " for ip=<$ip>" if ($ip);
 	$detail .= " for dns=<$dns>" if ($dns);
-	$detail .= " for port=<$port>" if ($port);
-	$detail .= "; see $explanation" if ($explanation);
+	if ($host || $ip || $dns) {
+		$detail .= " for port=<$port>" if ($port);
+	} else {
+		$detail .= " and port=<$port>" if ($port);
+	}
+	if ($explanation =~ m#^https?://#) {
+		$detail .= "; see $explanation" if ($explanation);
+	} else {
+		$detail .= "; $explanation" if ($explanation);
+	}
 
 	return $detail;
 }
