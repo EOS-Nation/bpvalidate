@@ -1033,7 +1033,7 @@ sub validate_country_a2 {
 		$country = uc ($country);
 		my $country_validated = code2country($country);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1041,7 +1041,7 @@ sub validate_country_a2 {
 	} elsif ($country =~ /^[A-Z]{2}$/) {
 		my $country_validated = code2country($country);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1049,9 +1049,9 @@ sub validate_country_a2 {
 	} else {
 		my $code = country2code($country);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 		} else {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 		}
 		return undef;
 	}
@@ -1074,7 +1074,7 @@ sub validate_country_n {
 	if ($country =~ /^\d\d\d$/) {
 		my $country_validated = code2country($country, LOCALE_CODE_NUMERIC);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1082,9 +1082,9 @@ sub validate_country_n {
 	} else {
 		my $code = country2code($country, LOCALE_CODE_NUMERIC);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, suggested_value => uc($code), field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, suggested_value => uc($code), field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 		} else {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 		}
 		return undef;
 	}
