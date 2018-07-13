@@ -241,10 +241,12 @@ sub generate_message {
 	} else {
 		$detail .= " and port=<$port>" if ($port);
 	}
-	if ($explanation =~ m#^https?://#) {
-		$detail .= "; see $explanation" if ($explanation);
-	} else {
-		$detail .= "; $explanation" if ($explanation);
+	if ($explanation) {
+		if ($explanation =~ m#^https?://#) {
+			$detail .= "; see $explanation";
+		} else {
+			$detail .= "; $explanation";
+		}
 	}
 
 	return $detail;
