@@ -642,19 +642,10 @@ sub validate_url {
 		if ($content =~ /^\xEF\xBB\xBF/) {
 			$self->add_message(kind => 'err', detail => 'remove BOM (byte order mark) from start of JSON', url => $url, field => $field, class => $class);
 			$content =~ s/^\xEF\xBB\xBF//;
-		}			
-		eval {
-			$json = from_json ($content, {utf8 => 1});
-		};
-
-		if ($@) {
-			my $message = $@;
-			chomp ($message);
-			$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
-			$self->add_message(kind => 'crit', detail => 'invalid JSON error', value => $message, url => $url, field => $field, class => $class);
-			#print $content;
-			return undef;
 		}
+
+		$json = $self->get_json ($content, url => $url, field => $field, class => $class) || return undef;
+
 	} elsif ($content_type eq 'png_jpg') {
 	} elsif ($content_type eq 'svg') {
 	} elsif ($content_type eq 'html') {
@@ -850,7 +841,10 @@ sub validate_api_extra_check {
 		}
 	}
 
-	if (! $self->test_patreonous ($url, $field, $class)) {
+	if (! $self->test_patreonous (url => $url, field => $field, class => $class)) {
+		$errors++;
+	}
+	if (! $self->test_error_message (url => $url, field => $field, class => $class)) {
 		$errors++;
 	}
 
@@ -1093,10 +1087,10 @@ sub validate_country_n {
 }
 
 sub test_patreonous {
-	my ($self, $base_url, $field, $class) = @_;
-	my $url = "$base_url/v1/chain/get_table_rows";
+	my ($self, %options) = @_;
+	$options{url} .= "/v1/chain/get_table_rows";
 
-	my $req = HTTP::Request->new('POST', $url, undef, '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}');
+	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1104,7 +1098,29 @@ sub test_patreonous {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => 'invalid patreonous filter message', value => $status_message, field => $field, class => $class, url => $url, explanation => 'https://github.com/EOSIO/patroneos/issues/36');
+		$self->add_message(kind => 'crit', detail => 'invalid patreonous filter message', value => $status_message, explanation => 'https://github.com/EOSIO/patroneos/issues/36', %options);
+		return undef;
+	}
+
+	return 1;
+}
+
+sub test_error_message {
+	my ($self, %options) = @_;
+	$options{url} .= '/v1/chain/validate_error_message';
+
+	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true}');
+	$self->ua->timeout(10);
+	my $res = $self->ua->request($req);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $content = $res->content;
+
+	my $json = $self->get_json ($content, %options) || return undef;
+
+	if (scalar (@{$$json{error}{details}}) == 0) {
+		$self->add_message(kind => 'err', detail => 'detailed error messages not returned', explanation => 'edit config.ini to set verbose-http-errors = true', %options);
 		return undef;
 	}
 
@@ -1161,6 +1177,27 @@ sub add_to_list {
 	push (@{$self->{results}{output}{$section}{$list}}, \%data);
 
 	$self->add_message(kind => 'ok', detail => 'basic checks passed', resource => $options{add_to_list}, url => $host, field => $field, class => $class);
+}
+
+sub get_json {
+	my ($self, $content, %options) = @_;
+
+	my $json;
+
+	eval {
+		$json = from_json ($content, {utf8 => 1});
+	};
+
+	if ($@) {
+		my $message = $@;
+		chomp ($message);
+		$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
+		$self->add_message(kind => 'crit', detail => 'invalid JSON error', value => $message, %options);
+		#print $content;
+		return undef;
+	}
+
+	return $json;
 }
 
 1;
