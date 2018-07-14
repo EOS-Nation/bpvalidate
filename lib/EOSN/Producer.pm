@@ -895,10 +895,10 @@ sub validate_ip {
 
 	if (! is_public_ip($ip)) {
 		$self->add_message(kind => 'crit', detail => 'not a valid ip address', field => $field, class => $class, ip => $ip);
-		return undef;
+		return ();
 	}
 
-	return $ip;
+	return ($ip);
 }
 
 sub validate_dns {
