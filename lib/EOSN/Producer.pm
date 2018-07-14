@@ -367,7 +367,7 @@ sub check_nodes {
 
 		# ---------- check type of node
 
-		if ($$node{is_producer}) {
+		if (exists $$node{is_producer}) {
 			$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].is_producer", class => 'endpoint');
 			if ($$node{is_producer} && (! exists $$node{node_type})) {
 				$node_type = 'producer';
