@@ -322,32 +322,14 @@ sub check_nodes {
 	};
 
 	my $node_number = 0;
-	my $api_endpoint;
-	my $ssl_endpoint;
-	my $peer_endpoint;
-	my $bnet_endpoint;
+	my $api_endpoint = 0;
+	my $ssl_endpoint = 0;
+	my $peer_endpoint = 0;
+	my $bnet_endpoint = 0;
 	foreach my $node (@nodes) {
 		my $found_something = 0;
 		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'org');
 		my $node_type = $$node{node_type};
-
-		# ---------- check type of node
-
-		if ($$node{is_producer}) {
-			$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].is_producer", class => 'endpoint');
-			if ($$node{is_producer} && (! exists $$node{node_type})) {
-				$node_type = 'producer';
-				$$node{node_type} = 'producer'; # set this to avoid the error message below
-			}
-		}
-
-		if ((! exists $$node{node_type}) || (! defined $$node{node_type})) {
-			$self->add_message(kind => 'warn', detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number]", class => 'endpoint');
-		} elsif (($$node{node_type} ne 'producer') && ($$node{node_type} ne 'full') && ($$node{node_type} ne 'query') && ($$node{node_type} ne 'seed')) {
-			$self->add_message(kind => 'err', detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].node_type", class => 'endpoint');
-		} else {
-			$node_type = $$node{node_type};
-		}
 
 		# ---------- check endpoints
 
@@ -383,15 +365,44 @@ sub check_nodes {
 			}
 		}
 
-		# ---------- check if something was found and compare to node type
+		# ---------- check type of node
 
-		if (! defined $node_type) {
-			# cannot check
+		if ($$node{is_producer}) {
+			$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].is_producer", class => 'endpoint');
+			if ($$node{is_producer} && (! exists $$node{node_type})) {
+				$node_type = 'producer';
+			}
+		}
+
+		if (! $node_type) {
+			$self->add_message(kind => 'warn', detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number]", class => 'endpoint');
 		} elsif ($node_type eq 'producer') {
 			if ($found_something) {
 				$self->add_message(kind => 'warn', detail => 'endpoints provided (producer should be private)', field => "node[$node_number]", class => 'endpoint');
 			}
+		} elsif ($node_type eq 'seed') {
+			if (! $peer_endpoint) {
+				$self->add_message(kind => 'warn', detail => 'no peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+			}
+			if ($api_endpoint) {
+				$self->add_message(kind => 'warn', detail => 'extranious API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+			}
+		} elsif ($node_type eq 'query') {
+			if ($peer_endpoint) {
+				$self->add_message(kind => 'warn', detail => 'extranious peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+			}
+			if (! $api_endpoint) {
+				$self->add_message(kind => 'warn', detail => 'no API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+			}
+		} elsif ($node_type eq 'full') {
+			if (! $peer_endpoint) {
+				$self->add_message(kind => 'warn', detail => 'no peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+			}
+			if (! $api_endpoint) {
+				$self->add_message(kind => 'warn', detail => 'no API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+			}
 		} else {
+			$self->add_message(kind => 'err', detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].node_type", class => 'endpoint');
 			if (! $found_something) {
 				$self->add_message(kind => 'warn', detail => 'no endpoints provided (useless section)', field => "node[$node_number]", class => 'endpoint');
 			}
@@ -777,6 +788,7 @@ sub validate_api_extra_check {
 	my $url = $options{url};
 	my $field = $options{field};
 	my $class = $options{class};
+	my $node_type = $options{node_type};
 	my $ssl = $options{ssl} || 'either'; # either, on, off
 	my $url_ext = $options{url_ext} || '';
 
@@ -787,13 +799,13 @@ sub validate_api_extra_check {
 # cookies should not be used for session routing, so this check is not required
 #	my $server_header = $res->header('Server');
 #	if ($server_header && $server_header =~ /cloudflare/) {
-#		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class, explanation => 'https://validate.eosnation.io/faq/#cloudflare');
+#		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class, node_type => $node_type, explanation => 'https://validate.eosnation.io/faq/#cloudflare');
 #		$errors++;
 #	}
 #
 #	my $cookie_header = $res->header('Set-Cookie');
 #	if ($cookie_header) {
-#		$self->add_message(kind => 'err', detail => 'API nodes must not set cookies', url => $url, field => $field, class => $class);
+#		$self->add_message(kind => 'err', detail => 'API nodes must not set cookies', url => $url, field => $field, class => $class, node_type => $node_type);
 #		$errors++;
 #	}
 
@@ -803,23 +815,23 @@ sub validate_api_extra_check {
 		if ($check_http2 =~ m#HTTP/2 200#) {
 			$options{add_to_list} .= '2';
 		} else {
-			$self->add_message(kind => 'warn', detail => 'HTTPS API nodes would have better performance by using HTTP/2', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
+			$self->add_message(kind => 'warn', detail => 'HTTPS API nodes would have better performance by using HTTP/2', url => $url, field => $field, class => $class, node_type => $node_type, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
 		}
 	}
 
 	if (! $$result{chain_id}) {
-		$self->add_message(kind => 'crit', detail => 'cannot find chain_id in response', url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'cannot find chain_id in response', url => $url, field => $field, class => $class, node_type => $node_type);
 		$errors++;
 	}
 
 	if ($$result{chain_id} ne 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906') {
-		$self->add_message(kind => 'crit', detail => 'invalid chain_id', value => $$result{chain_id}, url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'invalid chain_id', value => $$result{chain_id}, url => $url, field => $field, class => $class, node_type => $node_type);
 		$errors++;
 	}
 
 
 	if (! $$result{head_block_time}) {
-		$self->add_message(kind => 'crit', detail => 'cannot find head_block_time in response', url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'cannot find head_block_time in response', url => $url, field => $field, class => $class, node_type => $node_type);
 		$errors++;
 	}
 
@@ -829,35 +841,39 @@ sub validate_api_extra_check {
 	if ($delta > 10) {
 		my $val = Time::Seconds->new($delta);
 		my $deltas = $val->pretty;
-		#$self->add_message(kind => 'crit', detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}> delta=<$deltas>", url => $url, field => $field, class => $class);
-		$self->add_message(kind => 'crit', detail => 'last block is not up-to-date', value => $$result{head_block_time}, url => $url, field => $field, class => $class);
+		#$self->add_message(kind => 'crit', detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}> delta=<$deltas>", url => $url, field => $field, class => $class, node_type => $node_type);
+		$self->add_message(kind => 'crit', detail => 'last block is not up-to-date', value => $$result{head_block_time}, url => $url, field => $field, class => $class, node_type => $node_type);
 		$errors++;
 	}
 
 	if (! $$result{server_version}) {
-		$self->add_message(kind => 'crit', detail => 'cannot find server_version in response', url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'cannot find server_version in response', url => $url, field => $field, class => $class, node_type => $node_type);
 		$errors++;
 	}
 
 	if (! $$versions{$$result{server_version}}) {
-		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version}, url => $url, field => $field, class => $class, explanation => 'https://validate.eosnation.io/faq/#versions');
+		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version}, url => $url, field => $field, class => $class, node_type => $node_type, explanation => 'https://validate.eosnation.io/faq/#versions');
 	} else {
 		my $name = $$versions{$$result{server_version}}{name};
 		my $current = $$versions{$$result{server_version}}{current};
 		$info{server_version} = $name;
 		if (! $current) {
-			$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class, explanation => 'https://validate.eosnation.io/faq/#versions');
+			$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class, node_type => $node_type, explanation => 'https://validate.eosnation.io/faq/#versions');
 		}
 	}
 
-	if (! $self->test_patreonous (url => $url, field => $field, class => $class)) {
+	if (! $self->test_patreonous (url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
-	if (! $self->test_error_message (url => $url, field => $field, class => $class)) {
+	if (! $self->test_error_message (url => $url, field => $field, class => $class, node_type => $node_type)) {
 		#don't flag this as error right now; change after 2018-07-18
 		#$errors++;
 	}
-	if (! $self->test_abi_serializer (url => $url, field => $field, class => $class)) {
+	if (! $self->test_abi_serializer (url => $url, field => $field, class => $class, node_type => $node_type)) {
+		#don't flag this as error right now; change after 2018-07-19
+		#$errors++;
+	}
+	if (! $self->test_history_actions (url => $url, field => $field, class => $class, node_type => $node_type)) {
 		#don't flag this as error right now; change after 2018-07-19
 		#$errors++;
 	}
@@ -1119,6 +1135,8 @@ sub test_patreonous {
 		return undef;
 	}
 
+	$self->add_message(kind => 'ok', detail => 'patreonous filter test passed', %options);
+
 	return 1;
 }
 
@@ -1141,6 +1159,8 @@ sub test_error_message {
 		return undef;
 	}
 
+	$self->add_message(kind => 'ok', detail => 'verbose errors test passed', %options);
+
 	return 1;
 }
 
@@ -1159,6 +1179,29 @@ sub test_abi_serializer {
 		$self->add_message(kind => 'err', detail => 'error retriving large block', value => $status_message, explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000', %options);
 		return undef;
 	}
+
+	$self->add_message(kind => 'ok', detail => 'abi serializer test passed', %options);
+
+	return 1;
+}
+
+sub test_history_actions {
+	my ($self, %options) = @_;
+	$options{url} .= '/v1/history/get_actions';
+
+	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true, "pos":-1, "offset":-20, "account_name": "eosio.ram"}');
+	$self->ua->timeout(10);
+	my $res = $self->ua->request($req);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+
+	if (! $res->is_success) {
+		$self->add_message(kind => 'err', detail => 'error retriving actions history', value => $status_message, explanation => 'edit config.ini to turn on history and replay all blocks', %options);
+		return undef;
+	}
+
+	$self->add_message(kind => 'ok', detail => 'basic history test passed', %options);
 
 	return 1;
 }
