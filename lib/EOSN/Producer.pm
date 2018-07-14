@@ -401,7 +401,7 @@ sub check_nodes {
 	}
 
 	if (! $api_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided, class => 'endpoint');
+		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided', class => 'endpoint');
 	} elsif (! $ssl_endpoint) {
 		$self->add_message(kind => 'warn', detail => 'no valid HTTPS API endpoints provided', class => 'endpoint');
 	}
