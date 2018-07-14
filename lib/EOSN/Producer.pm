@@ -845,7 +845,8 @@ sub validate_api_extra_check {
 		$errors++;
 	}
 	if (! $self->test_error_message (url => $url, field => $field, class => $class)) {
-		$errors++;
+		#don't flag this as error right now; change after 2018-07-18
+		#$errors++;
 	}
 
 	if ($errors) {
