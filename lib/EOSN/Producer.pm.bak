@@ -151,7 +151,7 @@ sub validate {
 }
 
 sub summarize_messages {
-	my ($self) = @_;
+	my ($self) @_
 
 	my %sev;
 	$sev{skip} = 6;
@@ -163,19 +163,16 @@ sub summarize_messages {
 
 	$self->{results}{messages} = $self->messages;
 
-	my %results;
-
-	foreach my $message (@{$self->{results}{messages}}) {
-		my $code = $$message{kind};
-		my $class = $$message{class};
-		my $sev = $results{$class} || 'ok';
-		if ($sev{$code} >= $sev{$sev}) {
-			$results{$class} = $code;
-		}
-	}
-
-	$self->{results}{message_summary} = \%results;
+        foreach my $message (@{$self->{results}{messages}}) {
+                my $code = $$message{kind};
+                my $class = $$message{class};
+                my $sev = $results{$class} || 'ok';
+                if ($sev{$code} >= $sev{$sev}) {
+                        $results{$class} = $code;
+                }
+        }
 }
+
 
 sub run_validate {
 	my ($self) = @_;
@@ -323,9 +320,7 @@ sub check_nodes {
 
 	my $node_number = 0;
 	my $api_endpoint;
-	my $ssl_endpoint;
 	my $peer_endpoint;
-	my $bnet_endpoint;
 	foreach my $node (@nodes) {
 		my $found_something = 0;
 		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'org');
@@ -353,7 +348,7 @@ sub check_nodes {
 
 		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
 			$found_something++;
-			my $result = $self->validate_api(url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
+			my $result = $self->validate_api(url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_field => $node_type, location => $location);
 			if ($result) {
 				$api_endpoint++;
 			}
@@ -361,25 +356,23 @@ sub check_nodes {
 
 		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
 			$found_something++;
-			my $result = $self->validate_api(url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
+			my $result = $self->validate_api(url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_field => $node_type, location => $location);
 			if ($result) {
 				$api_endpoint++;
-				$ssl_endpoint++;
 			}
 		}
 
 		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
 			$found_something++;
-			if ($self->validate_connection(peer => $$node{p2p_endpoint}, field => "node[$node_number].p2p_endpoint", connection_field => 'p2p', add_to_list => 'nodes/p2p', node_type => $node_type, location => $location)) {
+			if ($self->validate_connection(peer => $$node{p2p_endpoint}, field => "node[$node_number].p2p_endpoint", connection_field => 'p2p', add_to_list => 'nodes/p2p', node_field => $node_type, location => $location)) {
 				$peer_endpoint++;
 			}
 		}
 
 		if ((defined $$node{bnet_endpoint}) && ($$node{bnet_endpoint} ne '')) {
 			$found_something++;
-			if ($self->validate_connection(peer => $$node{bnet_endpoint}, field => "node[$node_number].bnet_endpoint", connection_field => 'bnet', add_to_list => 'nodes/bnet', node_type => $node_type, location => $location)) {
+			if ($self->validate_connection(peer => $$node{bnet_endpoint}, field => "node[$node_number].bnet_endpoint", connection_field => 'bnet', add_to_list => 'nodes/bnet', node_field => $node_type, location => $location)) {
 				$peer_endpoint++;
-				$bnet_endpoint++;
 			}
 		}
 
@@ -401,15 +394,10 @@ sub check_nodes {
 	}
 
 	if (! $api_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided, class => 'endpoint');
-	} elsif (! $ssl_endpoint) {
-		$self->add_message(kind => 'warn', detail => 'no valid HTTPS API endpoints provided', class => 'endpoint');
+		$self->add_message(kind => 'crit', detail => 'no API endpoints provided (that do not have errors noted) of either api_endpoint or ssl_endpoint', class => 'endpoint');
 	}
-
 	if (! $peer_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no valid P2P or BNET endpoints provided', class => 'endpoint');
-	} elsif (! $bnet_endpoint) {
-		$self->add_message(kind => 'warn', detail => 'no valid BNET endpoints provided', class => 'endpoint');
+		$self->add_message(kind => 'crit', detail => 'no P2P or BNET endpoints provided (that do not have errors noted)', class => 'endpoint');
 	}
 }
 
@@ -651,10 +639,19 @@ sub validate_url {
 		if ($content =~ /^\xEF\xBB\xBF/) {
 			$self->add_message(kind => 'err', detail => 'remove BOM (byte order mark) from start of JSON', url => $url, field => $field, class => $class);
 			$content =~ s/^\xEF\xBB\xBF//;
+		}			
+		eval {
+			$json = from_json ($content, {utf8 => 1});
+		};
+
+		if ($@) {
+			my $message = $@;
+			chomp ($message);
+			$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
+			$self->add_message(kind => 'crit', detail => 'invalid JSON error', value => $message, url => $url, field => $field, class => $class);
+			#print $content;
+			return undef;
 		}
-
-		$json = $self->get_json ($content, url => $url, field => $field, class => $class) || return undef;
-
 	} elsif ($content_type eq 'png_jpg') {
 	} elsif ($content_type eq 'svg') {
 	} elsif ($content_type eq 'html') {
@@ -850,16 +847,8 @@ sub validate_api_extra_check {
 		}
 	}
 
-	if (! $self->test_patreonous (url => $url, field => $field, class => $class)) {
+	if (! $self->test_patreonous ($url, $field, $class)) {
 		$errors++;
-	}
-	if (! $self->test_error_message (url => $url, field => $field, class => $class)) {
-		#don't flag this as error right now; change after 2018-07-18
-		#$errors++;
-	}
-	if (! $self->test_abi_serializer (url => $url, field => $field, class => $class)) {
-		#don't flag this as error right now; change after 2018-07-19
-		#$errors++;
 	}
 
 	if ($errors) {
@@ -904,10 +893,10 @@ sub validate_ip {
 
 	if (! is_public_ip($ip)) {
 		$self->add_message(kind => 'crit', detail => 'not a valid ip address', field => $field, class => $class, ip => $ip);
-		return ();
+		return undef;
 	}
 
-	return ($ip);
+	return $ip;
 }
 
 sub validate_dns {
@@ -1041,7 +1030,7 @@ sub validate_country_a2 {
 		$country = uc ($country);
 		my $country_validated = code2country($country);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class);
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1049,7 +1038,7 @@ sub validate_country_a2 {
 	} elsif ($country =~ /^[A-Z]{2}$/) {
 		my $country_validated = code2country($country);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class);
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1057,9 +1046,9 @@ sub validate_country_a2 {
 	} else {
 		my $code = country2code($country);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class);
 		} else {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, field => $field, class => $class);
 		}
 		return undef;
 	}
@@ -1082,7 +1071,7 @@ sub validate_country_n {
 	if ($country =~ /^\d\d\d$/) {
 		my $country_validated = code2country($country, LOCALE_CODE_NUMERIC);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class);
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1090,9 +1079,9 @@ sub validate_country_n {
 	} else {
 		my $code = country2code($country, LOCALE_CODE_NUMERIC);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, suggested_value => uc($code), field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, suggested_value => uc($code), field => $field, class => $class);
 		} else {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class);
 		}
 		return undef;
 	}
@@ -1100,14 +1089,11 @@ sub validate_country_n {
 	return $country;
 }
 
-# --------------------------------------------------------------------------
-# API Test Methods
-
 sub test_patreonous {
-	my ($self, %options) = @_;
-	$options{url} .= "/v1/chain/get_table_rows";
+	my ($self, $base_url, $field, $class) = @_;
+	my $url = "$base_url/v1/chain/get_table_rows";
 
-	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}');
+	my $req = HTTP::Request->new('POST', $url, undef, '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1115,56 +1101,12 @@ sub test_patreonous {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => 'invalid patreonous filter message', value => $status_message, explanation => 'https://github.com/EOSIO/patroneos/issues/36', %options);
+		$self->add_message(kind => 'crit', detail => 'invalid patreonous filter message', value => $status_message, field => $field, class => $class, url => $url, explanation => 'https://github.com/EOSIO/patroneos/issues/36');
 		return undef;
 	}
 
 	return 1;
 }
-
-sub test_error_message {
-	my ($self, %options) = @_;
-	$options{url} .= '/v1/chain/validate_error_message';
-
-	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true}');
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
-	my $status_code = $res->code;
-	my $status_message = $res->status_line;
-	my $response_url = $res->request->uri;
-	my $content = $res->content;
-
-	my $json = $self->get_json ($content, %options) || return undef;
-
-	if (scalar (@{$$json{error}{details}}) == 0) {
-		$self->add_message(kind => 'err', detail => 'detailed error messages not returned', explanation => 'edit config.ini to set verbose-http-errors = true', %options);
-		return undef;
-	}
-
-	return 1;
-}
-
-sub test_abi_serializer {
-	my ($self, %options) = @_;
-	$options{url} .= '/v1/chain/get_block';
-
-	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true, "block_num_or_id": 447}');
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
-	my $status_code = $res->code;
-	my $status_message = $res->status_line;
-	my $response_url = $res->request->uri;
-
-	if (! $res->is_success) {
-		$self->add_message(kind => 'err', detail => 'error retriving large block', value => $status_message, explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000', %options);
-		return undef;
-	}
-
-	return 1;
-}
-
-# --------------------------------------------------------------------------
-# Helper Methods
 
 sub add_message {
 	my ($self, %options) = @_;
@@ -1216,27 +1158,6 @@ sub add_to_list {
 	push (@{$self->{results}{output}{$section}{$list}}, \%data);
 
 	$self->add_message(kind => 'ok', detail => 'basic checks passed', resource => $options{add_to_list}, url => $host, field => $field, class => $class);
-}
-
-sub get_json {
-	my ($self, $content, %options) = @_;
-
-	my $json;
-
-	eval {
-		$json = from_json ($content, {utf8 => 1});
-	};
-
-	if ($@) {
-		my $message = $@;
-		chomp ($message);
-		$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
-		$self->add_message(kind => 'crit', detail => 'invalid JSON error', value => $message, %options);
-		#print $content;
-		return undef;
-	}
-
-	return $json;
 }
 
 1;
