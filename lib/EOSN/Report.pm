@@ -209,6 +209,7 @@ sub generate_message {
 	my $kind = $$options{kind} || confess "missing kind";
 	my $detail = $$options{detail} || confess "missing detail";
 	my $field = $$options{field};
+	my $node_type = $$options{node_type};
 	my $resource = $$options{resource};
 	my $url = $$options{url};
 	my $response_url = $$options{response_url};
@@ -230,16 +231,17 @@ sub generate_message {
 	$detail .= " suggested to use value=<$suggested_value>" if ($suggested_value);
 	$detail .= " target=<$target>" if ($target);
 	$detail .= " for field=<$field>" if ($field);
+	$detail .= " having node_type=<$node_type>" if ($node_type);
 	$detail .= " for resource=<$resource>" if ($resource);
 	$detail .= " for url=<$url>" if ($url);
 	$detail .= " redirected to response_url=<$response_url>" if ($response_url);
 	$detail .= " for host=<$host>" if ($host);
 	$detail .= " for ip=<$ip>" if ($ip);
 	$detail .= " for dns=<$dns>" if ($dns);
-	if ($host || $ip || $dns) {
-		$detail .= " for port=<$port>" if ($port);
-	} else {
+	if ($url || $host || $ip || $dns) {
 		$detail .= " and port=<$port>" if ($port);
+	} else {
+		$detail .= " for port=<$port>" if ($port);
 	}
 	if ($explanation) {
 		if ($explanation =~ m#^https?://#) {
