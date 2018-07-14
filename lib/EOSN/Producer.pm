@@ -848,6 +848,10 @@ sub validate_api_extra_check {
 		#don't flag this as error right now; change after 2018-07-18
 		#$errors++;
 	}
+	if (! $self->test_abi_serializer (url => $url, field => $field, class => $class)) {
+		#don't flag this as error right now; change after 2018-07-19
+		#$errors++;
+	}
 
 	if ($errors) {
 		return undef;
@@ -1087,6 +1091,9 @@ sub validate_country_n {
 	return $country;
 }
 
+# --------------------------------------------------------------------------
+# API Test Methods
+
 sub test_patreonous {
 	my ($self, %options) = @_;
 	$options{url} .= "/v1/chain/get_table_rows";
@@ -1127,6 +1134,28 @@ sub test_error_message {
 
 	return 1;
 }
+
+sub test_abi_serializer {
+	my ($self, %options) = @_;
+	$options{url} .= '/v1/chain/get_block';
+
+	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true, "block_num_or_id": 447}');
+	$self->ua->timeout(10);
+	my $res = $self->ua->request($req);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+
+	if (! $res->is_success) {
+		$self->add_message(kind => 'err', detail => 'error retriving large block', value => $status_message, explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000', %options);
+		return undef;
+	}
+
+	return 1;
+}
+
+# --------------------------------------------------------------------------
+# Helper Methods
 
 sub add_message {
 	my ($self, %options) = @_;
