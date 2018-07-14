@@ -25,6 +25,7 @@ sub eosn_ua {
 sub get_table {
 	my ($ua, $url, %parameters) = @_;
 
+	my $retry_count = 20;
 	my $limit = $parameters{limit};
 	$parameters{json} = JSON::true;
 
@@ -63,6 +64,9 @@ sub get_table {
 		#print ">> row count: ", scalar (@$rows), ", more: $more\n";
 
 		last if (scalar @$rows >= $limit);
+		last if ($retry_count == 0);
+
+		$retry_count--;
 	}
 
 	return $rows;
