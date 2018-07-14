@@ -109,18 +109,24 @@ foreach my $entry (@entries1, @entries2, @entries3) {
 	$results{name} = $producer;
 
 	if ($rank <= 21) {
-		push (@{$results{tags}}, 'top21');
+		push (@{$results{tags}}, 'top21_y');
+		push (@{$results{tags}}, 'paid_n');
+		push (@{$results{tags}}, 'notpaid_n');
 	} elsif ($votep > 0.5) {
-		push (@{$results{tags}}, 'paid');
+		push (@{$results{tags}}, 'top21_n');
+		push (@{$results{tags}}, 'paid_y');
+		push (@{$results{tags}}, 'notpaid_n');
 	} else {
-		push (@{$results{tags}}, 'notpaid');
+		push (@{$results{tags}}, 'top21_n');
+		push (@{$results{tags}}, 'paid_n');
+		push (@{$results{tags}}, 'notpaid_y');
 	}
 
 	foreach my $key (qw (regproducer org endpoint)) {
-		if (exists $$entry{message_summary}{$key} && $$entry{message_summary}{$key} eq 'ok') {
-				push (@{$results{tags}}, $key);
+		if (exists $$entry{message_summary}{$key} && (($$entry{message_summary}{$key} eq 'ok') || ($$entry{message_summary}{$key} eq 'info'))) {
+				push (@{$results{tags}}, $key . '_y');
 			} else {
-				push (@{$results{tags}}, $key . 'x');
+				push (@{$results{tags}}, $key . '_n');
 			}
 	}
 
@@ -135,7 +141,33 @@ my $final_result = to_json ({
 	canonical => 1
 });
 
+my @form;
+push (@form, "<div>\n");
+push (@form, checkbox('top21', 'BP Top 21'));
+push (@form, checkbox('paid', 'BP Paid Standby'));
+push (@form, checkbox('notpaid', 'BP Not-Paid Standby'));
+push (@form, checkbox('regproducer', 'Regproducer Check'));
+push (@form, checkbox('org', 'Organization Check'));
+push (@form, checkbox('endpoint', 'Endpoints Check'));
+push (@form, "</div>\n");
+
+unshift (@report, @form);
+
 push (@report, "<script>\nvar filterData = $final_result\n</script>\n");
 #report_write_file("producers/filter.json", $final_result);
 
 write_report_thtml (content => \@report, title => 'Producer Scorecard', outfile => "producers/index");
+
+sub checkbox {
+	my ($name, $label) = @_;
+
+	my $string = '';
+	$string .= "<div class=\"filtergroup\">\n";
+	$string .= "$label<br>\n";
+	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}_y\" onClick=\"runFilters()\"> Yes</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filterx\" type=\"radio\" name=\"$name\" checked onClick=\"runFilters()\"> n/a</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}_n\" onClick=\"runFilters()\"> No</label>\n";
+	$string .= "</div>\n";
+	return $string;
+}
+

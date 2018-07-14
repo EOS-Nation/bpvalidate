@@ -1,25 +1,47 @@
+// --------------------------------------------------------------------------
+// Listeners
+
 document.addEventListener('DOMContentLoaded', function () {
 
-  // Get all "navbar-burger" elements
-  var $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+  // ---------- navbar
 
-  // Check if there are any navbar burgers
-  if ($navbarBurgers.length > 0) {
-
-    // Add a click event on each of them
-    $navbarBurgers.forEach(function ($el) {
-      $el.addEventListener('click', function () {
-
-        // Get the target from the "data-target" attribute
-        var target = $el.dataset.target;
-        var $target = document.getElementById(target);
-
-        // Toggle the class on both the "navbar-burger" and the "navbar-menu"
-        $el.classList.toggle('is-active');
-        $target.classList.toggle('is-active');
-
-      });
-    });
+  var navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+  if (navbarBurgers.length > 0) {
+    runBurgers(navbarBurgers);
   }
 
+  // ---------- scorecard
+
+  var filterItems = Array.prototype.slice.call(document.querySelectorAll('.filter'), 0);
+  if (filterItems.length > 0) {
+    runFilters();
+  }
 });
+
+// --------------------------------------------------------------------------
+// Functions
+
+function runBurgers(navbarBurgers) {
+  navbarBurgers.forEach(function (element) {
+    element.addEventListener('click', function () {
+      var target = element.dataset.target;
+      var $target = document.getElementById(target);
+      element.classList.toggle('is-active');
+      $target.classList.toggle('is-active');
+    });
+  });
+}
+
+function runFilters() {
+  var filterItems = Array.prototype.slice.call(document.querySelectorAll('.filter'), 0);
+  filterData.producers.forEach(function (filter) {
+    var element = document.getElementById('bp_' + filter.name);
+    var state = 'inline-block';
+    filterItems.forEach(function (checkbox) {
+      if (checkbox.checked && filter.tags.indexOf(checkbox.value) == -1) {
+        state = 'none';
+      }
+    });
+    element.style.display = state;
+  });
+}
