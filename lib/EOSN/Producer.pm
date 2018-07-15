@@ -26,6 +26,18 @@ $bad_urls{'https://google.com'} = {value => 'not a BP specific web site'};
 $bad_urls{'https://www.yahoo.com'} = {value => 'not a BP specific web site'};
 $bad_urls{'https://pbs.twimg.com'} = {value => 'does not load when tracking protection is enabled', explanation => 'https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection'};
 
+our %social;
+$social{'medium'} = 'https://medium.com/@';
+$social{'steemit'} = 'https://steemit.com/@';
+$social{'twitter'} = 'https://twitter.com/';
+$social{'youtube'} = 'https://www.youtube.com/';
+$social{'facebook'} = 'https://www.facebook.com/';
+$social{'github'} = 'https://github.com/';
+$social{'reddit'} = 'https://www.reddit.com/user/';
+$social{'keybase'} = 'https://keybase.pub/';
+$social{'telegram'} = 'https://t.me/';
+$social{'wechat'} = undef;
+
 # --------------------------------------------------------------------------
 # Class Methods
 
@@ -268,7 +280,6 @@ sub check_org_misc {
 		$self->add_message(kind => 'err', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'org');
 	}
 
-
 	$self->validate_url(url => $$json{org}{website}, field => 'org.website', class => 'org', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn');
 	$self->validate_url(url => $$json{org}{code_of_conduct}, field => 'org.code_of_conduct', class => 'org', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn');
 	$self->validate_url(url => $$json{org}{ownership_disclosure}, field => 'org.ownership_disclosure', class => 'org', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn');
@@ -299,11 +310,37 @@ sub check_org_social {
 		return undef;
 	}
 
-	foreach my $key (sort keys %{$$json{org}{social}}) {
+	my $valid = 0;
+	foreach my $key (sort keys %social) {
+		next if (! exists $$json{org}{social}{$key});
 		my $value = $$json{org}{social}{$key};
+		my $url_prefix = $social{$key};
+
 		if ($value =~ m#https?://#) {
-			$self->add_message(kind => 'err', detail => 'social media references must be relative', field => "org.social.$key", class => 'org');
+			$self->add_message(kind => 'err', detail => 'social references must be relative', field => "org.social.$key", class => 'org');
+			next;
 		}
+
+		if ($url_prefix) {
+			my $url = $url_prefix . $value;
+			$url .= '/' if ($key eq 'keybase');
+# disable until caching is implemented
+#			if (! $self->validate_url(url => $url, field => "org.social.$key", class => 'org', content_type => 'html', add_to_list => "social/$key", dupe => 'warn')) {
+#				next;
+#			}
+		}
+
+		$self->add_message(kind => 'ok', detail => 'valid social reference', field => "org.social.$key", class => 'org');
+		$valid++;
+	}
+
+	foreach my $key (keys %{$$json{org}{social}}) {
+		next if (exists $social{$key});
+		$self->add_message(kind => 'err', detail => 'unknown social reference', field => "org.social.$key", class => 'org');
+	}
+
+	if ($valid < 4) {
+		$self->add_message(kind => 'err', detail => 'should have at least 4 social references', field => "org.social", class => 'org');
 	}
 }
 
