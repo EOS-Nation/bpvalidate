@@ -330,7 +330,7 @@ sub check_org_social {
 #			}
 		}
 
-		$self->add_message(kind => 'ok', detail => 'valid social reference', field => "org.social.$key", class => 'org');
+		$self->add_message(kind => 'ok', detail => 'valid social reference', value => $value, field => "org.social.$key", class => 'org');
 		$valid++;
 	}
 
