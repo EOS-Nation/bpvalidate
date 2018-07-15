@@ -3,6 +3,7 @@ h1 = Validator Reports
 
 <ul class="menu-list">
 <li><a href="/reports/endpoints.html">Endpoints Report</a>
+<li><a href="/reports/node_types.html">Node Types Report</a>
 <li><a href="/reports/resources.html">Resources Report</a>
 <li><a href="/reports/versions.html">API Versions Report</a>
 <li><a href="/reports/country.html">Country Report</a>

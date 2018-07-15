@@ -3,11 +3,13 @@
 #script to test that things are working
 
 ./bp-schema
-./bp-validate --output=/var/www/html/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=alohaeosprod,eosnationftw,cryptolions1,eoscanadacom,bitfinexeos1
+#./bp-validate --output=/var/www/html/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=alohaeosprod,eosnationftw,cryptolions1,eoscanadacom,bitfinexeos1,hexlantttttt,eosriobrazil,acroeos12345,eosriobrazil
+#./bp-validate --output=/var/www/html/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=eosnationftw
 #./bp-validate --output=/var/www/html/bps.json --versions=../config/versions.csv --limit=1000 --debug
 ./bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/
 ./bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/
 ./bp-report-endpoints --input=/var/www/html/bps.json --out=/var/www/html/
+./bp-report-node_types --input=/var/www/html/bps.json --out=/var/www/html/
 ./bp-report-resources --input=/var/www/html/bps.json --out=/var/www/html/
 ./bp-report-versions --input=/var/www/html/bps.json --out=/var/www/html/
 ./bp-report-country --input=/var/www/html/bps.json --out=/var/www/html/

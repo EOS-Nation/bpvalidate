@@ -16,6 +16,7 @@ do
 	bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-endpoints --input=/var/www/html/bps.json --out=/var/www/html/
+	bp-report-node_types --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-resources --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-versions --input=/var/www/html/bps.json --out=/var/www/html/
 	bp-report-country --input=/var/www/html/bps.json --out=/var/www/html/

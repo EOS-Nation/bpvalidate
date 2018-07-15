@@ -1,0 +1,40 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::Report;
+
+binmode(STDOUT, ":utf8");
+
+# ---------------------------------------------------------------------------
+# Main
+
+my $data = get_report_options ();
+my @report;
+my %endpoints;
+
+foreach my $entry (@{$$data{producers}}) {
+	my $producer = $$entry{regproducer}{owner};
+	foreach my $kind (sort keys %{$$entry{output}{nodes}}) {
+		foreach my $node (@{$$entry{output}{nodes}{$kind}}) {
+			$$node{producer} = $producer;
+			$$node{kind} = $kind;
+			my $node_type = $$node{node_type};
+			push (@{$endpoints{$node_type}}, $node) if ($node_type);
+		}
+	}
+}
+
+foreach my $node_type (sort keys %endpoints) {
+	my @section;
+
+	foreach my $entry (@{$endpoints{$node_type}}) {
+		my $producer = $$entry{producer};
+		my $address = $$entry{address};
+		push (@section, ["%12s, %9s, %s\n", $$entry{producer}, $$entry{kind}, $$entry{address}]);
+	}
+
+	push (@report, {name => $node_type, rows => \@section});
+}
+
+generate_report (data => $data, report => \@report, title => 'Node Types Report', columns => 1, outfile => "reports/node_types", text => 1, html => 1);
