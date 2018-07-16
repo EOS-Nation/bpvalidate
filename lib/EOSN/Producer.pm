@@ -359,14 +359,18 @@ sub check_nodes {
 	};
 
 	my $node_number = 0;
-	my $api_endpoint = 0;
-	my $ssl_endpoint = 0;
-	my $peer_endpoint = 0;
-	my $bnet_endpoint = 0;
+	my $total_api_endpoint = 0;
+	my $total_ssl_endpoint = 0;
+	my $total_peer_endpoint = 0;
+	my $total_bnet_endpoint = 0;
 	foreach my $node (@nodes) {
 		my $found_something = 0;
 		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'org');
 		my $node_type = $$node{node_type};
+		my $api_endpoint = 0;
+		my $ssl_endpoint = 0;
+		my $peer_endpoint = 0;
+		my $bnet_endpoint = 0;
 
 		# ---------- check endpoints
 
@@ -382,7 +386,6 @@ sub check_nodes {
 			$found_something++;
 			my $result = $self->validate_api(url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
 			if ($result) {
-				$api_endpoint++;
 				$ssl_endpoint++;
 			}
 		}
@@ -397,7 +400,6 @@ sub check_nodes {
 		if ((defined $$node{bnet_endpoint}) && ($$node{bnet_endpoint} ne '')) {
 			$found_something++;
 			if ($self->validate_connection(peer => $$node{bnet_endpoint}, field => "node[$node_number].bnet_endpoint", connection_field => 'bnet', add_to_list => 'nodes/bnet', node_type => $node_type, location => $location)) {
-				$peer_endpoint++;
 				$bnet_endpoint++;
 			}
 		}
@@ -418,24 +420,24 @@ sub check_nodes {
 				$self->add_message(kind => 'warn', detail => 'endpoints provided (producer should be private)', field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'seed') {
-			if (! $peer_endpoint) {
+			if (! $peer_endpoint && ! $bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'no peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
-			if ($api_endpoint) {
+			if ($api_endpoint || $ssl_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'extranious API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'query') {
-			if ($peer_endpoint) {
+			if ($peer_endpoint || $bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'extranious peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
-			if (! $api_endpoint) {
+			if (! $api_endpoint && ! $ssl_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'no API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'full') {
-			if (! $peer_endpoint) {
+			if (! $peer_endpoint && ! $bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'no peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
-			if (! $api_endpoint) {
+			if (! $api_endpoint && ! $ssl_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'no API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} else {
@@ -445,18 +447,22 @@ sub check_nodes {
 			}
 		}
 			
+		$total_api_endpoint += $api_endpoint;
+		$total_ssl_endpoint += $ssl_endpoint;
+		$total_peer_endpoint += $peer_endpoint;
+		$total_bnet_endpoint += $bnet_endpoint;
 		$node_number++;
 	}
 
-	if (! $api_endpoint) {
+	if (! $total_api_endpoint && ! $total_ssl_endpoint) {
 		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided', class => 'endpoint');
-	} elsif (! $ssl_endpoint) {
+	} elsif (! $total_ssl_endpoint) {
 		$self->add_message(kind => 'warn', detail => 'no valid HTTPS API endpoints provided', class => 'endpoint');
 	}
 
-	if (! $peer_endpoint) {
+	if (! $total_peer_endpoint && ! $total_bnet_endpoint) {
 		$self->add_message(kind => 'crit', detail => 'no valid P2P or BNET endpoints provided', class => 'endpoint');
-	} elsif (! $bnet_endpoint) {
+	} elsif (! $total_bnet_endpoint) {
 		$self->add_message(kind => 'warn', detail => 'no valid BNET endpoints provided', class => 'endpoint');
 	}
 }
