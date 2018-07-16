@@ -2,6 +2,7 @@
 
 use utf8;
 use strict;
+use EOSN::Report;
 use EOSN::FileUtil qw(read_file write_file);
 use File::Find;
 use JSON;
@@ -12,15 +13,10 @@ binmode(STDOUT, ":utf8");
 # ---------------------------------------------------------------------------
 # Main
 
-my $infile = undef;
-my $outdir = "/var/www/html";
 my %globals;
 
-GetOptions('input=s' => \$infile, 'output=s' => \$outdir) || exit 1;
-
-die "$0: filename not given" if (! $infile);
-die "$0: filename not given" if (! $infile);
-
+my $data = get_report_options();
+my $outdir = outdir();
 read_globals();
 go();
 
@@ -28,10 +24,9 @@ go();
 # Subroutines
 
 sub read_globals {
-	$globals{template_en} = read_file ("$outdir/res/template.html.en");
-	$globals{template_fr} = read_file ("$outdir/res/template.html.fr");
-
-	my $data = from_json(read_file($infile) || die "$0: no data read");
+	foreach my $lang (languages()) {
+		$globals{"template_$lang"} = read_file ("$outdir/res/template.html.$lang");
+	}
 	$globals{last_update} = $$data{meta}{generated_at};
 }
 
@@ -45,7 +40,7 @@ sub generate_content {
 	my $filename_out = $filename_in;
 	$filename_out =~ s/\.thtml.(\w\w)$/.html.$1/;
 	my $lang = $1;
-	print "generate file=<$filename_in> lang=<$lang>\n";
+	#print "generate file=<$filename_in> lang=<$lang>\n";
 	my (@content) = read_file ($filename_in);
 
 	my $header = 1;

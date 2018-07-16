@@ -13,7 +13,6 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $data = get_report_options ();
-my @report;
 
 foreach my $entry (@{$$data{producers}}) {
 	my @section;
@@ -50,126 +49,125 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 	}
 }
 
-push (@report, "<div>\n");
-foreach my $entry (@entries1, @entries2, @entries3) {
-	my $producer = $$entry{regproducer}{owner};
-	my $rank = $$entry{info}{rank};
-	my $votep = $$entry{info}{vote_percent};
-	my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
-	my $country = $$entry{info}{country_alpha2};
-
-	my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';
-	$logo = '' if ($logo !~ m#https://#);
-	if ($logo) {
-		$logo = "<figure class=\"image is-24x24\"><img src=\"$logo\"></figure>\n";
-	} else {
-		$logo = "<figure class=\"image is-24x24\"></figure>\n";
-	}
-	my %results;
-
-	my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
-	foreach my $key (qw (regproducer org endpoint)) {
-		my $html = sev_html($msgsummary{$key} || 'skip', $key);
-		$msgsummary{$key} = $html;
-	}
-
-	my $selected = '';
-	if ($rank <= 21) {
-		$selected = sev_html('selected');
-	} elsif ($votep > 0.5) {
-		$selected = sev_html('standby');
-	}
-
-	my $flag = '';
-	if ($country) {
-		$flag = flag_html($country);
-	}
-
-	push (@report, "<div id=\"bp_$producer\" class=\"scorecard\" onclick=\"window.location.href='$producer.html'\">\n");
-	push (@report, "<div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\">$flag</div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$selected</div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{regproducer}</div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{org}</div>\n");
-	push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{endpoint}</div>\n");
-	push (@report, "</div>\n");
-	push (@report, "<div>$producer_name_html</div>\n");
-	push (@report, "</div>\n");
-}
-push (@report, "</div>\n");
-
-my @filter;
-foreach my $entry (@entries1, @entries2, @entries3) {
-	my $producer = $$entry{regproducer}{owner};
-	my $rank = $$entry{info}{rank};
-	my $votep = $$entry{info}{vote_percent};
-
-	my %results;
-	$results{name} = $producer;
-
-	if ($rank <= 21) {
-		push (@{$results{tags}}, 'top21_y');
-		push (@{$results{tags}}, 'paid_n');
-		push (@{$results{tags}}, 'notpaid_n');
-	} elsif ($votep > 0.5) {
-		push (@{$results{tags}}, 'top21_n');
-		push (@{$results{tags}}, 'paid_y');
-		push (@{$results{tags}}, 'notpaid_n');
-	} else {
-		push (@{$results{tags}}, 'top21_n');
-		push (@{$results{tags}}, 'paid_n');
-		push (@{$results{tags}}, 'notpaid_y');
-	}
-
-	foreach my $key (qw (regproducer org endpoint)) {
-		if (exists $$entry{message_summary}{$key} && (($$entry{message_summary}{$key} eq 'ok') || ($$entry{message_summary}{$key} eq 'info'))) {
-				push (@{$results{tags}}, $key . '_y');
-			} else {
-				push (@{$results{tags}}, $key . '_n');
-			}
-	}
-
-	push (@filter, \%results);
-}
-
-my $final_result = to_json ({
-	meta => {generated_at => time2str("%C", time), maintainer => 'matthew@eosnation.io'},
-	producers => \@filter
-}, {
-	pretty => 0,
-	canonical => 1
-});
-
-my @form;
-push (@form, "<div>\n");
-push (@form, checkbox('top21', 'BP Top 21'));
-push (@form, checkbox('paid', 'BP Paid Standby'));
-push (@form, checkbox('notpaid', 'BP Not-Paid Standby'));
-push (@form, checkbox('regproducer', 'Regproducer Check'));
-push (@form, checkbox('org', 'Organization Check'));
-push (@form, checkbox('endpoint', 'Endpoints Check'));
-push (@form, "</div>\n");
-
-unshift (@report, @form);
-
-push (@report, "<script>\nvar filterData = $final_result\n</script>\n");
-#report_write_file("producers/filter.json", $final_result);
-
 foreach my $lang (languages) {
-	write_report_thtml (lang => $lang, content => \@report, title => 'Producer Scorecard', outfile => "producers/index");
+	my @report;
+	push (@report, "<div>\n");
+	foreach my $entry (@entries1, @entries2, @entries3) {
+		my $producer = $$entry{regproducer}{owner};
+		my $rank = $$entry{info}{rank};
+		my $votep = $$entry{info}{vote_percent};
+		my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
+		my $country = $$entry{info}{country_alpha2};
+
+		my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';
+		$logo = '' if ($logo !~ m#https://#);
+		if ($logo) {
+			$logo = "<figure class=\"image is-24x24\"><img src=\"$logo\"></figure>\n";
+		} else {
+			$logo = "<figure class=\"image is-24x24\"></figure>\n";
+		}
+		my %results;
+
+		my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
+		foreach my $key (qw (regproducer org endpoint)) {
+			my $html = sev_html($msgsummary{$key} || 'skip', $key, $lang);
+			$msgsummary{$key} = $html;
+		}
+
+		my $selected = '';
+		if ($rank <= 21) {
+			$selected = sev_html('bp_top21', undef, $lang);
+		} elsif ($votep > 0.5) {
+			$selected = sev_html('bp_standby', undef, $lang);
+		}
+
+		my $flag = '';
+		if ($country) {
+			$flag = flag_html($country);
+		}
+
+		push (@report, "<div id=\"bp_$producer\" class=\"scorecard\" onclick=\"window.location.href='$producer.html'\">\n");
+		push (@report, "<div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\">$flag</div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$selected</div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{regproducer}</div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{org}</div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{endpoint}</div>\n");
+		push (@report, "</div>\n");
+		push (@report, "<div>$producer_name_html</div>\n");
+		push (@report, "</div>\n");
+	}
+	push (@report, "</div>\n");
+
+	my @filter;
+	foreach my $entry (@entries1, @entries2, @entries3) {
+		my $producer = $$entry{regproducer}{owner};
+		my $rank = $$entry{info}{rank};
+		my $votep = $$entry{info}{vote_percent};
+
+		my %results;
+		$results{name} = $producer;
+
+		if ($rank <= 21) {
+			push (@{$results{tags}}, 'top21_y');
+			push (@{$results{tags}}, 'paid_n');
+			push (@{$results{tags}}, 'other_n');
+		} elsif ($votep > 0.5) {
+			push (@{$results{tags}}, 'top21_n');
+			push (@{$results{tags}}, 'paid_y');
+			push (@{$results{tags}}, 'other_n');
+		} else {
+			push (@{$results{tags}}, 'top21_n');
+			push (@{$results{tags}}, 'paid_n');
+			push (@{$results{tags}}, 'other_y');
+		}
+
+		foreach my $key (qw (regproducer org endpoint)) {
+			if (exists $$entry{message_summary}{$key} && (($$entry{message_summary}{$key} eq 'ok') || ($$entry{message_summary}{$key} eq 'info'))) {
+					push (@{$results{tags}}, $key . '_y');
+				} else {
+					push (@{$results{tags}}, $key . '_n');
+				}
+		}
+
+		push (@filter, \%results);
+	}
+
+	my $final_result = to_json ({
+		meta => {generated_at => time2str("%C", time), maintainer => 'matthew@eosnation.io'},
+		producers => \@filter
+	}, {
+		pretty => 0,
+		canonical => 1
+	});
+
+	my @form;
+	push (@form, "<div>\n");
+	push (@form, checkbox('top21', label('bp_top21', $lang), $lang));
+	push (@form, checkbox('paid', label('bp_standby', $lang), $lang));
+	push (@form, checkbox('other', label('bp_other', $lang), $lang));
+	push (@form, checkbox('regproducer', label('class_regproducer_l', $lang), $lang));
+	push (@form, checkbox('org', label('class_org_l', $lang), $lang));
+	push (@form, checkbox('endpoint', label('class_endpoint_l', $lang), $lang));
+	push (@form, "</div>\n");
+
+	unshift (@report, @form);
+
+	push (@report, "<script>\nvar filterData = $final_result\n</script>\n");
+
+	write_report_thtml (lang => $lang, content => \@report, outfile => "producers/index");
 }
 
 sub checkbox {
-	my ($name, $label) = @_;
+	my ($name, $label, $lang) = @_;
 
 	my $string = '';
 	$string .= "<div class=\"filtergroup\">\n";
 	$string .= "$label<br>\n";
-	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}_y\" onClick=\"runFilters()\"> Yes</label>\n";
-	$string .= " <label class=\"radio\"><input class=\"filterx\" type=\"radio\" name=\"$name\" checked onClick=\"runFilters()\"> n/a</label>\n";
-	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}_n\" onClick=\"runFilters()\"> No</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}_y\" onClick=\"runFilters()\"> " . label('filter_yes', $lang) . "</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filterx\" type=\"radio\" name=\"$name\" checked onClick=\"runFilters()\"> " . label('filter_na', $lang) ."</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}_n\" onClick=\"runFilters()\"> " . label('filter_no', $lang) . "</label>\n";
 	$string .= "</div>\n";
 	return $string;
 }
-

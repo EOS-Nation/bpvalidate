@@ -37,4 +37,4 @@ foreach my $node_type (sort keys %endpoints) {
 	push (@report, {name => $node_type, rows => \@section});
 }
 
-generate_report (data => $data, report => \@report, title => 'Node Types Report', columns => 1, outfile => "reports/node_types", text => 1, html => 1);
+generate_report (data => $data, report => \@report, columns => 1, outfile => "reports/node_types", text => 1, html => 1);

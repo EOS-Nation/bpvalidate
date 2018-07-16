@@ -27,4 +27,4 @@ foreach my $entry (@{$$data{producers}}) {
 	}
 }
 
-generate_report (data => $data, report => \@report, title => 'Errors Report', columns => 1, icons => 1, class => 2, outfile => "reports/errors", text => 1, html => 1);
+generate_report (data => $data, report => \@report, columns => 1, icons => 1, class => 2, outfile => "reports/errors", text => 1, html => 1);

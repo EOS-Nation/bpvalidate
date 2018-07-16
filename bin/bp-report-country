@@ -35,4 +35,4 @@ foreach my $key (sort keys %sections) {
 	push (@report, {name => $name, title => $header, rows => $section});
 }
 
-generate_report (data => $data, report => \@report, title => 'Country Report', columns => 1, outfile => "reports/country", text => 1, html => 1);
+generate_report (data => $data, report => \@report, columns => 1, outfile => "reports/country", text => 1, html => 1);

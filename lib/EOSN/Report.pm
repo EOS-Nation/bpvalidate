@@ -2,12 +2,13 @@ use utf8;
 use strict;
 use HTML::Entities;
 use JSON;
-use EOSN::FileUtil qw(read_file write_file);
+use EOSN::FileUtil qw(read_file write_file read_csv_hash);
 use Carp qw(confess);
 use Getopt::Long;
 
 our $infile = undef;
-our $outdir_base = undef;
+our $outdir = undef;
+our $confdir = undef;
 our %icons;
 $icons{skip} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-ban"></i></span>';
 $icons{info} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-info-circle"></i></span>';
@@ -15,41 +16,35 @@ $icons{ok} = '<span class="icon is-medium has-text-success"><i class="fas fa-lg 
 $icons{warn} = '<span class="icon is-medium has-text-warning"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{err} = '<span class="icon is-medium has-text-warning2"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{crit} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-stop"></i></span>';
-$icons{selected} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-certificate"></i></span>';
-$icons{standby} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-certificate"></i></span>';
+$icons{bp_top21} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-certificate"></i></span>';
+$icons{bp_standby} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-certificate"></i></span>';
 
-our %labels;
-$labels{general} = 'General Info';
-$labels{regproducer} = 'Regproducer';
-$labels{org} = 'Organization';
-$labels{endpoint} = 'Endpoints';
-$labels{ipv6} = 'IPv6';
-$labels{skip} = 'Skipped';
-$labels{info} = 'Information';
-$labels{ok} = 'OK';
-$labels{warn} = 'Warning';
-$labels{err} = 'Error';
-$labels{crit} = 'Critical Error';
-$labels{selected} = 'Selected Block Producer';
-$labels{standby} = 'Paid Standby Block Producer';
+our $labels;
+our $languages;
 
-our %langs;
-$langs{en} = 1;
-$langs{fr} = 1;
+# --------------------------------------------------------------------------
+# Getter Subroutines
+
+sub languages {
+	return keys %$languages;
+}
+
+sub outdir {
+	return $outdir;
+}
 
 # --------------------------------------------------------------------------
 # Subroutines
 
-sub languages {
-	return keys %langs;
-}
-
 sub get_report_options {
-	GetOptions('input=s' => \$infile, 'output=s' => \$outdir_base) || exit 1;
+	GetOptions('input=s' => \$infile, 'output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
 
 	confess "$0: input filename not given" if (! $infile);
-	confess "$0: output filename prefix not given" if (! $outdir_base);
+	confess "$0: output dir not given" if (! $outdir);
+	confess "$0: config dir not given" if (! $confdir);
 
+	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
+	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
 	return from_json(read_file($infile) || confess "$0: no data read");
 }
 
@@ -59,7 +54,7 @@ sub generate_report {
 	my $text = $options{text};
 	my $html = $options{html};
 
-	foreach my $lang (keys %langs) {
+	foreach my $lang (languages()) {
 		generate_report_txt (lang => $lang, %options) if ($text);
 		generate_report_thtml (lang => $lang, %options) if ($html);
 	}
@@ -71,8 +66,8 @@ sub generate_report_txt {
 	my $lang = $options{lang};
 	my $data = $options{data};
 	my $report = $options{report};
-	my $title = $options{title};
 	my $outfile = $options{outfile};
+	my $title = $options{title} || label("title_$outfile", $lang);
 	my @out;
 
 	push (@out, "# $title\n");
@@ -109,7 +104,6 @@ sub generate_report_thtml {
 	my $lang = $options{lang};
 	my $data = $options{data};
 	my $report = $options{report};
-	my $title = $options{title};
 	my $columns = $options{columns};
 	my $icons = $options{icons};
 	my $class = $options{class};
@@ -119,7 +113,7 @@ sub generate_report_thtml {
 	my @out;
 
 	if ($text) {
-		push (@out, "<p><a href=\"/$outfile.txt\">text version</a></p>");
+		push (@out, "<p><a href=\"/$outfile.txt\">" . label('label_text_version', $lang) . "</a></p>");
 		push (@out, "<br>\n");
 	}
 
@@ -145,9 +139,9 @@ sub generate_report_thtml {
 					my $value = $data[$i-1];
 					if ($icons && $i == $icons) {
 						my $classx = $data[$class - 1];
-						$value = sev_html($value, $classx);
+						$value = sev_html($value, $classx, $lang);
 					} elsif ($class && $i == $class) {
-						$value = $labels{$value} || $value;
+						$value = label("class_$value", $lang);
 					} elsif ($noescape && $i == $noescape) {
 						# no nothing
 					} else {
@@ -179,8 +173,8 @@ sub write_report_thtml {
 
 	my $lang = $options{lang};
 	my $content = $options{content};
-	my $title = $options{title};
 	my $outfile = $options{outfile};
+	my $title = $options{title} || label("title_$outfile", $lang);
 	my @out;
 
 	push (@out, "title = EOS Block Producer bp.json Validator: $title\n");
@@ -192,16 +186,17 @@ sub write_report_thtml {
 }
 
 sub sev_html {
-	my ($kind, $class) = @_;
+	my ($kind, $class, $lang) = @_;
 
 	my $html = $icons{$kind} || encode_entities ($kind);
-	my $labels = $labels{$kind} || $kind;
 
 	if ($class) {
-		my $labelc = $labels{$class} || $class;
-		$html =~ s/ / title="$labelc: $labels" /;
+		my $title_class = label("class_$class", $lang);
+		my $title = label("check_$kind", $lang);
+		$html =~ s/ / title="$title_class: $title" /;
 	} else {
-		$html =~ s/ / title="$labels" /;
+		my $title = label("$kind", $lang);
+		$html =~ s/ / title="$title" /;
 	}
 	
 	return $html;
@@ -270,7 +265,14 @@ sub generate_message {
 sub report_write_file {
 	my ($filename, @out) = @_;
 
-	write_file ($outdir_base . "/" . $filename, @out);
+	write_file ($outdir . "/" . $filename, @out);
+}
+
+sub label {
+	my ($key, $lang) = @_;
+
+	#return "[" . ($$labels{$key}{"label_$lang"} || $$labels{$key}{label_en} || $key) . "]";
+	return $$labels{$key}{"label_$lang"} || $$labels{$key}{label_en} || $key;
 }
 
 1;
