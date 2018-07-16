@@ -435,7 +435,7 @@ sub check_nodes {
 			}
 		} elsif ($node_type eq 'full') {
 			if (! $peer_endpoint && ! $bnet_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'no peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+###discussion about this	$self->add_message(kind => 'warn', detail => 'no peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 			if (! $api_endpoint && ! $ssl_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'no API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
