@@ -13,7 +13,6 @@ h1 = About the Block Producer Validator
     <li class="bullet"> To get the meta data, "/bp.json" is appended to the URL is used in the regproducer call.
     <li class="bullet"> To do API endpoint validation, "/v1/chain/get_info" is appended to urls within the meta data.
     <li class="bullet"> Data from each block producer is re-checked approximately every 30 minutes.
-    <li class="bullet"> For Block Producers and Standby Block Producers: in case of errors, make sure all URLs start with http:// or https://.
     </ul>
   </div>
 </div>
