@@ -28,7 +28,8 @@ go();
 # Subroutines
 
 sub read_globals {
-	$globals{template} = read_file ("$outdir/res/template.html");
+	$globals{template_en} = read_file ("$outdir/res/template.html.en");
+	$globals{template_fr} = read_file ("$outdir/res/template.html.fr");
 
 	my $data = from_json(read_file($infile) || die "$0: no data read");
 	$globals{last_update} = $$data{meta}{generated_at};
@@ -39,11 +40,12 @@ sub go {
 }
 
 sub generate_content {
-	return if ($_ !~ /\.thtml$/);
+	return if ($_ !~ /\.thtml.\w\w$/);
 	my $filename_in = $File::Find::name;
 	my $filename_out = $filename_in;
-	$filename_out =~ s/\.thtml$/.html/;
-	#print "generate file=<$filename_in>\n";
+	$filename_out =~ s/\.thtml.(\w\w)$/.html.$1/;
+	my $lang = $1;
+	print "generate file=<$filename_in> lang=<$lang>\n";
 	my (@content) = read_file ($filename_in);
 
 	my $header = 1;
@@ -59,7 +61,7 @@ sub generate_content {
 		}
 	}
 
-	my $output = $globals{template};
+	my $output = $globals{"template_$lang"};
 
 	foreach my $key (keys %globals) {
 		my $value = $globals{$key};

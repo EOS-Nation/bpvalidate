@@ -7,59 +7,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
 <link rel="stylesheet" href="/res/flags/flag-icon.css">
+<link rel="stylesheet" href="/res/main.css">
 <script type="text/javascript" src="/res/main.js"></script>
-<style>
-ul.bullet, li.bullet {
-  margin-left: 5px;
-  padding-left: 10px;
-}
-li.bullet {
-  list-style: initial;
-}
-section.section {
-  padding: 1rem 1.5rem;
-}
-h1.title.is-1 {
-  font-size: 2rem;
-}
-h2.title.is-2 {
-  font-size: 1.5rem;
-}
-footer.footer {
-  background: #eeeeee;
-}
-.has-text-warning2 {
-  color: orange !important;
-}
-.scorecard {
-  display: inline-block;
-  margin: 5px;
-  padding: 5px;
-  border: solid 1px;
-  border-color: grey;
-  width: 230px;
-  height: 70px;
-  overflow: hidden;
-  background-color: #EEEEEE;
-}
-.filtergroup {
-  display: inline-block;
-  margin: 5px;
-  padding: 5px;
-  border: solid 1px;
-  border-color: grey;
-  width: 230px;
-  height: 70px;
-  overflow: hidden;
-  background-color: #EEEEFF;
-}
-</style>
 </head>
 <body>
 <nav class="navbar is-light" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
     <a class="navbar-item" href="/">
-      bp.json Validator
+      bp.json Validator (fr)
     </a>
     <a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false">
       <span aria-hidden="true"></span>

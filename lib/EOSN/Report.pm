@@ -33,8 +33,16 @@ $labels{crit} = 'Critical Error';
 $labels{selected} = 'Selected Block Producer';
 $labels{standby} = 'Paid Standby Block Producer';
 
+our %langs;
+$langs{en} = 1;
+$langs{fr} = 1;
+
 # --------------------------------------------------------------------------
 # Subroutines
+
+sub languages {
+	return keys %langs;
+}
 
 sub get_report_options {
 	GetOptions('input=s' => \$infile, 'output=s' => \$outdir_base) || exit 1;
@@ -51,13 +59,16 @@ sub generate_report {
 	my $text = $options{text};
 	my $html = $options{html};
 
-	generate_report_txt (%options) if ($text);
-	generate_report_thtml (%options) if ($html);
+	foreach my $lang (keys %langs) {
+		generate_report_txt (lang => $lang, %options) if ($text);
+		generate_report_thtml (lang => $lang, %options) if ($html);
+	}
 }
 
 sub generate_report_txt {
 	my %options = @_;
 
+	my $lang = $options{lang};
 	my $data = $options{data};
 	my $report = $options{report};
 	my $title = $options{title};
@@ -89,12 +100,13 @@ sub generate_report_txt {
 		push (@out, "\n");
 	}
 
-	report_write_file ("$outfile.txt", @out);
+	report_write_file ("$outfile.txt.$lang", @out);
 }
 
 sub generate_report_thtml {
 	my %options = @_;
 
+	my $lang = $options{lang};
 	my $data = $options{data};
 	my $report = $options{report};
 	my $title = $options{title};
@@ -165,6 +177,7 @@ sub generate_report_thtml {
 sub write_report_thtml {
 	my %options = @_;
 
+	my $lang = $options{lang};
 	my $content = $options{content};
 	my $title = $options{title};
 	my $outfile = $options{outfile};
@@ -175,7 +188,7 @@ sub write_report_thtml {
 	push (@out, "\n");
 	push (@out, @$content);
 
-	report_write_file ("$outfile.thtml", @out);
+	report_write_file ("$outfile.thtml.$lang", @out);
 }
 
 sub sev_html {

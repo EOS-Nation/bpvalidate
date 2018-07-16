@@ -156,7 +156,9 @@ unshift (@report, @form);
 push (@report, "<script>\nvar filterData = $final_result\n</script>\n");
 #report_write_file("producers/filter.json", $final_result);
 
-write_report_thtml (content => \@report, title => 'Producer Scorecard', outfile => "producers/index");
+foreach my $lang (languages) {
+	write_report_thtml (lang => $lang, content => \@report, title => 'Producer Scorecard', outfile => "producers/index");
+}
 
 sub checkbox {
 	my ($name, $label) = @_;
