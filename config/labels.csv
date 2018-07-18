@@ -31,3 +31,11 @@ label_text_version,text version,文字内容版本
 filter_yes,Yes,是
 filter_na,n/a,无内容
 filter_no,No,不是
+introduction,Introduction,介绍
+introduction/description,"The bp.json validator aims to check if Block Producers and Standby Block Producers are providing information to the community in a ""standard"" way. The validator has a set of ""checks"" and after executing the ""checks"" it then reports how well the bp.json file published by each block producer aligns to the ""standard"". To get a full understanding of how well a Block Producer or Standby Block Producer is contributing to the community takes more than the checks done here, but these checks can help the EOS community determine which organizations to vote for.",bp.json验证器是一个检查出块节点和备选出块节点是否以“标准”的方式向社区提供信息的小程序。验证器上有一系列的“证实标记”，在“证实”了信息之后，它会把每个出块节点发布的BPJSON文件与“发布标准”对比并做出报告。要全面了解一个出块节点或备选出块节点对社区作出贡献的程度，仅仅在这里观察检查结果是远远不够的。但这些检查结果可以在一定程度上帮助EOS社区做出给应该哪些节点投票的决定
+main_menu,Main Menu,
+main_menu/producer_scorecard,Producer Scorecard,
+main_menu/validator_reports,Validator Reports,
+main_menu/data_download,Data Download,
+main_menu/faq,Frequently Asked Questions,
+main_menu/about,About,
