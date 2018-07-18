@@ -421,7 +421,7 @@ sub check_nodes {
 			}
 		} elsif ($node_type eq 'seed') {
 			if (! $peer_endpoint && ! $bnet_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'no peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(kind => 'warn', detail => 'no valid peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 			if ($api_endpoint || $ssl_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'extranious API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
@@ -431,19 +431,19 @@ sub check_nodes {
 				$self->add_message(kind => 'warn', detail => 'extranious peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 			if (! $api_endpoint && ! $ssl_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'no API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(kind => 'warn', detail => 'no valid API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'full') {
 			if (! $peer_endpoint && ! $bnet_endpoint) {
 ###discussion about this	$self->add_message(kind => 'warn', detail => 'no peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 			if (! $api_endpoint && ! $ssl_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'no API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(kind => 'warn', detail => 'no valid API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} else {
 			$self->add_message(kind => 'err', detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].node_type", class => 'endpoint');
 			if (! $found_something) {
-				$self->add_message(kind => 'warn', detail => 'no endpoints provided (useless section)', field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(kind => 'warn', detail => 'no valid endpoints provided (useless section)', field => "node[$node_number]", class => 'endpoint');
 			}
 		}
 			
@@ -455,15 +455,15 @@ sub check_nodes {
 	}
 
 	if (! $total_api_endpoint && ! $total_ssl_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided', class => 'endpoint');
+		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided in any node', class => 'endpoint');
 	} elsif (! $total_ssl_endpoint) {
-		$self->add_message(kind => 'warn', detail => 'no valid HTTPS API endpoints provided', class => 'endpoint');
+		$self->add_message(kind => 'warn', detail => 'no valid HTTPS API endpoints provided in any node', class => 'endpoint');
 	}
 
 	if (! $total_peer_endpoint && ! $total_bnet_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no valid P2P or BNET endpoints provided', class => 'endpoint');
+		$self->add_message(kind => 'crit', detail => 'no valid P2P or BNET endpoints provided in any node', class => 'endpoint');
 	} elsif (! $total_bnet_endpoint) {
-		$self->add_message(kind => 'warn', detail => 'no valid BNET endpoints provided', class => 'endpoint');
+		$self->add_message(kind => 'warn', detail => 'no valid BNET endpoints provided in any node', class => 'endpoint');
 	}
 }
 
