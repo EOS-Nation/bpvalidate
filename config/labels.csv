@@ -1,33 +1,33 @@
-key,label_en
-class_general,General Info
-class_regproducer,Regproducer
-class_org,Organization
-class_endpoint,Endpoints
-class_ipv6,Ipv6
-class_general_l,General Info Check
-class_regproducer_l,Regproducer Check
-class_org_l,Organization Check
-class_endpoint_l,Endpoints Check
-class_ipv6_l,Ipv6 Check
-check_skip,Skipped
-check_info,Information
-check_ok,OK
-check_warn,Warning
-check_err,Error
-check_crit,Critical
-bp_top21,Top 21  BP
-bp_standby,Paid Standby BP
-bp_other,Not-Paid Standby BP
-title_reports/config,Endpoints config.ini
-title_reports/country,Country Report
-title_reports/endpoints,Endpoints Report
-title_reports/errors,Errors Report
-title_reports/node_types,Node Types Report
-title_producers/producer,Report for %producer%
-title_producers/index,Producer Scorecard
-title_reports/resources,Resources Report
-title_reports/versions,API Versions Report
-label_text_version,text version
-filter_yes,Yes
-filter_na,n/a
-filter_no,No
+key,label_en,label_ch
+class_general,General Info,
+class_regproducer,Regproducer,
+class_org,Organization,
+class_endpoint,Endpoints,
+class_ipv6,Ipv6,
+class_general_l,General Info Check,
+class_regproducer_l,Regproducer Check,
+class_org_l,Organization Check,
+class_endpoint_l,Endpoints Check,
+class_ipv6_l,Ipv6 Check,
+check_skip,Skipped,
+check_info,Information,
+check_ok,OK,
+check_warn,Warning,
+check_err,Error,
+check_crit,Critical,
+bp_top21,Top 21  BP,
+bp_standby,Paid Standby BP,
+bp_other,Not-Paid Standby BP,
+title_reports/config,Endpoints config.ini,
+title_reports/country,Country Report,
+title_reports/endpoints,Endpoints Report,
+title_reports/errors,Errors Report,
+title_reports/node_types,Node Types Report,
+title_producers/producer,Report for %producer%,
+title_producers/index,Producer Scorecard,
+title_reports/resources,Resources Report,
+title_reports/versions,API Versions Report,
+label_text_version,text version,
+filter_yes,Yes,
+filter_na,n/a,
+filter_no,No,
