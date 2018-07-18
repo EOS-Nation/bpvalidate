@@ -23,7 +23,7 @@ title_reports/country,Country Report,国家报告
 title_reports/endpoints,Endpoints Report,终端报告
 title_reports/errors,Errors Report,错误信息报告
 title_reports/node_types,Node Types Report,节点类型
-title_producers/producer,Report for %producer%,出块节点报告
+title_producers/producer,Report for %producer%,%producer% 的报告
 title_producers/index,Producer Scorecard,出块节点计分卡
 title_reports/resources,Resources Report,资源报告
 title_reports/versions,API Versions Report,API版本报告
