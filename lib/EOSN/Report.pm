@@ -29,6 +29,10 @@ sub languages {
 	return keys %$languages;
 }
 
+sub labels {
+	return $labels;
+}
+
 sub outdir {
 	return $outdir;
 }

@@ -1,4 +1,4 @@
-key,label_en,label_ch
+key,label_en,label_zh
 class_general,General Info,基本信息
 class_regproducer,Regproducer,注册出块节点
 class_org,Organization,机构
@@ -39,3 +39,10 @@ main_menu/validator_reports,Validator Reports,
 main_menu/data_download,Data Download,
 main_menu/faq,Frequently Asked Questions,
 main_menu/about,About,
+nav_title,bp.json Validator,
+nav_producers,Producer Scorecard,
+nav_reports,Reports,
+nav_data,Data,
+nav_faq,FAQ,FAQ
+nav_about,About,
+nav_update,Validator last update: %last_update%,

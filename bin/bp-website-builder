@@ -7,6 +7,7 @@ use EOSN::FileUtil qw(read_file write_file);
 use File::Find;
 use JSON;
 use Getopt::Long;
+use Data::Dumper;
 
 binmode(STDOUT, ":utf8");
 
@@ -14,7 +15,7 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my %globals;
-
+my $labels;
 my $data = get_report_options();
 my $outdir = outdir();
 read_globals();
@@ -24,10 +25,9 @@ go();
 # Subroutines
 
 sub read_globals {
-	foreach my $lang (languages()) {
-		$globals{"template_$lang"} = read_file ("$outdir/res/template.html.$lang");
-	}
+	$globals{"template"} = read_file ("$outdir/res/template.html");
 	$globals{last_update} = $$data{meta}{generated_at};
+	$labels = labels ();
 }
 
 sub go {
@@ -56,12 +56,19 @@ sub generate_content {
 		}
 	}
 
-	my $output = $globals{"template_$lang"};
+	my $output = $globals{template};
+	$globals{lang} = $lang;
+
+	foreach my $key (keys %$labels) {
+		my $value = $$labels{$key}{"label_$lang"} || $$labels{$key}{"label_en"};
+		$output =~ s/%$key%/$value/g;
+	}
 
 	foreach my $key (keys %globals) {
 		my $value = $globals{$key};
 		$output =~ s/%$key%/$value/g;
 	}	
+
 	foreach my $key (keys %variables) {
 		my $value = $variables{$key};
 		$output =~ s/%$key%/$value/g;
