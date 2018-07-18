@@ -59,6 +59,11 @@ sub generate_content {
 	my $output = $globals{template};
 	$globals{lang} = $lang;
 
+	foreach my $key (keys %variables) {
+		my $value = $variables{$key};
+		$output =~ s/%$key%/$value/g;
+	}
+
 	foreach my $key (keys %$labels) {
 		my $value = $$labels{$key}{"label_$lang"} || $$labels{$key}{"label_en"};
 		$output =~ s/%$key%/$value/g;
@@ -66,11 +71,6 @@ sub generate_content {
 
 	foreach my $key (keys %globals) {
 		my $value = $globals{$key};
-		$output =~ s/%$key%/$value/g;
-	}	
-
-	foreach my $key (keys %variables) {
-		my $value = $variables{$key};
 		$output =~ s/%$key%/$value/g;
 	}	
 
