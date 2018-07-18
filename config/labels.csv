@@ -4,11 +4,11 @@ class_regproducer,Regproducer,注册出块节点
 class_org,Organization,机构
 class_endpoint,Endpoints,终端
 class_ipv6,Ipv6,Ipv6协议
-class_general_l,General Info Check,"基本信息 打勾,证实"
+class_general_l,General Info Check,基本信息 证实
 class_regproducer_l,Regproducer Check,注册出块节点 证实
 class_org_l,Organization Check,机构 证实
 class_endpoint_l,Endpoints Check,是终端 证实
-class_ipv6_l,Ipv6 Check,"Ipv6协议 证实,打勾"
+class_ipv6_l,Ipv6 Check,Ipv6协议 证实
 check_skip,Skipped,跳过
 check_info,Information,信息
 check_ok,OK,OK
@@ -29,5 +29,5 @@ title_reports/resources,Resources Report,资源报告
 title_reports/versions,API Versions Report,API版本报告
 label_text_version,text version,文字内容版本
 filter_yes,Yes,是
-filter_na,n/a,不确定
+filter_na,n/a,无内容
 filter_no,No,不是
