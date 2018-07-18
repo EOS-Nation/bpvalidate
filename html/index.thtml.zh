@@ -1,0 +1,34 @@
+title = EOS Block Producer bp.json Validator
+h1 = Block Producer bp.json Validator
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      介绍
+    </p>
+  </header>
+  <div class="card-content">
+
+bp.json验证器是一个检查出块节点和备选出块节点是否以“标准”的方式向社区提供信息的小程序。验证器上有一系列的“证实标记”，在“证实”了信息之后，它会把每个出块节点发布的BPJSON文件与“发布标准”对比并做出报告。要全面了解一个出块节点或备选出块节点对社区作出贡献的程度，仅仅在这里观察检查结果是远远不够的。但这些检查结果可以在一定程度上帮助EOS社区做出给应该哪些节点投票的决定
+
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Main Menu
+    </p>
+  </header>
+  <div class="card-content">
+    <ul class="menu-list">
+    <li> <a href="producers/">Producer Scorecard</a>
+    <li> <a href="reports/">Validator Reports</a>
+    <li> <a href="data/">Data Download</a>
+    <li> <a href="faq/">Frequently Asked Questions</a>
+    <li> <a href="about/">About</a>
+    </ul>
+  </div>
+</div>
