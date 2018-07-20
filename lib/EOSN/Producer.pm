@@ -909,16 +909,13 @@ sub validate_api_extra_check {
 		$errors++;
 	}
 	if (! $self->test_error_message (url => $url, field => $field, class => $class, node_type => $node_type)) {
-		#don't flag this as error right now; change after 2018-07-18
-		#$errors++;
+		$errors++;
 	}
 	if (! $self->test_abi_serializer (url => $url, field => $field, class => $class, node_type => $node_type)) {
-		#don't flag this as error right now; change after 2018-07-19
-		#$errors++;
+		$errors++;
 	}
 	if (! $self->test_history_actions (url => $url, field => $field, class => $class, node_type => $node_type)) {
-		#don't flag this as error right now; change after 2018-07-19
-		#$errors++;
+		$errors++;
 	}
 
 	if ($errors) {
