@@ -31,10 +31,10 @@ label_text_version,text version,文字内容版本
 filter_yes,Yes,是
 filter_na,n/a,无内容
 filter_no,No,不是
-nav_title,bp.json Validator,
-nav_producers,Producer Scorecard,
-nav_reports,Reports,
-nav_data,Data,
-nav_faq,FAQ,
-nav_about,About,
-nav_update,Validator last update: %last_update%,
+nav_title,bp.json Validator,bp.json 验证器
+nav_producers,Producer Scorecard, 节点计分卡
+nav_reports,Reports,报告
+nav_data,Data,数据
+nav_faq,FAQ,常见问题
+nav_about,About,关于
+nav_update,Validator last update: %last_update%, 验证其最后更新： %last_update%
