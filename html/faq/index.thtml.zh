@@ -1,0 +1,43 @@
+title = EOS Block Producer bp.json Validator: FAQ
+h1 = Frequently Asked Questions Regarding the Block Producer Validator
+
+<div class="card" id="versions">
+  <header class="card-header">
+    <p class="card-header-title">
+      How are server versions determined? Why are some unknown? Why are some not considered current?
+    </p>
+  </header>
+  <div class="card-content">
+<p>
+The nodeos software does not provide the exact version number being used.  Instead it provides a hash of the version number.  Depending on how the 
+software is compiled, the same version may generate different hashes.  Therefore the list of version numbers is maintained by hand in 
+<a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions.csv">GitHub</a>.  The list also specifies which versions are considered
+current vs out-of-date.  Generally the last 2 versions are considered current, although if a long time passes with out a new version being issued or 
+there is a critical issue, then only latest version is considered current.
+</p>
+</p>
+If your version is missing, please generate a pull request or request it be added by contacting 
+<a href="mailto:matthew@eosnation.io">matthew@eosnation.io</a> or @mdarwin on telegram.
+</p>
+  </div>
+</div>
+
+<br>
+
+<!--
+<div class="card" id="cloudflare">
+  <header class="card-header">
+    <p class="card-header-title">
+      Why is there a specific warning about Cloudflare?
+    </p>
+  </header>
+  <div class="card-content">
+<p>
+The validator checks that the server returns cookie requests or not. Cloudflare always issues cookies and it cannot be disabled in Cloudflare
+configuration.
+Cookies are a problem in the case where someone wants to add multiple API endpoints to a single global loadbalancer (across multiple Block Producers). 
+If every endpoint uses its own cookies, that's a hassle to deal with.
+</p>
+  </div>
+</div>
+-->
