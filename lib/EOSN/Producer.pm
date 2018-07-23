@@ -463,7 +463,8 @@ sub check_nodes {
 	if (! $total_peer_endpoint && ! $total_bnet_endpoint) {
 		$self->add_message(kind => 'crit', detail => 'no valid P2P or BNET endpoints provided in any node', class => 'endpoint');
 	} elsif (! $total_bnet_endpoint) {
-		$self->add_message(kind => 'warn', detail => 'no valid BNET endpoints provided in any node', class => 'endpoint');
+		# 2018-07-23 apparently some bnet endpoints are crashing? 
+		#$self->add_message(kind => 'warn', detail => 'no valid BNET endpoints provided in any node', class => 'endpoint');
 	}
 }
 
