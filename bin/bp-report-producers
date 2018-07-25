@@ -14,10 +14,10 @@ binmode(STDOUT, ":utf8");
 
 my $data = get_report_options ();
 
-foreach my $entry (@{$$data{producers}}) {
-	my @section;
+foreach my $lang (languages()) {
+	foreach my $entry (@{$$data{producers}}) {
+		my @section;
 
-	foreach my $lang (languages()) {
 		my $producer = $$entry{regproducer}{owner};
 		my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
 		foreach my $message (@{$$entry{messages}}) {
