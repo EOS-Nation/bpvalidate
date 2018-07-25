@@ -156,7 +156,11 @@ sub validate {
 	my $end_time = time;
 	$self->summarize_messages;
 
-	$self->{results}{meta}{generated_at} = time2str("%C", time);
+	my $update_time = time2str("%C", time);
+
+	$self->prefix_message(kind => 'info', detail => 'bp.json is re-validated approximately every 30 minutes; last update', time => $update_time, class => 'general');
+
+	$self->{results}{meta}{generated_at} = $update_time;
 	$self->{results}{meta}{elapsed_time} = $end_time - $start_time;
 
 	return $self->{results};
@@ -1276,6 +1280,16 @@ sub test_regproducer_key {
 
 # --------------------------------------------------------------------------
 # Helper Methods
+
+sub prefix_message {
+	my ($self, %options) = @_;
+
+	my $kind = $options{kind} || confess "missing kind";
+	my $detail = $options{detail} || confess "missing detail";
+	my $class = $options{class} || confess "missing class";
+
+	unshift (@{$self->{messages}}, \%options);
+}
 
 sub add_message {
 	my ($self, %options) = @_;

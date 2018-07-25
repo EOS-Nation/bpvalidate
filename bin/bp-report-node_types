@@ -6,7 +6,7 @@ use EOSN::Report;
 
 binmode(STDOUT, ":utf8");
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 # Main
 
 my $data = get_report_options ();
@@ -37,4 +37,8 @@ foreach my $node_type (sort keys %endpoints) {
 	push (@report, {name => $node_type, rows => \@section});
 }
 
-generate_report (data => $data, report => \@report, columns => 1, outfile => "reports/node_types", text => 1, html => 1);
+my %report_options = (data => $data, report => \@report, columns => 1, outfile => "reports/node_types", text => 1, html => 1);
+foreach my $lang (languages()) {
+	generate_report_txt (lang => $lang, %report_options);
+	generate_report_thtml (lang => $lang, %report_options);
+}

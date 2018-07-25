@@ -1,4 +1,5 @@
 key,label_en,label_zh
+format_datetime,%Y-%m-%d %R %Z,%Y年%m月%d日 %R %Z
 class_general,General Info,基本信息
 class_regproducer,Regproducer,注册出块节点
 class_org,Organization,机构
@@ -37,4 +38,6 @@ nav_reports,Reports,报告
 nav_data,Data,数据
 nav_faq,FAQ,常见问题
 nav_about,About,关于
-nav_update,Validator last update: %last_update%, 验证器最后更新： %last_update%
+nav_update,Validator last update: %last_update%, 验证器最后更新: %last_update%
+txt_update,Validator last update:, 验证器最后更新:
+txt_about,For details on how this is generated see https://validate.eosnation.io/about/,

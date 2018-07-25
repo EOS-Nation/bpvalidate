@@ -5,6 +5,8 @@ use JSON;
 use EOSN::FileUtil qw(read_file write_file read_csv_hash);
 use Carp qw(confess);
 use Getopt::Long;
+use Date::Parse;
+use Date::Format;
 
 our $infile = undef;
 our $outdir = undef;
@@ -52,18 +54,6 @@ sub get_report_options {
 	return from_json(read_file($infile) || confess "$0: no data read");
 }
 
-sub generate_report {
-	my %options = @_;
-
-	my $text = $options{text};
-	my $html = $options{html};
-
-	foreach my $lang (languages()) {
-		generate_report_txt (lang => $lang, %options) if ($text);
-		generate_report_thtml (lang => $lang, %options) if ($html);
-	}
-}
-
 sub generate_report_txt {
 	my %options = @_;
 
@@ -75,8 +65,8 @@ sub generate_report_txt {
 	my @out;
 
 	push (@out, "# $title\n");
-	push (@out, "# Last Update: $$data{meta}{generated_at}\n");
-	push (@out, "# For details on how this is generated, see https://validate.eosnation.io/about/\n");
+	push (@out, "# " . label('txt_update', $lang) . ": " . datetime($$data{meta}{generated_at}, $lang) . "\n");
+	push (@out, "# " . label('txt_about', $lang) . "\n");
 	push (@out, "\n");
 	foreach my $section (@$report) {
 		my $name = $$section{name};
@@ -213,7 +203,7 @@ sub flag_html {
 }
 
 sub generate_message {
-	my ($options) = @_;
+	my ($options, $lang) = @_;
 
 	my $value = $$options{value};
 	my $suggested_value = $$options{suggested_value};
@@ -230,6 +220,7 @@ sub generate_message {
 	my $dns = $$options{dns};
 	my $port = $$options{port};
 	my $explanation = $$options{explanation};
+	my $time = $$options{time};
 
 	if ($url && $url !~ m#^https?://.#) {
 		$host = $url;
@@ -262,6 +253,7 @@ sub generate_message {
 			$detail .= "; $explanation";
 		}
 	}
+	$detail .= " at=<" . datetime($time, $lang) . ">" if ($time);
 
 	return $detail;
 }
@@ -277,6 +269,13 @@ sub label {
 
 	#return "[" . ($$labels{$key}{"label_$lang"} || $$labels{$key}{label_en} || $key) . "]";
 	return $$labels{$key}{"label_$lang"} || $$labels{$key}{label_en} || $key;
+}
+
+sub datetime {
+	my ($value, $lang) = @_;
+
+	my $unixtime = str2time($value);
+	return time2str(label('format_datetime', $lang), $unixtime, 'UTC');
 }
 
 1;

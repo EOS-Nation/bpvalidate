@@ -6,7 +6,7 @@ use EOSN::Report;
 
 binmode(STDOUT, ":utf8");
 
-# ---------------------------------------------------------------------------
+# --------------------------------------------------------------------------
 # Main
 
 my %map;
@@ -44,4 +44,8 @@ foreach my $kind (sort keys %endpoints) {
 	push (@report, {name => $kind, rows => \@section, name_prefix => '# ', section_divider => 2});
 }
 
-generate_report (data => $data, report => \@report, columns => 0, outfile => "reports/config", text => 1, html => 1);
+my %report_options = (data => $data, report => \@report, columns => 0, outfile => "reports/config", text => 1, html => 1);
+foreach my $lang (languages()) {
+	generate_report_txt (lang => $lang, %report_options);
+	generate_report_thtml (lang => $lang, %report_options);
+}

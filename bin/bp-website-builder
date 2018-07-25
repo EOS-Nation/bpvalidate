@@ -26,7 +26,7 @@ go();
 
 sub read_globals {
 	$globals{"template"} = read_file ("$outdir/res/template.html");
-	$globals{last_update} = $$data{meta}{generated_at};
+	$globals{generated_at} = $$data{meta}{generated_at};
 	$labels = labels ();
 }
 
@@ -58,6 +58,7 @@ sub generate_content {
 
 	my $output = $globals{template};
 	$globals{lang} = $lang;
+	$globals{last_update} = datetime($globals{generated_at}, $lang);
 
 	foreach my $key (keys %variables) {
 		my $value = $variables{$key};
