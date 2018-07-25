@@ -195,6 +195,7 @@ sub run_validate {
 	my $url = $self->{properties}{url};
 	my $is_active = $self->{properties}{is_active};
 	my $location = $self->{properties}{location};
+	my $key = $self->{properties}{producer_key};
 
 	$self->add_message(kind => 'info', detail => 'voting rank', value => $self->{rank}, class => 'general');
 	$self->{results}{info}{rank} = $self->{rank};
@@ -205,14 +206,14 @@ sub run_validate {
 		return undef;
 	}
 
-	#print ">> [$name][$key][$url][$votes]\n";
-
 	if ($url !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
 		$self->add_message(kind => 'crit', detail => 'invalid configured URL', url => $url, class => 'regproducer');
 		return undef;
 	}
 
-	my $country = $self->validate_country_n (country => $location, field => 'main location', class => 'regproducer');
+	$self->test_regproducer_key (key => $key, class => 'regproducer');
+
+	my $country = $self->validate_country_n (country => $location, class => 'regproducer');
 	if ($country) {
 		$self->{results}{info}{country_number} = $country;
 		my $countryx = code2country($country, LOCALE_CODE_NUMERIC);
@@ -1243,6 +1244,32 @@ sub test_history_actions {
 	}
 
 	$self->add_message(kind => 'ok', detail => 'basic history test passed', %options);
+
+	return 1;
+}
+
+sub test_regproducer_key {
+	my ($self, %options) = @_;
+
+	my $key = $options{key};
+	my $url = 'https://api.eosn.io/v1/history/get_key_accounts';
+
+	my $req = HTTP::Request->new('POST', $url, undef, '{"json": true, "public_key": "' . $key . '"}');
+	$self->ua->timeout(10);
+	my $res = $self->ua->request($req);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $content = $res->content;
+
+	my $json = $self->get_json ($content, %options) || return 1;  #skip if down
+
+	if (scalar @{$$json{account_names}} != 0) {
+		$self->add_message(kind => 'err', detail => 'regproducer key is assigned to an account; better to use a dedicated signing key', %options);
+		return undef;
+	}
+
+	$self->add_message(kind => 'ok', detail => 'regproducer signing key test passed', %options);
 
 	return 1;
 }
