@@ -1,17 +1,15 @@
-title = EOS Block Producer bp.json Validator: Download
-h1 = Download the Block Producer Validator Results
+title = EOS 出块节点 bp.json 验证器: 下载
+h1 = 下载出块节点验证结果
 
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Introduction
+      介绍
     </p>
   </header>
   <div class="card-content">
 
-All of the parsable input bp.json files as well as the analysis are consolidated into a single output file: bps.json.  You can download the file below.  Feel free to use 
-this file in any projects you may have.
-
+所有可解析的bp.json输入文件以及分析报告都被合并在bps.json的输出文件中。以下文件均可下载。欢迎在其他项目中使用这些文件 
   </div>
 </div>
 
@@ -20,7 +18,7 @@ this file in any projects you may have.
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Download
+      下载
     </p>
   </header>
   <div class="card-content">
