@@ -432,15 +432,10 @@ sub check_nodes {
 				$self->add_message(kind => 'warn', detail => 'extranious API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'query') {
-			if ($peer_endpoint || $bnet_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'extranious peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
-			}
-			if (! $api_endpoint && ! $ssl_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'no valid API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
-			}
+			$self->add_message(kind => 'err', detail => 'use node_type=query is deprecated; use node_type=full instead', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21')
 		} elsif ($node_type eq 'full') {
-			if (! $peer_endpoint && ! $bnet_endpoint) {
-###discussion about this	$self->add_message(kind => 'warn', detail => 'no peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+			if ($peer_endpoint || $bnet_endpoint) {
+				$self->add_message(kind => 'warn', detail => 'extranious peer endpoints provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 			if (! $api_endpoint && ! $ssl_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'no valid API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
@@ -451,7 +446,7 @@ sub check_nodes {
 				$self->add_message(kind => 'warn', detail => 'no valid endpoints provided (useless section)', field => "node[$node_number]", class => 'endpoint');
 			}
 		}
-			
+
 		$total_api_endpoint += $api_endpoint;
 		$total_ssl_endpoint += $ssl_endpoint;
 		$total_peer_endpoint += $peer_endpoint;
