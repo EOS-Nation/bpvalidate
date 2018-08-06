@@ -422,7 +422,7 @@ sub check_nodes {
 
 		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
 			$found_api_ssl_endpoint++;
-			my $result = $self->validate_api(url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
+			my $result = $self->validate_api(api_url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
 			if ($result) {
 				$valid_api_endpoint++;
 			}
@@ -430,7 +430,7 @@ sub check_nodes {
 
 		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
 			$found_api_ssl_endpoint++;
-			my $result = $self->validate_api(url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
+			my $result = $self->validate_api(api_url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
 			if ($result) {
 				$valid_ssl_endpoint++;
 			}
@@ -572,7 +572,7 @@ sub validate_string {
 sub validate_url {
 	my ($self, %options) = @_;
 
-	my $url = $options{url};
+	my $xurl = $options{url} || $options{api_url};
 	my $field = $options{field} || confess "type not provided";
 	my $class = $options{class} || confess "class not provided";
 	my $content_type = $options{content_type} || confess "content_type not provided";
@@ -583,56 +583,56 @@ sub validate_url {
 	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
 	my $timeout = $options{timeout} || 10;
 
-	#print ">> check url=[GET $url$url_ext]\n";
+	#print ">> check url=[GET $xurl$url_ext]\n";
 
-	if (! $url) {
-		$self->add_message(kind => 'err', detail => 'no URL given', field => $field, class => $class);
+	if (! $xurl) {
+		$self->add_message(kind => 'err', detail => 'no URL given', %options);
 		return undef;
 	}
 
 	foreach my $test_url (keys %bad_urls) {
 		my $details = $bad_urls{$test_url};
-		if ($url =~ m#^$test_url#) {
-			$self->add_message(kind => 'crit', detail => 'URL not allowed', field => $field, class => $class, url => $url, %$details);
+		if ($xurl =~ m#^$test_url#) {
+			$self->add_message(kind => 'crit', detail => 'URL not allowed', %options, %$details);
 			return undef;
 		}
 	}
 
 	if ($dupe ne 'skip') {
-		if ($self->{urls}{$url}) {
-			$self->add_message(kind => $dupe, detail => 'duplicate URL', field => $field, class => $class, url => $url);
+		if ($self->{urls}{$xurl}) {
+			$self->add_message(kind => $dupe, detail => 'duplicate URL', %options);
 			return undef if ($dupe eq 'err');
 		}
-		$self->{urls}{$url} = 1;
+		$self->{urls}{$xurl} = 1;
 	}
 
-	$url =~ s/#.*$//;
+	$xurl =~ s/#.*$//;
 
-	if ($url !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
-		$self->add_message(kind => 'err', detail => 'invalid URL', url => $url, field => $field, class => $class);
+	if ($xurl !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
+		$self->add_message(kind => 'err', detail => 'invalid URL', %options);
 		return undef;
 	}
-	if ($url =~ m#^https?://.*//#) {
-		$self->add_message(kind => 'warn', detail => 'double slashes in URL', url => $url, field => $field, class => $class);
-		$url =~ s#(^https?://.*)//#$1/#;
+	if ($xurl =~ m#^https?://.*//#) {
+		$self->add_message(kind => 'warn', detail => 'double slashes in URL', %options);
+		$xurl =~ s#(^https?://.*)//#$1/#;
 	}
-	if ($url =~ m#^https?://localhost#) {
-		$self->add_message(kind => 'err', detail => 'localhost URL is invalid', url => $url, field => $field, class => $class);
+	if ($xurl =~ m#^https?://localhost#) {
+		$self->add_message(kind => 'err', detail => 'localhost URL is invalid', %options);
 		return undef;
 	}
-	if ($url =~ m#^https?://127\.#) {
-		$self->add_message(kind => 'err', detail => 'localhost URL is invalid', url => $url, field => $field, class => $class);
+	if ($xurl =~ m#^https?://127\.#) {
+		$self->add_message(kind => 'err', detail => 'localhost URL is invalid', %options);
 		return undef;
 	}
 
 	my $host_port;
 	my $protocol;
 	my $location;
-	if ($url =~ m#^(https?)://(.*?)(/.*)$#) {
+	if ($xurl =~ m#^(https?)://(.*?)(/.*)$#) {
 		$protocol = $1;
 		$host_port = $2;
 		$location = $3;
-	} elsif ($url =~ m#^(https?)://(.*)$#) {
+	} elsif ($xurl =~ m#^(https?)://(.*)$#) {
 		$protocol = $1;
 		$host_port = $2;
 	} else {
@@ -649,19 +649,19 @@ sub validate_url {
 	}
 
 	if ($protocol eq 'http' && $port && $port == 80) {
-		$self->add_message(kind => 'warn', detail => 'port is not required', url => $url, port => 80, field => $field, class => $class);
+		$self->add_message(kind => 'warn', detail => 'port is not required', port => 80, %options);
 	} elsif ($protocol eq 'https' && $port && $port == 443) {
-		$self->add_message(kind => 'warn', detail => 'port is not required', url => $url, port => 443, field => $field, class => $class);
+		$self->add_message(kind => 'warn', detail => 'port is not required', port => 443, %options);
 	}
 	if ($non_standard_port) {
 		if ($protocol eq 'http' && $port && $port != 80) {
-			$self->add_message(kind => 'info', detail => 'port is non-standard (not using 80) and may be unusable by some applications', url => $url, port => $port, field => $field, class => $class);
+			$self->add_message(kind => 'info', detail => 'port is non-standard (not using 80) and may be unusable by some applications', port => $port, %options);
 		} elsif ($protocol eq 'https' && $port && $port != 443) {
-			$self->add_message(kind => 'info', detail => 'port is non-standard (not using 443) and may be unusable by some applications', url => $url, port => $port, field => $field, class => $class);
+			$self->add_message(kind => 'info', detail => 'port is non-standard (not using 443) and may be unusable by some applications', port => $port, %options);
 		}
 	}
 	if ($location && $location eq '/') {
-		$self->add_message(kind => 'warn', detail => 'trailing slash is not required', url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'warn', detail => 'trailing slash is not required', %options);
 	}
 
 	if (! $self->validate_ip_dns($host, $field, $class)) {
@@ -669,17 +669,17 @@ sub validate_url {
 	}	
 
 	if ($ssl eq 'either') {
-		if ($url !~ m#^https://#) {
-			$self->add_message(kind => 'warn', detail => 'HTTPS is recommended instead of HTTP', url => $url, field => $field, class => $class, see1 => 'https://security.googleblog.com/2018/02/a-secure-web-is-here-to-stay.html');
+		if ($xurl !~ m#^https://#) {
+			$self->add_message(kind => 'warn', detail => 'HTTPS is recommended instead of HTTP', %options, see1 => 'https://security.googleblog.com/2018/02/a-secure-web-is-here-to-stay.html');
 		}
 	} elsif ($ssl eq 'on') {
-		if ($url !~ m#^https://#) {
-			$self->add_message(kind => 'err', detail => 'need to specify HTTPS instead of HTTP', url => $url, field => $field, class => $class);
+		if ($xurl !~ m#^https://#) {
+			$self->add_message(kind => 'err', detail => 'need to specify HTTPS instead of HTTP', %options);
 			return undef;
 		}
 	} elsif ($ssl eq 'off') {
-		if ($url =~ m#^https://#) {
-			$self->add_message(kind => 'err', detail => 'need to specify HTTP instead of HTTPS', url => $url, field => $field, class => $class);
+		if ($xurl =~ m#^https://#) {
+			$self->add_message(kind => 'err', detail => 'need to specify HTTP instead of HTTPS', %options);
 			return undef;
 		}
 	} else {
@@ -688,7 +688,7 @@ sub validate_url {
 
 	my $clock = time;
 
-	my $req = HTTP::Request->new('GET', $url . $url_ext);
+	my $req = HTTP::Request->new('GET', $xurl . $url_ext);
 	$req->header('Origin', 'https://example.com');
 	$req->header("Referer", 'https://validate.eosnation.io');
 	$self->ua->timeout($timeout * 2);
@@ -701,12 +701,12 @@ sub validate_url {
 	my $time = time - $clock;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => 'invalid URL', value => $status_message, url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'crit', detail => 'invalid URL', value => $status_message, %options);
 		return undef;
 	}
 
 	if ($time > $timeout) {
-		$self->add_message(kind => 'err', detail => 'response took longer than expected', value => "$time s", target => "$timeout s", url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'response took longer than expected', value => "$time s", target => "$timeout s", %options);
 	}
 
 	my @cors_headers = $res->header('Access-Control-Allow-Origin');
@@ -715,29 +715,29 @@ sub validate_url {
 	} elsif ($cors eq 'should') {
 		# error, but not fatal, but not ok either
 		if (! @cors_headers) {
-			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			delete $options{add_to_list};
 		} elsif (@cors_headers > 1) {
-			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			delete $options{add_to_list};
 		} elsif ($cors_headers[0] ne '*') {
-			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			delete $options{add_to_list};
 		}	
 	} elsif ($cors eq 'on') {
 		if (! @cors_headers) {
-			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			return undef;
 		} elsif (@cors_headers > 1) {
-			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			return undef;
 		} elsif ($cors_headers[0] ne '*') {
-			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			return undef;
 		}	
 	} elsif ($cors eq 'off') {
 		if (@cors_headers) {
-			$self->add_message(kind => 'err', detail => 'Access-Control-Allow-Origin header returned when should not be', url => $url, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'Access-Control-Allow-Origin header returned when should not be', %options);
 			return undef;
 		}	
 	} else {
@@ -745,7 +745,7 @@ sub validate_url {
 	}
 
 	if (! $response_content_type) {
-		$self->add_message(kind => 'err', detail => 'did not receive content_type header', url => $url, field => $field, class => $class);
+		$self->add_message(kind => 'err', detail => 'did not receive content_type header', %options);
 		return undef;
 	} elsif ($content_type && $content_types{$content_type}) {
 		my $found = 0;
@@ -753,23 +753,23 @@ sub validate_url {
 			$found = 1 if ($x eq $response_content_type);
 		}
 		if (! $found) {
-			$self->add_message(kind => 'err', detail => 'received unexpected content_type', value => $response_content_type, url => $url, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'received unexpected content_type', value => $response_content_type, %options);
 			return undef;
 		}
 	}
 
 	my $content = $res->content;
 
-	if ($response_url ne ($url . $url_ext)) {
-		$self->add_message(kind => 'info', detail => 'URL redirected', url => $url, field => $field, class => $class, response_url => '' .$response_url);
+	if ($response_url ne ($xurl . $url_ext)) {
+		$self->add_message(kind => 'info', detail => 'URL redirected', %options, response_url => '' .$response_url);
 		if ($ssl eq 'on') {
 			if ($response_url !~ m#^https://#) {
-				$self->add_message(kind => 'err', detail => 'need to specify HTTPS instead of HTTP', url => $url, field => $field, class => $class, response_url => '' . $response_url);
+				$self->add_message(kind => 'err', detail => 'need to specify HTTPS instead of HTTP', %options, response_url => '' . $response_url);
 				return undef;
 			}
 		} elsif ($ssl eq 'off') {
 			if ($response_url =~ m#^https://#) {
-				$self->add_message(kind => 'err', detail => 'need to specify HTTP instead of HTTPS', url => $url, field => $field, class => $class, response_url => '' . $response_url);
+				$self->add_message(kind => 'err', detail => 'need to specify HTTP instead of HTTPS', %options, response_url => '' . $response_url);
 				return undef;
 			}
 		}
@@ -779,11 +779,11 @@ sub validate_url {
 	if ($content_type eq 'json') {
 		#printf ("%v02X", $content);
 		if ($content =~ /^\xEF\xBB\xBF/) {
-			$self->add_message(kind => 'err', detail => 'remove BOM (byte order mark) from start of JSON', url => $url, field => $field, class => $class);
+			$self->add_message(kind => 'err', detail => 'remove BOM (byte order mark) from start of JSON', %options);
 			$content =~ s/^\xEF\xBB\xBF//;
 		}
 
-		$json = $self->get_json ($content, url => $url, field => $field, class => $class) || return undef;
+		$json = $self->get_json ($content, %options) || return undef;
 
 	} elsif ($content_type eq 'png_jpg') {
 	} elsif ($content_type eq 'svg') {
@@ -806,7 +806,7 @@ sub validate_url {
 		}
 	}
 
-	$self->add_to_list(host => $url, info => $info, result => $json, %options) if ($options{add_to_list});
+	$self->add_to_list(info => $info, result => $json, %options) if ($options{add_to_list});
 
 	return $return;
 }
@@ -881,11 +881,11 @@ sub validate_connection {
 sub validate_api {
 	my ($self, %options) = @_;
 
-	my $url = $options{url};
+	my $api_url = $options{api_url};
 	my $field = $options{field};
 
 	return $self->validate_url(
-		url => $url,
+		api_url => $api_url,
 		field => $field,
 		class => 'endpoint',
 		url_ext => '/v1/chain/get_info',
@@ -904,7 +904,7 @@ sub validate_api {
 sub validate_api_extra_check {
 	my ($self, $result, $res, %options) = @_;
 
-	my $url = $options{url};
+	my $url = $options{api_url};
 	my $field = $options{field};
 	my $class = $options{class};
 	my $node_type = $options{node_type};
@@ -981,19 +981,19 @@ sub validate_api_extra_check {
 		}
 	}
 
-	if (! $self->test_patreonous (url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_patreonous (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
-	if (! $self->test_error_message (url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_error_message (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
-	if (! $self->test_abi_serializer (url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_abi_serializer (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
-	if (! $self->test_system_symbol (url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_system_symbol (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
 
@@ -1240,9 +1240,9 @@ sub validate_country_n {
 
 sub test_patreonous {
 	my ($self, %options) = @_;
-	$options{url} .= "/v1/chain/get_table_rows";
+	$options{api_url} .= "/v1/chain/get_table_rows";
 
-	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}');
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1261,9 +1261,9 @@ sub test_patreonous {
 
 sub test_error_message {
 	my ($self, %options) = @_;
-	$options{url} .= '/v1/chain/validate_error_message';
+	$options{api_url} .= '/v1/chain/validate_error_message';
 
-	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true}');
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1285,9 +1285,9 @@ sub test_error_message {
 
 sub test_abi_serializer {
 	my ($self, %options) = @_;
-	$options{url} .= '/v1/chain/get_block';
+	$options{api_url} .= '/v1/chain/get_block';
 
-	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true, "block_num_or_id": 447}');
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "block_num_or_id": 447}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1306,9 +1306,9 @@ sub test_abi_serializer {
 
 sub test_history_actions {
 	my ($self, %options) = @_;
-	$options{url} .= '/v1/history/get_actions';
+	$options{api_url} .= '/v1/history/get_actions';
 
-	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true, "pos":-1, "offset":-20, "account_name": "eosio.ram"}');
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "pos":-1, "offset":-20, "account_name": "eosio.ram"}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1326,9 +1326,9 @@ sub test_history_actions {
 
 sub test_system_symbol {
 	my ($self, %options) = @_;
-	$options{url} .= '/v1/chain/get_currency_balance';
+	$options{api_url} .= '/v1/chain/get_currency_balance';
 
-	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true, "account": "eosnationftw", "code":"eosio.token", "symbol": "EOS"}');
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "account": "eosnationftw", "code":"eosio.token", "symbol": "EOS"}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1398,7 +1398,7 @@ sub add_message {
 sub add_to_list {
 	my ($self, %options) = @_;
 
-	my $host = $options{host} || confess "missing host";
+	my $host = $options{host} || $options{url} || $options{api_url} || confess "missing host";
 	my $field = $options{field} || confess "missing type";
 	my $class = $options{class} || confess "missing class";
 
@@ -1434,7 +1434,7 @@ sub add_to_list {
 
 	push (@{$self->{results}{output}{$section}{$list}}, \%data);
 
-	$self->add_message(kind => 'ok', detail => 'basic checks passed', resource => $options{add_to_list}, url => $host, field => $field, class => $class);
+	$self->add_message(kind => 'ok', detail => 'basic checks passed', resource => $options{add_to_list}, %options);
 }
 
 sub get_json {

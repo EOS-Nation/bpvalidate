@@ -236,6 +236,7 @@ sub generate_message {
 	my $field = $$options{field};
 	my $node_type = $$options{node_type};
 	my $resource = $$options{resource};
+	my $api_url = $$options{api_url};
 	my $url = $$options{url};
 	my $response_url = $$options{response_url};
 	my $host = $$options{host};
@@ -262,6 +263,7 @@ sub generate_message {
 	$detail .= format_message_entry ('field', $field, 0, $content_type);
 	$detail .= format_message_entry ('having node_type', $node_type, 0, $content_type);
 	$detail .= format_message_entry ('resource', $resource, 0, $content_type);
+	$detail .= format_message_entry ('api_url', $api_url, 0, $content_type);
 	$detail .= format_message_entry ('url', $url, 1, $content_type);
 	$detail .= format_message_entry ('redirected to response_url', $response_url, 0, $content_type);
 	$detail .= format_message_entry ('host', $host, 0, $content_type);
@@ -282,10 +284,16 @@ sub format_message_entry {
 	return '' if (! defined $value);
 	return '' if ($value eq '');
 
-	$is_url = 0 if ($content_type ne 'html');
-#	$value = '<a href="' . $value . '">' . $value . '</a>' if ($is_url);
-
-	return ", $key=<$value>";
+#	if ($content_type eq 'html') {
+#		if ($is_url) {
+#			$value = '<a href="' . $value . '">' . $value . '</a>' if ($is_url);
+#		} else {
+#			$value = encode_entities ($value);
+#		}
+#		return ", $key=&lt;$value&gt;";
+#	} else {
+		return ", $key=<$value>";
+#	}
 }
 
 sub report_write_file {

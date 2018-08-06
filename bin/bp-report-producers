@@ -25,7 +25,7 @@ foreach my $lang (languages()) {
 				push (@section, ["%4s, %11s, %s\n", $$message{kind}, $$message{class}, generate_message($message, lang => $lang, content_type => $content_type)]);
 			}
 
-			generate_report (lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, icons => 1, class => 2, outfile => "producers/$producer", text => 1, html => 1);
+			generate_report (lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, icons => 1, class => 2, outfile => "producers/$producer", text => 1, html => 1, noescape => 3);
 		}
 	}
 }

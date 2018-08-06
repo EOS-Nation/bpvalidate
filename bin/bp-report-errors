@@ -29,6 +29,6 @@ foreach my $lang (languages()) {
 			}
 		}
 
-		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, icons => 1, class => 2, outfile => "reports/errors", text => 1, html => 1);
+		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, icons => 1, class => 2, outfile => "reports/errors", text => 1, html => 1, noescape => 3);
 	}
 }
