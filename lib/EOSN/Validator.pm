@@ -993,6 +993,9 @@ sub validate_api_extra_check {
 	if (! $self->test_history_actions (url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
+	if (! $self->test_system_symbol (url => $url, field => $field, class => $class, node_type => $node_type)) {
+		$errors++;
+	}
 
 	if ($errors) {
 		return undef;
@@ -1317,6 +1320,28 @@ sub test_history_actions {
 		return undef;
 	}
 	$self->add_message(kind => 'ok', detail => 'basic history test passed', %options);
+
+	return 1;
+}
+
+sub test_system_symbol {
+	my ($self, %options) = @_;
+	$options{url} .= '/v1/chain/get_currency_balance';
+
+	my $req = HTTP::Request->new('POST', $options{url}, undef, '{"json": true, "account": "eosnationftw", "code":"eosio.token", "symbol": "EOS"}');
+	$self->ua->timeout(10);
+	my $res = $self->ua->request($req);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $content = $res->content;
+
+	my $json = $self->get_json ($content, %options) || return undef;
+	if (! scalar (@$json)) {
+		$self->add_message(kind => 'err', detail => 'code compiled with incorrect symbol', %options);
+		return undef;
+	}
+	$self->add_message(kind => 'ok', detail => 'basic symbol test passed', %options);
 
 	return 1;
 }
