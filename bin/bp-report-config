@@ -14,7 +14,6 @@ $map{p2p} = 'p2p-peer-address';
 $map{bnet} = 'bnet-connect';
 
 my $data = get_report_options ();
-my @report;
 my %endpoints;
 
 foreach my $entry (@{$$data{producers}}) {
@@ -29,6 +28,7 @@ foreach my $entry (@{$$data{producers}}) {
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
+		my @report;
 		foreach my $kind (sort keys %endpoints) {
 			next if (! $map{$kind});
 			my @section;

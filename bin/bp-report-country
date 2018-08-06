@@ -11,7 +11,6 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $data = get_report_options ();
-my @report;
 my %sections;
 
 foreach my $entry (@{$$data{producers}}) {
@@ -27,6 +26,7 @@ foreach my $entry (@{$$data{producers}}) {
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
+		my @report;
 		foreach my $key (sort keys %sections) {
 			my $name = $sections{$key}{name};
 			my $section = $sections{$key}{data};

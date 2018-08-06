@@ -10,7 +10,6 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $data = get_report_options ();
-my @report;
 my %endpoints;
 
 foreach my $entry (@{$$data{producers}}) {
@@ -27,6 +26,7 @@ foreach my $entry (@{$$data{producers}}) {
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
+		my @report;
 		foreach my $node_type (sort keys %endpoints) {
 			my @section;
 
