@@ -507,17 +507,17 @@ sub check_nodes {
 	}
 
 	if (! $count_node_type_full) {
-		$self->add_message(kind => 'err', detail => 'no full nodes provided', see => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint');
+		$self->add_message(kind => 'err', detail => 'no full nodes provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint');
 	} else {
 		$self->add_message(kind => 'ok', detail => 'full node(s) provided', count => $count_node_type_full, class => 'endpoint');
 	}
 	if (! $count_node_type_seed) {
-		$self->add_message(kind => 'err', detail => 'no seed nodes provided', see => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint');
+		$self->add_message(kind => 'err', detail => 'no seed nodes provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint');
 	} else {
 		$self->add_message(kind => 'ok', detail => 'seed node(s) provided', count => $count_node_type_seed, class => 'endpoint');
 	}
 	if (! $count_node_type_producer) {
-		$self->add_message(kind => 'err', detail => 'no producer nodes provided', see => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint');
+		$self->add_message(kind => 'err', detail => 'no producer nodes provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint');
 	} else {
 		$self->add_message(kind => 'ok', detail => 'producer node(s) provided', count => $count_node_type_producer, class => 'endpoint');
 	}
