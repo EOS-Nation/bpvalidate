@@ -25,18 +25,18 @@ foreach my $entry (@{$$data{producers}}) {
 	push (@{$sections{$country_alpha2}{data}}, ["%12s\n", $producer]);
 }
 
-foreach my $key (sort keys %sections) {
-	my $name = $sections{$key}{name};
-	my $section = $sections{$key}{data};
-
-	my $flag = flag_html($key);
-	my $header = "$name &nbsp; $flag";
-	
-	push (@report, {name => $name, title => $header, rows => $section});
-}
-
-my %report_options = (data => $data, report => \@report, columns => 1, outfile => "reports/country", text => 1, html => 1);
 foreach my $lang (languages()) {
+	foreach my $key (sort keys %sections) {
+		my $name = $sections{$key}{name};
+		my $section = $sections{$key}{data};
+
+		my $flag = flag_html($key);
+		my $header = "$name &nbsp; $flag";
+	
+		push (@report, {name => $name, title => $header, rows => $section});
+	}
+
+	my %report_options = (data => $data, report => \@report, columns => 1, outfile => "reports/country", text => 1, html => 1);
 	generate_report_txt (lang => $lang, %report_options);
 	generate_report_thtml (lang => $lang, %report_options);
 }

@@ -27,25 +27,25 @@ foreach my $entry (@{$$data{producers}}) {
 	}
 }
 
-foreach my $kind (sort keys %endpoints) {
-	next if (! $map{$kind});
-	my @section;
+foreach my $lang (languages()) {
+	foreach my $kind (sort keys %endpoints) {
+		next if (! $map{$kind});
+		my @section;
 
-	foreach my $entry (@{$endpoints{$kind}}) {
-		my $producer = $$entry{producer};
-		my $location_name = $$entry{location}{name} || "Unknown";
-		my $location_country = $$entry{location}{country} || "??";
-		my $address = $$entry{address};
-		push (@section, ["# %s: %s, %s\n", $producer, $location_country, $location_name]);
-		push (@section, ["%s = %s\n", $map{$kind}, $$entry{address}]);
-		push (@section, ["\n"]);
+		foreach my $entry (@{$endpoints{$kind}}) {
+			my $producer = $$entry{producer};
+			my $location_name = $$entry{location}{name} || "Unknown";
+			my $location_country = $$entry{location}{country} || "??";
+			my $address = $$entry{address};
+			push (@section, ["# %s: %s, %s\n", $producer, $location_country, $location_name]);
+			push (@section, ["%s = %s\n", $map{$kind}, $$entry{address}]);
+			push (@section, ["\n"]);
+		}
+
+		push (@report, {name => $kind, rows => \@section, name_prefix => '# ', section_divider => 2});
 	}
 
-	push (@report, {name => $kind, rows => \@section, name_prefix => '# ', section_divider => 2});
-}
-
-my %report_options = (data => $data, report => \@report, columns => 0, outfile => "reports/config", text => 1, html => 1);
-foreach my $lang (languages()) {
+	my %report_options = (data => $data, report => \@report, columns => 0, outfile => "reports/config", text => 1, html => 1);
 	generate_report_txt (lang => $lang, %report_options);
 	generate_report_thtml (lang => $lang, %report_options);
 }
