@@ -259,19 +259,15 @@ sub generate_message {
 	$detail .= format_message_entry ('value', $value, 0, $content_type);
 	$detail .= format_message_entry ('suggested to use value', $suggested_value, 0, $content_type);
 	$detail .= format_message_entry ('target', $target, 0, $content_type);
-	$detail .= format_message_entry ('for field', $field, 0, $content_type);
+	$detail .= format_message_entry ('field', $field, 0, $content_type);
 	$detail .= format_message_entry ('having node_type', $node_type, 0, $content_type);
-	$detail .= format_message_entry ('for resource', $resource, 0, $content_type);
-	$detail .= format_message_entry ('for url', $url, 1, $content_type);
+	$detail .= format_message_entry ('resource', $resource, 0, $content_type);
+	$detail .= format_message_entry ('url', $url, 1, $content_type);
 	$detail .= format_message_entry ('redirected to response_url', $response_url, 0, $content_type);
-	$detail .= format_message_entry ('for host', $host, 0, $content_type);
-	$detail .= format_message_entry ('for ip', $ip, 0, $content_type);
-	$detail .= format_message_entry ('for dns', $dns, 0, $content_type);
-	if ($url || $host || $ip || $dns) {
-		$detail .= format_message_entry ('and port', $port, 0, $content_type);
-	} else {
-		$detail .= format_message_entry ('for port', $port, 0, $content_type);
-	}
+	$detail .= format_message_entry ('host', $host, 0, $content_type);
+	$detail .= format_message_entry ('ip', $ip, 0, $content_type);
+	$detail .= format_message_entry ('dns', $dns, 0, $content_type);
+	$detail .= format_message_entry ('port', $port, 0, $content_type);
 	$detail .= format_message_entry ('explanation', $explanation, 0, $content_type);
 	$detail .= format_message_entry ('see', $see1, 1, $content_type);
 	$detail .= format_message_entry ('see', $see2, 1, $content_type);
