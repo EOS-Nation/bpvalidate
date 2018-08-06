@@ -24,19 +24,19 @@ foreach my $entry (@{$$data{producers}}) {
 }
 
 foreach my $lang (languages()) {
-	foreach my $kind (sort keys %endpoints) {
-		my @section;
+	foreach my $content_type (content_types()) {
+		foreach my $kind (sort keys %endpoints) {
+			my @section;
 
-		foreach my $entry (@{$endpoints{$kind}}) {
-			my $producer = $$entry{producer};
-			my $address = $$entry{address};
-			push (@section, ["%12s, %s\n", $$entry{producer}, $$entry{address}]);
+			foreach my $entry (@{$endpoints{$kind}}) {
+				my $producer = $$entry{producer};
+				my $address = $$entry{address};
+				push (@section, ["%12s, %s\n", $$entry{producer}, $$entry{address}]);
+			}
+
+			push (@report, {name => $kind, rows => \@section});
 		}
 
-		push (@report, {name => $kind, rows => \@section});
+		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/resources", text => 1, html => 1);
 	}
-
-	my %report_options = (data => $data, report => \@report, columns => 1, outfile => "reports/resources", text => 1, html => 1);
-	generate_report_txt (lang => $lang, %report_options);
-	generate_report_thtml (lang => $lang, %report_options);
 }

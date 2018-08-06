@@ -14,21 +14,21 @@ my $data = get_report_options ();
 my @report;
 
 foreach my $lang (languages()) {
-	foreach my $entry (@{$$data{producers}}) {
-		my @section;
+	foreach my $content_type (content_types()) {
+		foreach my $entry (@{$$data{producers}}) {
+			my @section;
 
-		my $producer = $$entry{regproducer}{owner};
-		foreach my $message (@{$$entry{messages}}) {
-			next if ($$message{kind} eq 'ok');
-			push (@section, ["%4s, %11s, %s\n", $$message{kind}, $$message{class}, generate_message($message, $lang)]);
+			my $producer = $$entry{regproducer}{owner};
+			foreach my $message (@{$$entry{messages}}) {
+				next if ($$message{kind} eq 'ok');
+				push (@section, ["%4s, %11s, %s\n", $$message{kind}, $$message{class}, generate_message($message, lang => $lang, content_type => $content_type)]);
+			}
+
+			if (@section) {
+				push (@report, {name => $producer, rows => \@section});
+			}
 		}
 
-		if (@section) {
-			push (@report, {name => $producer, rows => \@section});
-		}
+		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, icons => 1, class => 2, outfile => "reports/errors", text => 1, html => 1);
 	}
-
-	my %report_options = (data => $data, report => \@report, columns => 1, icons => 1, class => 2, outfile => "reports/errors", text => 1, html => 1);
-	generate_report_txt (lang => $lang, %report_options);
-	generate_report_thtml (lang => $lang, %report_options);
 }

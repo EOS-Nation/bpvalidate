@@ -27,6 +27,10 @@ our $languages;
 # --------------------------------------------------------------------------
 # Getter Subroutines
 
+sub content_types {
+	return ('txt', 'html');
+}
+
 sub languages {
 	return keys %$languages;
 }
@@ -52,6 +56,21 @@ sub get_report_options {
 	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
 	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
 	return from_json(read_file($infile) || confess "$0: no data read");
+}
+
+sub generate_report {
+	my (%options) = @_;
+
+	my $content_type = $options{content_type};
+	delete $options{content_type};
+
+	if ($content_type eq 'txt') {
+	        generate_report_txt (%options);
+	} elsif ($content_type eq 'html') {
+	        generate_report_thtml (%options);
+	} else {
+		die "$0: unknown content_type";
+	}
 }
 
 sub generate_report_txt {
@@ -203,7 +222,10 @@ sub flag_html {
 }
 
 sub generate_message {
-	my ($options, $lang) = @_;
+	my ($options, %params) = @_;
+
+	my $content_type = $params{content_type} || die;
+	my $lang = $params{lang} || die;
 
 	my $count = $$options{count};
 	my $value = $$options{value};
@@ -233,29 +255,41 @@ sub generate_message {
 		$response_url = undef if ($url eq $response_url);
 	}
 
-	$detail .= " count=<$count>" if ($count);
-	$detail .= " value=<$value>" if ($value);
-	$detail .= " suggested to use value=<$suggested_value>" if ($suggested_value);
-	$detail .= " target=<$target>" if ($target);
-	$detail .= " for field=<$field>" if ($field);
-	$detail .= " having node_type=<$node_type>" if ($node_type);
-	$detail .= " for resource=<$resource>" if ($resource);
-	$detail .= " for url=<$url>" if ($url);
-	$detail .= " redirected to response_url=<$response_url>" if ($response_url);
-	$detail .= " for host=<$host>" if ($host);
-	$detail .= " for ip=<$ip>" if ($ip);
-	$detail .= " for dns=<$dns>" if ($dns);
+	$detail .= format_message_entry ('count', $count, 0, $content_type);
+	$detail .= format_message_entry ('value', $value, 0, $content_type);
+	$detail .= format_message_entry ('suggested to use value', $suggested_value, 0, $content_type);
+	$detail .= format_message_entry ('target', $target, 0, $content_type);
+	$detail .= format_message_entry ('for field', $field, 0, $content_type);
+	$detail .= format_message_entry ('having node_type', $node_type, 0, $content_type);
+	$detail .= format_message_entry ('for resource', $resource, 0, $content_type);
+	$detail .= format_message_entry ('for url', $url, 1, $content_type);
+	$detail .= format_message_entry ('redirected to response_url', $response_url, 0, $content_type);
+	$detail .= format_message_entry ('for host', $host, 0, $content_type);
+	$detail .= format_message_entry ('for ip', $ip, 0, $content_type);
+	$detail .= format_message_entry ('for dns', $dns, 0, $content_type);
 	if ($url || $host || $ip || $dns) {
-		$detail .= " and port=<$port>" if ($port);
+		$detail .= format_message_entry ('and port', $port, 0, $content_type);
 	} else {
-		$detail .= " for port=<$port>" if ($port);
+		$detail .= format_message_entry ('for port', $port, 0, $content_type);
 	}
-	$detail .= "; $explanation" if ($explanation);
-	$detail .= "; see $see1" if ($see1);
-	$detail .= "; see $see2" if ($see2);
-	$detail .= " at=<" . datetime($time, $lang) . ">" if ($time);
+	$detail .= format_message_entry ('explanation', $explanation, 0, $content_type);
+	$detail .= format_message_entry ('see', $see1, 1, $content_type);
+	$detail .= format_message_entry ('see', $see2, 1, $content_type);
+	$detail .= format_message_entry ('at', datetime($time, $lang), 0, $content_type);
 
 	return $detail;
+}
+
+sub format_message_entry {
+	my ($key, $value, $is_url, $content_type) = @_;
+
+	return '' if (! defined $value);
+	return '' if ($value eq '');
+
+	$is_url = 0 if ($content_type ne 'html');
+#	$value = '<a href="' . $value . '">' . $value . '</a>' if ($is_url);
+
+	return ", $key=<$value>";
 }
 
 sub report_write_file {
@@ -273,6 +307,8 @@ sub label {
 
 sub datetime {
 	my ($value, $lang) = @_;
+
+	return '' if (! defined $value);
 
 	my $unixtime = str2time($value);
 	return time2str(label('format_datetime', $lang), $unixtime, 'UTC');

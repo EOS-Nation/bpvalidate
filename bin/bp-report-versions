@@ -38,14 +38,14 @@ foreach my $kind (sort keys %endpoints) {
 }
 
 foreach my $lang (languages()) {
-	foreach my $key (sort keys %sections) {
-		my $section = $sections{$key};
-		my $name = $key;
-		$name = 'Unknown' if ($key eq 'zzunknown');
-		push (@report, {name => $name, rows => $section});
-	}
+	foreach my $content_type (content_types()) {
+		foreach my $key (sort keys %sections) {
+			my $section = $sections{$key};
+			my $name = $key;
+			$name = 'Unknown' if ($key eq 'zzunknown');
+			push (@report, {name => $name, rows => $section});
+		}
 
-	my %report_options = (data => $data, report => \@report, columns => 1, outfile => "reports/versions", text => 1, html => 1);
-	generate_report_txt (lang => $lang, %report_options);
-	generate_report_thtml (lang => $lang, %report_options);
+		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/versions", text => 1, html => 1);
+	}
 }
