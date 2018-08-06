@@ -281,6 +281,8 @@ sub check_org_misc {
 		}
 	}
 
+
+# removed July, 2018: https://github.com/EOS-Nation/bpvalidate/issues/27
 #	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
 #		$self->add_message(kind => 'err', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'org');
 #	}
