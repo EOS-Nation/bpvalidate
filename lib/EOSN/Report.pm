@@ -284,16 +284,16 @@ sub format_message_entry {
 	return '' if (! defined $value);
 	return '' if ($value eq '');
 
-#	if ($content_type eq 'html') {
-#		if ($is_url) {
-#			$value = '<a href="' . $value . '">' . $value . '</a>' if ($is_url);
-#		} else {
-#			$value = encode_entities ($value);
-#		}
-#		return ", $key=&lt;$value&gt;";
-#	} else {
+	if ($content_type eq 'html') {
+		if ($is_url) {
+			$value = '<a href="' . $value . '">' . $value . '</a>' if ($is_url);
+		} else {
+			$value = encode_entities ($value);
+		}
+		return ", $key=&lt;$value&gt;";
+	} else {
 		return ", $key=<$value>";
-#	}
+	}
 }
 
 sub report_write_file {
