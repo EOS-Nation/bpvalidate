@@ -281,6 +281,9 @@ sub check_org_misc {
 		}
 	}
 
+	if ($$json{producer_public_key}) {
+		$self->add_message(kind => 'info', detail => 'producer_public_key is not useful', see1 => 'https://github.com/eosrio/bp-info-standard/issues/7', field => 'producer_public_key', class => 'org');
+	}
 
 # removed July, 2018: https://github.com/EOS-Nation/bpvalidate/issues/27
 #	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
@@ -366,105 +369,119 @@ sub check_nodes {
 	};
 
 	my $node_number = 0;
-	my $total_api_endpoint = 0;
-	my $total_ssl_endpoint = 0;
-	my $total_peer_endpoint = 0;
-	my $total_bnet_endpoint = 0;
+	my $total_valid_api_endpoint = 0;
+	my $total_valid_ssl_endpoint = 0;
+	my $total_valid_peer_endpoint = 0;
+	my $total_valid_bnet_endpoint = 0;
+	my $total_found_api_ssl_endpoint = 0;
+	my $total_found_peer_bnet_endpoint = 0;
 	foreach my $node (@nodes) {
-		my $found_something = 0;
 		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'org');
 		my $node_type = $$node{node_type};
-		my $api_endpoint = 0;
-		my $ssl_endpoint = 0;
-		my $peer_endpoint = 0;
-		my $bnet_endpoint = 0;
+		my $valid_api_endpoint = 0;
+		my $valid_ssl_endpoint = 0;
+		my $valid_peer_endpoint = 0;
+		my $valid_bnet_endpoint = 0;
+		my $found_api_ssl_endpoint = 0;
+		my $found_peer_bnet_endpoint = 0;
 
 		# ---------- check endpoints
 
 		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
-			$found_something++;
+			$found_api_ssl_endpoint++;
 			my $result = $self->validate_api(url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
 			if ($result) {
-				$api_endpoint++;
+				$valid_api_endpoint++;
 			}
 		}
 
 		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
-			$found_something++;
+			$found_api_ssl_endpoint++;
 			my $result = $self->validate_api(url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
 			if ($result) {
-				$ssl_endpoint++;
+				$valid_ssl_endpoint++;
 			}
 		}
 
 		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
-			$found_something++;
+			$found_peer_bnet_endpoint++;
 			if ($self->validate_connection(peer => $$node{p2p_endpoint}, field => "node[$node_number].p2p_endpoint", connection_field => 'p2p', add_to_list => 'nodes/p2p', node_type => $node_type, location => $location)) {
-				$peer_endpoint++;
+				$valid_peer_endpoint++;
 			}
 		}
 
 		if ((defined $$node{bnet_endpoint}) && ($$node{bnet_endpoint} ne '')) {
-			$found_something++;
+			$found_peer_bnet_endpoint++;
 			if ($self->validate_connection(peer => $$node{bnet_endpoint}, field => "node[$node_number].bnet_endpoint", connection_field => 'bnet', add_to_list => 'nodes/bnet', node_type => $node_type, location => $location)) {
-				$bnet_endpoint++;
+				$valid_bnet_endpoint++;
 			}
 		}
 
 		# ---------- check type of node
 
 		if (exists $$node{is_producer}) {
-			$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].is_producer", class => 'endpoint');
 			if ($$node{is_producer} && (! exists $$node{node_type})) {
+				$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].is_producer", class => 'endpoint');
 				$node_type = 'producer';
+			} else {
+				$self->add_message(kind => 'info', detail => "is_producer is deprecated and can be removed", field => "node[$node_number].is_producer", class => 'endpoint');
 			}
 		}
 
 		if (! $node_type) {
 			$self->add_message(kind => 'warn', detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number]", class => 'endpoint');
 		} elsif ($node_type eq 'producer') {
-			if ($found_something) {
+			if ($found_api_ssl_endpoint || $found_peer_bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'endpoints provided (producer should be private)', field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'seed') {
-			if (! $peer_endpoint && ! $bnet_endpoint) {
+			if (! $valid_peer_endpoint && ! $valid_bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'no valid peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
-			if ($api_endpoint || $ssl_endpoint) {
+			if ($valid_api_endpoint || $valid_ssl_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'extranious API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'query') {
 			$self->add_message(kind => 'err', detail => 'use node_type=query is deprecated; use node_type=full instead', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21')
 		} elsif ($node_type eq 'full') {
-			if ($peer_endpoint || $bnet_endpoint) {
+			if ($valid_peer_endpoint || $valid_bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'extranious peer endpoints provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
-			if (! $api_endpoint && ! $ssl_endpoint) {
+			if (! $valid_api_endpoint && ! $valid_ssl_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'no valid API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} else {
 			$self->add_message(kind => 'err', detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].node_type", class => 'endpoint');
-			if (! $found_something) {
+			if (! $found_api_ssl_endpoint && ! $found_peer_bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'no valid endpoints provided (useless section)', field => "node[$node_number]", class => 'endpoint');
 			}
 		}
 
-		$total_api_endpoint += $api_endpoint;
-		$total_ssl_endpoint += $ssl_endpoint;
-		$total_peer_endpoint += $peer_endpoint;
-		$total_bnet_endpoint += $bnet_endpoint;
+		$total_valid_api_endpoint += $valid_api_endpoint;
+		$total_valid_ssl_endpoint += $valid_ssl_endpoint;
+		$total_valid_peer_endpoint += $valid_peer_endpoint;
+		$total_valid_bnet_endpoint += $valid_bnet_endpoint;
+		$total_found_api_ssl_endpoint += $found_api_ssl_endpoint;
+		$total_found_peer_bnet_endpoint += $found_peer_bnet_endpoint;
 		$node_number++;
 	}
 
-	if (! $total_api_endpoint && ! $total_ssl_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided in any node', class => 'endpoint');
-	} elsif (! $total_ssl_endpoint) {
+	if (! $total_found_api_ssl_endpoint) {
+		$self->add_message(kind => 'crit', detail => 'no HTTP or HTTPS API endpoints provided in any node', class => 'endpoint');
+	} elsif (! $total_valid_api_endpoint && ! $total_valid_ssl_endpoint) {
+		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided in any node; see above messages', class => 'endpoint');
+	} elsif (! $total_valid_ssl_endpoint) {
 		$self->add_message(kind => 'warn', detail => 'no valid HTTPS API endpoints provided in any node', class => 'endpoint');
+	} elsif (! $total_valid_api_endpoint) {
+		# similar check is implemented on https://eosreport.franceos.fr/
+		# $self->add_message(kind => 'warn', detail => 'no valid HTTP API endpoints provided in any node', class => 'endpoint');
 	}
 
-	if (! $total_peer_endpoint && ! $total_bnet_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no valid P2P or BNET endpoints provided in any node', class => 'endpoint');
-	} elsif (! $total_bnet_endpoint) {
+	if (! $total_found_peer_bnet_endpoint) {
+		$self->add_message(kind => 'crit', detail => 'no P2P or BNET endpoints provided in any node', class => 'endpoint');
+	} elsif (! $total_valid_peer_endpoint && ! $total_valid_bnet_endpoint) {
+		$self->add_message(kind => 'crit', detail => 'no valid P2P or BNET endpoints provided in any node; see above messages', class => 'endpoint');
+	} elsif (! $total_valid_bnet_endpoint) {
 		# 2018-07-23 apparently some bnet endpoints are crashing? 
 		#$self->add_message(kind => 'warn', detail => 'no valid BNET endpoints provided in any node', class => 'endpoint');
 	}
