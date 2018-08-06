@@ -240,6 +240,7 @@ sub run_validate {
 	if (! ref $$json{org}) {
 		$self->add_message(kind => 'err', detail => 'not a object', field => 'org', class => 'org');
 	} else {
+		$self->check_onchainjson;
 		$self->check_org_misc;
 		$self->check_org_location;
 		$self->check_org_branding;
@@ -247,6 +248,35 @@ sub run_validate {
 	}
 
 	$self->check_nodes;
+}
+
+sub check_onchainjson {
+	my ($self) = @_;
+
+	my $onchainjson = $self->{onchainjson};
+	if (! $onchainjson) {
+		$self->add_message(kind => 'err', detail => 'bp.json has not been provided on-chain', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', class => 'chain');
+		return;
+	}
+
+	my $chain_json = $self->get_json ($onchainjson, field => 'bp.json onchain', 'class' => 'chain');
+	if (! $chain_json) {
+		return;
+	}
+
+	my $file_json = $self->{results}{input};
+
+	my $chain_text = to_json($chain_json, {canonical => 1, pretty => 0});
+	my $file_text = to_json($file_json, {canonical => 1, pretty => 0});
+
+	if ($chain_text ne $file_text) {
+		print "CHAIN: $chain_text\n";
+		print "FILEE: $file_text\n";
+		$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', class => 'chain');
+		return;
+	}
+
+	$self->add_message(kind => 'ok', detail => 'bp.json has been provided on-chain and matches what is in the regproducer URL', class => 'chain');
 }
 
 sub check_org_location {

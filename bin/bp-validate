@@ -43,11 +43,24 @@ sub setup_jobs {
 	my $ua = eosn_ua();
 	my $dbh = do_connect('validate');
 	my $rank = 0;
+	my %onchainjson;
 
 	my $producer_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_producers", limit => $limit);
 
 	if (! $producer_list) {
 		die "$0: cannot get producer list";
+	}
+
+	my $json_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_table_rows", limit => $limit, code => "producerjson", scope => "producerjson", table => "producerjson");
+
+	if (! $json_list) {
+		die "$0: cannot get json list";
+	}
+
+	foreach my $obj (@$json_list) {
+		my $owner = $$obj{owner};
+		my $json = $$obj{json};
+		$onchainjson{$owner} = $json;
 	}
 
 	my $vote_total = 0;
@@ -58,8 +71,9 @@ sub setup_jobs {
 
 	foreach my $entry (@{$producer_list}) {
 		$rank++;
+		my $owner = $$entry{owner};
 
-		$dbh->do('insert ignore into producer (producer, status, regproducer_at) values (?, ?, ?)', {}, $$entry{owner}, 'hold', time);
+		$dbh->do('insert ignore into producer (producer, status, regproducer_at) values (?, ?, ?)', {}, $owner, 'hold', time);
 
 		my $vote_percent = 0;
 		if ($$entry{is_active}) {
@@ -83,7 +97,9 @@ sub setup_jobs {
 			$limit = time;
 		}
 
-		$dbh->do('update producer set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ? where producer = ? and (checked_at < ? or checked_at is null)', {}, $state, time, to_json ($entry), $rank, $vote_percent, $$entry{owner}, $limit);
+		$dbh->do('update producer set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, onchainjson_data = ?
+			where producer = ? and (checked_at < ? or checked_at is null)'
+			, {}, $state, time, to_json ($entry), $rank, $vote_percent, $onchainjson{$owner}, $owner, $limit);
 	}
 }
 
@@ -121,7 +137,13 @@ sub doit {
 		}
 		warn "[$thread_id] processing: $$entry{producer}\n" if ($debug);
 		my $ua = eosn_ua();
-		my $producer = new EOSN::Validator (ua => $ua, properties => from_json ($$entry{regproducer_data}), versions => $versions, rank => $$entry{regproducer_rank}, vote_percent => $$entry{regproducer_vote_percent});
+		my $producer = new EOSN::Validator (ua => $ua,
+			properties => from_json ($$entry{regproducer_data}),
+			versions => $versions,
+			rank => $$entry{regproducer_rank},
+			vote_percent => $$entry{regproducer_vote_percent},
+			onchainjson => $$entry{onchainjson_data}
+		);
 		my $results = $producer->validate;
 		#print "[$thread_id] >>> ", to_json ($results), "\n";
 		$dbh->do('update producer set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?', {}, 'done', time, to_json ($results), $$entry{id});
