@@ -375,6 +375,9 @@ sub check_nodes {
 	my $total_valid_bnet_endpoint = 0;
 	my $total_found_api_ssl_endpoint = 0;
 	my $total_found_peer_bnet_endpoint = 0;
+	my $count_node_type_full = 0;
+	my $count_node_type_seed = 0;
+	my $count_node_type_producer = 0;
 	foreach my $node (@nodes) {
 		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'org');
 		my $node_type = $$node{node_type};
@@ -428,14 +431,20 @@ sub check_nodes {
 			}
 		}
 
+		# subsequent nodes of the same type can be empty so as to add
+		# new locations for the existing endpoints
+		# https://github.com/EOS-Nation/bpvalidate/issues/29
+
 		if (! $node_type) {
 			$self->add_message(kind => 'warn', detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number]", class => 'endpoint');
 		} elsif ($node_type eq 'producer') {
+			$count_node_type_producer++;
 			if ($found_api_ssl_endpoint || $found_peer_bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'endpoints provided (producer should be private)', field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'seed') {
-			if (! $valid_peer_endpoint && ! $valid_bnet_endpoint) {
+			$count_node_type_seed++;
+			if (! $valid_peer_endpoint && ! $valid_bnet_endpoint && $count_node_type_seed == 1) {
 				$self->add_message(kind => 'warn', detail => 'no valid peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 			if ($valid_api_endpoint || $valid_ssl_endpoint) {
@@ -444,10 +453,11 @@ sub check_nodes {
 		} elsif ($node_type eq 'query') {
 			$self->add_message(kind => 'err', detail => 'use node_type=query is deprecated; use node_type=full instead', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21')
 		} elsif ($node_type eq 'full') {
+			$count_node_type_full++;
 			if ($valid_peer_endpoint || $valid_bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'extranious peer endpoints provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
-			if (! $valid_api_endpoint && ! $valid_ssl_endpoint) {
+			if (! $valid_api_endpoint && ! $valid_ssl_endpoint && $count_node_type_full == 1) {
 				$self->add_message(kind => 'warn', detail => 'no valid API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} else {
@@ -464,6 +474,22 @@ sub check_nodes {
 		$total_found_api_ssl_endpoint += $found_api_ssl_endpoint;
 		$total_found_peer_bnet_endpoint += $found_peer_bnet_endpoint;
 		$node_number++;
+	}
+
+	if (! $count_node_type_full) {
+		$self->add_message(kind => 'err', detail => 'no full nodes provided', class => 'endpoint');
+	} else {
+		$self->add_message(kind => 'ok', detail => 'full nodes provided', count => $count_node_type_full, class => 'endpoint');
+	}
+	if (! $count_node_type_seed) {
+		$self->add_message(kind => 'err', detail => 'no seed nodes provided', class => 'endpoint');
+	} else {
+		$self->add_message(kind => 'ok', detail => 'see nodes provided', count => $count_node_type_seed, class => 'endpoint');
+	}
+	if (! $count_node_type_producer) {
+		$self->add_message(kind => 'err', detail => 'no producer nodes provided', class => 'endpoint');
+	} else {
+		$self->add_message(kind => 'ok', detail => 'producer nodes provided', count => $count_node_type_producer, class => 'endpoint');
 	}
 
 	if (! $total_found_api_ssl_endpoint) {
