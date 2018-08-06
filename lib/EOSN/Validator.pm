@@ -158,7 +158,7 @@ sub validate {
 
 	my $update_time = time2str("%C", time);
 
-	$self->prefix_message(kind => 'info', detail => 'bp.json is re-validated approximately every 30 minutes; last update', time => $update_time, class => 'general');
+	$self->prefix_message(kind => 'info', detail => 'bp.json is re-validated approximately every 30 minutes', last_update_time => $update_time, class => 'general');
 
 	$self->{results}{meta}{generated_at} = $update_time;
 	$self->{results}{meta}{elapsed_time} = $end_time - $start_time;

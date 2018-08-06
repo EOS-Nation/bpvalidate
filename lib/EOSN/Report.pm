@@ -64,6 +64,8 @@ sub generate_report {
 	my $content_type = $options{content_type};
 	delete $options{content_type};
 
+	#print ">> generate report content_type=<$content_type> file=<$options{outfile}> lang=<$options{lang}>\n";
+
 	if ($content_type eq 'txt') {
 	        generate_report_txt (%options);
 	} elsif ($content_type eq 'html') {
@@ -246,7 +248,7 @@ sub generate_message {
 	my $explanation = $$options{explanation};
 	my $see1 = $$options{see1};
 	my $see2 = $$options{see2};
-	my $time = $$options{time};
+	my $last_update_time = $$options{last_update_time};
 
 	if ($url && $url !~ m#^https?://.#) {
 		$host = $url;
@@ -273,7 +275,7 @@ sub generate_message {
 	$detail .= format_message_entry ('explanation', $explanation, 0, $content_type);
 	$detail .= format_message_entry ('see', $see1, 1, $content_type);
 	$detail .= format_message_entry ('see', $see2, 1, $content_type);
-	$detail .= format_message_entry ('at', datetime($time, $lang), 0, $content_type);
+	$detail .= format_message_entry ('last updated at', datetime($last_update_time, $lang), 0, $content_type);
 
 	return $detail;
 }
