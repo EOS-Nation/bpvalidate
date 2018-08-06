@@ -24,7 +24,7 @@ $content_types{html} = ['text/html'];
 our %bad_urls;
 $bad_urls{'https://google.com'} = {value => 'not a BP specific web site'};
 $bad_urls{'https://www.yahoo.com'} = {value => 'not a BP specific web site'};
-$bad_urls{'https://pbs.twimg.com'} = {value => 'does not load when tracking protection is enabled', explanation => 'https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection'};
+$bad_urls{'https://pbs.twimg.com'} = {value => 'does not load when tracking protection is enabled', see1 => 'https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection'};
 
 our %social;
 $social{'medium'} = 'https://medium.com/@';
@@ -600,7 +600,7 @@ sub validate_url {
 
 	if ($ssl eq 'either') {
 		if ($url !~ m#^https://#) {
-			$self->add_message(kind => 'warn', detail => 'HTTPS is recommended instead of HTTP', url => $url, field => $field, class => $class, explanation => 'https://security.googleblog.com/2018/02/a-secure-web-is-here-to-stay.html');
+			$self->add_message(kind => 'warn', detail => 'HTTPS is recommended instead of HTTP', url => $url, field => $field, class => $class, see1 => 'https://security.googleblog.com/2018/02/a-secure-web-is-here-to-stay.html');
 		}
 	} elsif ($ssl eq 'on') {
 		if ($url !~ m#^https://#) {
@@ -645,24 +645,24 @@ sub validate_url {
 	} elsif ($cors eq 'should') {
 		# error, but not fatal, but not ok either
 		if (! @cors_headers) {
-			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			delete $options{add_to_list};
 		} elsif (@cors_headers > 1) {
-			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			delete $options{add_to_list};
 		} elsif ($cors_headers[0] ne '*') {
-			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			delete $options{add_to_list};
 		}	
 	} elsif ($cors eq 'on') {
 		if (! @cors_headers) {
-			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			return undef;
 		} elsif (@cors_headers > 1) {
-			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			return undef;
 		} elsif ($cors_headers[0] ne '*') {
-			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', url => $url, field => $field, class => $class, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', url => $url, field => $field, class => $class, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
 			return undef;
 		}	
 	} elsif ($cors eq 'off') {
@@ -848,7 +848,7 @@ sub validate_api_extra_check {
 # cookies should not be used for session routing, so this check is not required
 #	my $server_header = $res->header('Server');
 #	if ($server_header && $server_header =~ /cloudflare/) {
-#		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class, node_type => $node_type, explanation => 'https://validate.eosnation.io/faq/#cloudflare');
+#		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#cloudflare');
 #		$errors++;
 #	}
 #
@@ -864,7 +864,7 @@ sub validate_api_extra_check {
 		if ($check_http2 =~ m#HTTP/2 200#) {
 			$options{add_to_list} .= '2';
 		} else {
-			$self->add_message(kind => 'warn', detail => 'HTTPS API nodes would have better performance by using HTTP/2', url => $url, field => $field, class => $class, node_type => $node_type, explanation => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
+			$self->add_message(kind => 'warn', detail => 'HTTPS API nodes would have better performance by using HTTP/2', url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
 		}
 	}
 
@@ -901,13 +901,13 @@ sub validate_api_extra_check {
 	}
 
 	if (! $$versions{$$result{server_version}}) {
-		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version}, url => $url, field => $field, class => $class, node_type => $node_type, explanation => 'https://validate.eosnation.io/faq/#versions');
+		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version}, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
 	} else {
 		my $name = $$versions{$$result{server_version}}{name};
 		my $current = $$versions{$$result{server_version}}{current};
 		$info{server_version} = $name;
 		if (! $current) {
-			$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class, node_type => $node_type, explanation => 'https://validate.eosnation.io/faq/#versions');
+			$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
 		}
 	}
 
@@ -1103,7 +1103,7 @@ sub validate_country_a2 {
 		$country = uc ($country);
 		my $country_validated = code2country($country);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1111,7 +1111,7 @@ sub validate_country_a2 {
 	} elsif ($country =~ /^[A-Z]{2}$/) {
 		my $country_validated = code2country($country);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1119,9 +1119,9 @@ sub validate_country_a2 {
 	} else {
 		my $code = country2code($country);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 		} else {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 		}
 		return undef;
 	}
@@ -1144,7 +1144,7 @@ sub validate_country_n {
 	if ($country =~ /^\d\d\d$/) {
 		my $country_validated = code2country($country, LOCALE_CODE_NUMERIC);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 			return undef;
 		} else {
 			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
@@ -1152,9 +1152,9 @@ sub validate_country_n {
 	} else {
 		my $code = country2code($country, LOCALE_CODE_NUMERIC);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, suggested_value => uc($code), field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, suggested_value => uc($code), field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 		} else {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, explanation => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
 		}
 		return undef;
 	}
@@ -1177,7 +1177,7 @@ sub test_patreonous {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => 'invalid patreonous filter message', value => $status_message, explanation => 'https://github.com/EOSIO/patroneos/issues/36', %options);
+		$self->add_message(kind => 'crit', detail => 'invalid patreonous filter message', value => $status_message, see1 => 'https://github.com/EOSIO/patroneos/issues/36', %options);
 		return undef;
 	}
 
@@ -1222,7 +1222,7 @@ sub test_abi_serializer {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'err', detail => 'error retriving large block', value => $status_message, explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000', %options);
+		$self->add_message(kind => 'err', detail => 'error retriving large block', value => $status_message, explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)', %options);
 		return undef;
 	}
 
@@ -1243,10 +1243,9 @@ sub test_history_actions {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'err', detail => 'error retriving actions history', value => $status_message, explanation => 'edit config.ini to turn on history and replay all blocks', %options);
+		$self->add_message(kind => 'err', detail => 'error retriving actions history', value => $status_message, explanation => 'edit config.ini to turn on history and replay all blocks', see1 => 'https://steemit.com/eos/@greymass/consistency-in-configuration-of-public-eos-full-nodes', see2 => 'http://t.me/eosfullnodes', %options);
 		return undef;
 	}
-
 	$self->add_message(kind => 'ok', detail => 'basic history test passed', %options);
 
 	return 1;

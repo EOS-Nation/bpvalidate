@@ -220,6 +220,8 @@ sub generate_message {
 	my $dns = $$options{dns};
 	my $port = $$options{port};
 	my $explanation = $$options{explanation};
+	my $see1 = $$options{see1};
+	my $see2 = $$options{see2};
 	my $time = $$options{time};
 
 	if ($url && $url !~ m#^https?://.#) {
@@ -246,13 +248,9 @@ sub generate_message {
 	} else {
 		$detail .= " for port=<$port>" if ($port);
 	}
-	if ($explanation) {
-		if ($explanation =~ m#^https?://#) {
-			$detail .= "; see $explanation";
-		} else {
-			$detail .= "; $explanation";
-		}
-	}
+	$detail .= "; $explanation" if ($explanation);
+	$detail .= "; see $see1" if ($see1);
+	$detail .= "; see $see2" if ($see2);
 	$detail .= " at=<" . datetime($time, $lang) . ">" if ($time);
 
 	return $detail;
