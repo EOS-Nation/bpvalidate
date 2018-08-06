@@ -205,6 +205,7 @@ sub flag_html {
 sub generate_message {
 	my ($options, $lang) = @_;
 
+	my $count = $$options{count};
 	my $value = $$options{value};
 	my $suggested_value = $$options{suggested_value};
 	my $target = $$options{target};
@@ -232,6 +233,7 @@ sub generate_message {
 		$response_url = undef if ($url eq $response_url);
 	}
 
+	$detail .= " count=<$count>" if ($count);
 	$detail .= " value=<$value>" if ($value);
 	$detail .= " suggested to use value=<$suggested_value>" if ($suggested_value);
 	$detail .= " target=<$target>" if ($target);

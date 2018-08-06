@@ -479,17 +479,17 @@ sub check_nodes {
 	if (! $count_node_type_full) {
 		$self->add_message(kind => 'err', detail => 'no full nodes provided', class => 'endpoint');
 	} else {
-		$self->add_message(kind => 'ok', detail => 'full nodes provided', count => $count_node_type_full, class => 'endpoint');
+		$self->add_message(kind => 'ok', detail => 'full node(s) provided', count => $count_node_type_full, class => 'endpoint');
 	}
 	if (! $count_node_type_seed) {
 		$self->add_message(kind => 'err', detail => 'no seed nodes provided', class => 'endpoint');
 	} else {
-		$self->add_message(kind => 'ok', detail => 'see nodes provided', count => $count_node_type_seed, class => 'endpoint');
+		$self->add_message(kind => 'ok', detail => 'seed node(s) provided', count => $count_node_type_seed, class => 'endpoint');
 	}
 	if (! $count_node_type_producer) {
 		$self->add_message(kind => 'err', detail => 'no producer nodes provided', class => 'endpoint');
 	} else {
-		$self->add_message(kind => 'ok', detail => 'producer nodes provided', count => $count_node_type_producer, class => 'endpoint');
+		$self->add_message(kind => 'ok', detail => 'producer node(s) provided', count => $count_node_type_producer, class => 'endpoint');
 	}
 
 	if (! $total_found_api_ssl_endpoint) {
