@@ -5,7 +5,7 @@ use strict;
 use JSON;
 use Parallel::ForkManager;
 use EOSN::SQL qw(do_connect);
-use EOSN::Producer;
+use EOSN::Validator;
 use EOSN::FileUtil qw(write_file read_csv_hash);
 use EOSN::UA qw(eosn_ua get_table);
 use Date::Format qw(time2str);
@@ -121,7 +121,7 @@ sub doit {
 		}
 		warn "[$thread_id] processing: $$entry{producer}\n" if ($debug);
 		my $ua = eosn_ua();
-		my $producer = new EOSN::Producer (ua => $ua, properties => from_json ($$entry{regproducer_data}), versions => $versions, rank => $$entry{regproducer_rank}, vote_percent => $$entry{regproducer_vote_percent});
+		my $producer = new EOSN::Validator (ua => $ua, properties => from_json ($$entry{regproducer_data}), versions => $versions, rank => $$entry{regproducer_rank}, vote_percent => $$entry{regproducer_vote_percent});
 		my $results = $producer->validate;
 		#print "[$thread_id] >>> ", to_json ($results), "\n";
 		$dbh->do('update producer set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?', {}, 'done', time, to_json ($results), $$entry{id});

@@ -1,4 +1,4 @@
-package EOSN::Producer;
+package EOSN::Validator;
 
 use utf8;
 use strict;
