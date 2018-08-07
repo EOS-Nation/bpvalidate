@@ -269,10 +269,17 @@ sub check_onchainjson {
 	my $chain_text = to_json($chain_json, {canonical => 1, pretty => 0});
 	my $file_text = to_json($file_json, {canonical => 1, pretty => 0});
 
+	my $file_textns = $file_text;
+	$file_textns =~ s/\s+//;
+
 	if ($chain_text ne $file_text) {
-		print "CHAIN: $chain_text\n";
-		print "FILEE: $file_text\n";
-		$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', class => 'chain');
+		if ($chain_text eq $file_textns) {
+			$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL: spaces are missing from on-chain version', see1 => 'https://github.com/EOS-Nation/bpvalidate/blob/master/util/bpjson2chain.pl', class => 'chain');
+		} else {
+			print "CHAIN: $chain_text\n";
+			print "FILEE: $file_text\n";
+			$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', class => 'chain');
+		}
 		return;
 	}
 
