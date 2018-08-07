@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+# Usage: bpjson2chain.pl producername < bp.json
+
 use JSON;
 
 my $producer = $ARGV[0] || "insertproducername";
