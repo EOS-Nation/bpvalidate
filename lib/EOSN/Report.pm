@@ -249,6 +249,7 @@ sub generate_message {
 	my $see1 = $$options{see1};
 	my $see2 = $$options{see2};
 	my $last_update_time = $$options{last_update_time};
+	my $diff = $$options{diff};
 
 	if ($url && $url !~ m#^https?://.#) {
 		$host = $url;
@@ -276,6 +277,7 @@ sub generate_message {
 	$detail .= format_message_entry ('see', $see1, 1, $content_type);
 	$detail .= format_message_entry ('see', $see2, 1, $content_type);
 	$detail .= format_message_entry ('last updated at', datetime($last_update_time, $lang), 0, $content_type);
+	$detail .= format_message_entry ('diff', $diff, 2, $content_type);
 
 	return $detail;
 }
@@ -287,14 +289,20 @@ sub format_message_entry {
 	return '' if ($value eq '');
 
 	if ($content_type eq 'html') {
-		if ($is_url) {
-			$value = '<a href="' . $value . '">' . $value . '</a>' if ($is_url);
+		if ($is_url == 1) {
+			$value = '<a href="' . $value . '">' . $value . '</a>';
+		} elsif ($is_url == 2) {
+			$value = '<xmp>' . encode_entities ($value) . '</xmp>';
 		} else {
 			$value = encode_entities ($value);
 		}
 		return ", $key=&lt;$value&gt;";
 	} else {
-		return ", $key=<$value>";
+		if ($is_url == 2) {
+			return "";
+		} else {
+			return ", $key=<$value>";
+		}
 	}
 }
 

@@ -14,6 +14,7 @@ use Date::Format qw(time2str);
 use Date::Parse qw(str2time);
 use Carp qw(confess);
 use Time::Seconds;
+use Text::Diff;
 
 our %content_types;
 $content_types{json} = ['application/json'];
@@ -266,19 +267,22 @@ sub check_onchainjson {
 
 	my $file_json = $self->{results}{input};
 
-	my $chain_text = to_json($chain_json, {canonical => 1, pretty => 0});
-	my $file_text = to_json($file_json, {canonical => 1, pretty => 0});
+	my $chain_text = to_json($chain_json, {canonical => 1, pretty => 1});
+	my $file_text = to_json($file_json, {canonical => 1, pretty => 1});
 
 	my $file_textns = $file_text;
 	$file_textns =~ s/\s+//;
 
 	if ($chain_text ne $file_text) {
+		my %diffoptions;
+		$diffoptions{see2} = 'https://github.com/EOS-Nation/bpvalidate/blob/master/util/bpjson2chain.pl';
+		$diffoptions{see1} = 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information';
+		$diffoptions{diff} = diff(\$chain_text, \$file_text);
+		$diffoptions{class} = 'chain';
 		if ($chain_text eq $file_textns) {
-			$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL: spaces are missing from on-chain version', see1 => 'https://github.com/EOS-Nation/bpvalidate/blob/master/util/bpjson2chain.pl', class => 'chain');
+			$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL: spaces are missing from on-chain version', %diffoptions);
 		} else {
-			print "CHAIN: $chain_text\n";
-			print "FILEE: $file_text\n";
-			$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', class => 'chain');
+			$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL', %diffoptions);
 		}
 		return;
 	}
