@@ -292,7 +292,7 @@ sub format_message_entry {
 		if ($is_url == 1) {
 			$value = '<a href="' . $value . '">' . $value . '</a>';
 		} elsif ($is_url == 2) {
-			$value = '<xmp>' . encode_entities ($value) . '</xmp>';
+			$value = '<xmp>' . $value . '</xmp>';
 		} else {
 			$value = encode_entities ($value);
 		}
