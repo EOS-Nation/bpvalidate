@@ -271,7 +271,7 @@ sub check_onchainjson {
 	my $file_text = to_json($file_json, {canonical => 1, pretty => 1});
 
 	my $file_textns = $file_text;
-	$file_textns =~ s/\s+//;
+	$file_textns =~ s/\s+//g;
 
 	if ($chain_text ne $file_text) {
 		my %diffoptions;
