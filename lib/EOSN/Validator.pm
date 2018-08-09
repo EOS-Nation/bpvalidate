@@ -272,7 +272,7 @@ sub check_onchainjson {
 
 	if ($chain_text ne $file_text) {
 		$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL',
-			see2 => 'https://github.com/EOS-Nation/bpvalidate/blob/master/util/bpjson2chain.pl',
+			see2 => 'https://github.com/EOS-Nation/bpvalidate/blob/master/util/',
 			see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information',
 			diff => diff(\$chain_text, \$file_text),
 			class => 'chain'
