@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// Usage: ./bpjson2chain.js <bp.json filepath>
+
 const fs = require("fs");
 
 const bpjsonFilePath = process.argv[2] || "bp.json";
