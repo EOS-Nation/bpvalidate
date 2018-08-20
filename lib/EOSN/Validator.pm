@@ -485,7 +485,7 @@ sub check_nodes {
 				$self->add_message(kind => 'warn', detail => 'extranious API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'query') {
-			$self->add_message(kind => 'err', detail => 'use node_type=query is deprecated; use node_type=full instead', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21')
+			$self->add_message(kind => 'err', detail => 'use node_type=query is deprecated; use node_type=full instead', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint')
 		} elsif ($node_type eq 'full') {
 			$count_node_type_full++;
 			if ($valid_peer_endpoint || $valid_bnet_endpoint) {
