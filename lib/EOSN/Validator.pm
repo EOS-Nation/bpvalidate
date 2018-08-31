@@ -1340,6 +1340,11 @@ sub test_system_symbol {
 	my $response_url = $res->request->uri;
 	my $content = $res->content;
 
+	if (! $res->is_success) {
+		$self->add_message(kind => 'err', detail => 'error retriving symbol', value => $status_message, %options);
+		return undef;
+	}
+
 	my $json = $self->get_json ($content, %options) || return undef;
 	if (! scalar (@$json)) {
 		$self->add_message(kind => 'err', detail => 'code compiled with incorrect symbol', %options);
