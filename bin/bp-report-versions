@@ -31,7 +31,7 @@ foreach my $kind (sort keys %endpoints) {
 		my $producer = $$entry{producer};
 		my $address = $$entry{address};
 		my $key = $$entry{info}{server_version} || 'zzunknown';
-		push (@{$sections{$key}}, ["%12s, %9s, %10s, %9s, %s\n", $$entry{producer}, $kind, hex('0x'. $$entry{response}{server_version}), $$entry{response}{server_version}, $$entry{address}]);
+		push (@{$sections{$key}}, ["%12s, %9s, %10s, %9s, %20s, %s\n", $$entry{producer}, $kind, hex('0x'. $$entry{response}{server_version}), $$entry{response}{server_version}, ($$entry{response}{server_version_string} || 'n/a'), $$entry{address}]);
 	}
 
 }
