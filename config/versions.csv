@@ -2,8 +2,8 @@ hash,current,name
 8777d8db,0,mainnet-1.1.1
 742618be,0,mainnet-1.1.3
 2d3bb003,0,mainnet-1.1.4
-b8c1b2c2,1,mainnet-1.1.6
-mainnet-1.2.3,1,mainnet-1.2.3
+b8c1b2c2,0,mainnet-1.1.6
+mainnet-1.2.3,0,mainnet-1.2.3
 v1.2.3,1,eosio-1.2.3
 mainnet-1.2.4,1,mainnet-1.2.4
 v1.2.4,1,eosio-1.2.4
@@ -15,3 +15,5 @@ mainnet-1.3.0,1,mainnet-1.3.0
 v1.3.0,1,eosio-1.3.0
 mainnet-1.3.1,1,mainnet-1.3.1
 v1.3.1,1,eosio-1.3.1
+mainnet-1.3.2,1,mainnet-1.3.2
+v1.3.2,1,eosio-1.3.2
