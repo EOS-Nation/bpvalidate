@@ -67,9 +67,9 @@ sub generate_report {
 	#print ">> generate report content_type=<$content_type> file=<$options{outfile}> lang=<$options{lang}>\n";
 
 	if ($content_type eq 'txt') {
-	        generate_report_txt (%options);
+		generate_report_txt (%options);
 	} elsif ($content_type eq 'html') {
-	        generate_report_thtml (%options);
+		generate_report_thtml (%options);
 	} else {
 		die "$0: unknown content_type";
 	}
@@ -328,6 +328,22 @@ sub datetime {
 
 	my $unixtime = str2time($value);
 	return time2str(label('format_datetime', $lang), $unixtime, 'UTC');
+}
+
+sub is_important_bp {
+	my ($entry) = @_;
+
+	my $rank = $$entry{info}{rank};
+	my $votep = $$entry{info}{vote_percent};
+
+	my $selected = 0;
+	if ($rank <= 21) {
+		$selected = 1;
+	} elsif ($votep > 0.5) {
+		$selected = 1;
+	}
+
+	return $selected;
 }
 
 1;

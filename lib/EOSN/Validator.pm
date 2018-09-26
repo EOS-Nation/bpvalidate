@@ -303,7 +303,9 @@ sub check_onchainblacklist {
 
 	#print "blacklist: $onchainblacklist\n";
 
-	$self->add_message(kind => 'ok', detail => 'blacklist been provided on-chain', %message_options);
+	$self->{results}{output}{chain}{blacklist} = $onchainblacklist;
+
+	$self->add_message(kind => 'ok', detail => 'blacklist has been provided on-chain', value => $onchainblacklist,  %message_options);
 }
 
 sub check_onchainheartbeat {
@@ -368,7 +370,7 @@ sub check_onchainheartbeat {
 		return;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'heartbeat been provided on-chain and is up-to-date', %message_options);
+	$self->add_message(kind => 'ok', detail => 'heartbeat has been provided on-chain and is up-to-date', %message_options);
 }
 
 sub check_org_location {

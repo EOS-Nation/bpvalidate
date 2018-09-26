@@ -9,4 +9,5 @@ h1 = Validator Reports
 <li><a href="/reports/country.html">%title_reports/country%</a>
 <li><a href="/reports/config.html">%title_reports/config%</a>
 <li><a href="/reports/errors.html">%title_reports/errors%</a>
+<li><a href="/reports/blacklist.html">%title_reports/blacklist%</a>
 </ul>

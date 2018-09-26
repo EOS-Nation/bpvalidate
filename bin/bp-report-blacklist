@@ -1,0 +1,37 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::Report;
+
+binmode(STDOUT, ":utf8");
+
+# --------------------------------------------------------------------------
+# Main
+
+my $data = get_report_options ();
+my %sections;
+
+foreach my $entry (@{$$data{producers}}) {
+	my $producer = $$entry{regproducer}{owner};
+	my $blacklist = $$entry{output}{chain}{blacklist};
+	my $important_bp = is_important_bp ($entry);
+	if ($blacklist || $important_bp) {
+		$blacklist = "zzUnknown" if (! $blacklist);
+		push (@{$sections{$blacklist}}, ["%12s, %s\n", $producer, $blacklist]);
+	}
+}
+
+foreach my $lang (languages()) {
+	foreach my $content_type (content_types()) {
+		my @report;
+		foreach my $key (sort keys %sections) {
+			my $section = $sections{$key};
+			my $name = $key;
+			$name = 'Unknown' if ($key eq 'zzunknown');
+			push (@report, {name => $name, rows => $section});
+		}
+
+		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/blacklist", text => 1, html => 1);
+	}
+}
