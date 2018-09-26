@@ -138,7 +138,11 @@ sub setup_jobs {
 			onchainheartbeat_data = ?, onchainheartbeat_timestamp = ?,
 			onchainblacklist_data = ?
 			where producer = ? and (checked_at < ? or checked_at is null)'
-			, {}, $state, time, to_json ($entry), $rank, $vote_percent, $onchain{bpjson}{$owner}, $onchain{heartbeat}{$owner}{json}, $onchain{heartbeat}{$owner}{timestamp}, $onchain{blacklist}{$owner}, $owner, $limit);
+			, {}, $state, time, to_json ($entry), $rank, $vote_percent,
+			$onchain{bpjson}{$owner},
+			$onchain{heartbeat}{$owner}{json}, $onchain{heartbeat}{$owner}{timestamp},
+			$onchain{blacklist}{$owner},
+			$owner, $limit);
 	}
 }
 
