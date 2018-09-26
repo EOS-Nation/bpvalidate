@@ -19,6 +19,8 @@ $dbh->do("$prefix regproducer_rank int(11) unsigned");
 $dbh->do("$prefix regproducer_vote_percent float(10,2)");
 $dbh->do("$prefix regproducer_data text");
 $dbh->do("$prefix onchainjson_data text");
+$dbh->do("$prefix onchainheartbeat_data text");
+$dbh->do("$prefix onchainheartbeat_timestamp int(11) unsigned");
 $dbh->do("$prefix results_data text");
 $dbh->do("$prefix regproducer_at int(11)");
 $dbh->do("$prefix checked_at int(11)");

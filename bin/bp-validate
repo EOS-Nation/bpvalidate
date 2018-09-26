@@ -44,6 +44,7 @@ sub setup_jobs {
 	my $dbh = do_connect('validate');
 	my $rank = 0;
 	my %onchainjson;
+	my %onchainheartbeat;
 
 	my $producer_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_producers", limit => $limit);
 
@@ -51,23 +52,45 @@ sub setup_jobs {
 		die "$0: cannot get producer list";
 	}
 
-	my $json_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_table_rows", limit => $limit, code => "producerjson", scope => "producerjson", table => "producerjson");
+	# ---- on-chain json
 
-	if (! $json_list) {
-		die "$0: cannot get json list";
+	my $onchainjson_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_table_rows", limit => $limit, code => "producerjson", scope => "producerjson", table => "producerjson");
+
+	if (! $onchainjson_list) {
+		die "$0: cannot get onchainjson list";
 	}
 
-	foreach my $obj (@$json_list) {
+	foreach my $obj (@$onchainjson_list) {
 		my $owner = $$obj{owner};
 		my $json = $$obj{json};
 		$onchainjson{$owner} = $json;
 	}
+
+	# ---- on-chain heartbeat
+
+	my $onchainheartbeat_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_table_rows", limit => $limit, code => "eosheartbeat", scope => "eosheartbeat", table => "hbstruct");
+
+	if (! $onchainheartbeat_list) {
+		die "$0: cannot get onchainheartbeat list";
+	}
+
+	foreach my $obj (@$onchainheartbeat_list) {
+		my $user = $$obj{user};
+		my $json = $$obj{metadata_json};
+		my $timestamp = $$obj{timestamp};
+		$onchainheartbeat{$user}{json} = $json;
+		$onchainheartbeat{$user}{timestamp} = $timestamp;
+	}
+
+	# ----- votes
 
 	my $vote_total = 0;
 	foreach my $entry (@{$producer_list}) {
 		next if (! $$entry{is_active});
 		$vote_total += $$entry{total_votes};
 	}
+
+	# ---- go
 
 	foreach my $entry (@{$producer_list}) {
 		$rank++;
@@ -97,9 +120,10 @@ sub setup_jobs {
 			$limit = time;
 		}
 
-		$dbh->do('update producer set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, onchainjson_data = ?
+		$dbh->do('update producer set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, 
+			onchainjson_data = ?, onchainheartbeat_data = ?, onchainheartbeat_timestamp = ?
 			where producer = ? and (checked_at < ? or checked_at is null)'
-			, {}, $state, time, to_json ($entry), $rank, $vote_percent, $onchainjson{$owner}, $owner, $limit);
+			, {}, $state, time, to_json ($entry), $rank, $vote_percent, $onchainjson{$owner}, $onchainheartbeat{$owner}{json}, $onchainheartbeat{$owner}{timestamp}, $owner, $limit);
 	}
 }
 
@@ -142,7 +166,9 @@ sub doit {
 			versions => $versions,
 			rank => $$entry{regproducer_rank},
 			vote_percent => $$entry{regproducer_vote_percent},
-			onchainjson => $$entry{onchainjson_data}
+			onchainjson => $$entry{onchainjson_data},
+			onchainheartbeat_data => $$entry{onchainheartbeat_data},
+			onchainheartbeat_timestamp => $$entry{onchainheartbeat_timestamp}
 		);
 		my $results = $producer->validate;
 		#print "[$thread_id] >>> ", to_json ($results), "\n";
