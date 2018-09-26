@@ -236,6 +236,7 @@ sub generate_message {
 	my $kind = $$options{kind} || confess "missing kind";
 	my $detail = $$options{detail} || confess "missing detail";
 	my $field = $$options{field};
+	my $contract = $$options{contract};
 	my $node_type = $$options{node_type};
 	my $resource = $$options{resource};
 	my $api_url = $$options{api_url};
@@ -264,6 +265,7 @@ sub generate_message {
 	$detail .= format_message_entry ('suggested to use value', $suggested_value, 0, $content_type);
 	$detail .= format_message_entry ('target', $target, 0, $content_type);
 	$detail .= format_message_entry ('field', $field, 0, $content_type);
+	$detail .= format_message_entry ('contract', $contract, 0, $content_type);
 	$detail .= format_message_entry ('having node_type', $node_type, 0, $content_type);
 	$detail .= format_message_entry ('resource', $resource, 0, $content_type);
 	$detail .= format_message_entry ('api_url', $api_url, 0, $content_type);
