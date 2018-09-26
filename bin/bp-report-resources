@@ -34,7 +34,8 @@ foreach my $lang (languages()) {
 				push (@section, {
 					producer => $producer,
 					sprintf => "%s",
-					data => [$$entry{address}]
+					data => [$$entry{address}],
+					href => 1
 				});
 			}
 

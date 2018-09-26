@@ -163,6 +163,7 @@ sub generate_report_thtml {
 			my $producer = $$line{producer};
 			my $icons = $$line{icons};
 			my $class = $$line{class};
+			my $href = $$line{href};
 			my $noescape = $$line{noescape};
 			my $formatted = '';
 			if ($columns) {
@@ -180,6 +181,8 @@ sub generate_report_thtml {
 						$value = sev_html($value, $classx, $lang);
 					} elsif ($class && $i == $class) {
 						$value = label("class_$value", $lang);
+					} elsif ($href && $i == $href) {
+						$value = "<a href=\"$value\">$value</a>";
 					} elsif ($noescape && $i == $noescape) {
 						# no nothing
 					} else {
