@@ -21,7 +21,7 @@ do
 	bp-report-versions --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 	bp-report-country --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 	bp-report-config --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-blacklist --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
+	bp-report-blacklist --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 	bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 	echo "done"
 
