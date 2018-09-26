@@ -30,6 +30,7 @@ title_producers/producer,Report for %producer%,%producer% 的报告
 title_producers/index,Producer Scorecard,出块节点计分卡
 title_reports/resources,Resources Report,资源报告
 title_reports/versions,API Versions Report,API版本报告
+title_reports/blacklist,Blacklist Report,
 label_text_version,text version,文字内容版本
 filter_yes,Yes,是
 filter_na,n/a,无内容
