@@ -261,7 +261,7 @@ sub check_onchainbpjson {
 
 	my $onchainbpjson = $self->{onchainbpjson};
 	if (! $onchainbpjson) {
-		$self->add_message(kind => 'err', detail => 'bp.json has not been provided on-chain', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', %message_options);
+		$self->add_message(kind => 'crit', detail => 'bp.json has not been provided on-chain', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', %message_options);
 		return;
 	}
 
@@ -297,7 +297,7 @@ sub check_onchainblacklist {
 
 	my $onchainblacklist = $self->{onchainblacklist};
 	if (! $onchainblacklist) {
-		$self->add_message(kind => 'err', detail => 'blacklist has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
+		$self->add_message(kind => 'crit', detail => 'blacklist has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
 		return;
 	}
 
@@ -315,7 +315,7 @@ sub check_onchainheartbeat {
 
 	my $onchainheartbeat = $self->{onchainheartbeat_data};
 	if (! $onchainheartbeat) {
-		$self->add_message(kind => 'err', detail => 'heartbeat has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
+		$self->add_message(kind => 'crit', detail => 'heartbeat has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
 		return;
 	}
 
@@ -326,6 +326,10 @@ sub check_onchainheartbeat {
 		return;
 	}
 
+	foreach my $key (keys %$chain_json) {
+		$self->{results}{output}{chain}{$key} = $$chain_json{$key};
+	}
+
 	my $cpu = $$chain_json{cpu};
 	if ($cpu) {
 		$self->add_message(kind => 'ok', detail => 'CPU', value => $cpu, %message_options);
@@ -333,40 +337,43 @@ sub check_onchainheartbeat {
 		$self->add_message(kind => 'err', detail => 'CPU not provided', %message_options);
 	}
 
-	my $memory_threshold = 62 * 2 * 1024 * 1024;
+	my $memory_threshold = 62 * 2 * 1024 * 1024; # value is good until 2019-07-01
 	my $memory = $$chain_json{memory};
 	if ($memory && $memory >= $memory_threshold) {
-		$self->add_message(kind => 'ok', detail => 'Memory', value => $memory, %message_options);
+		$self->add_message(kind => 'ok', detail => 'memory', value => $memory, %message_options);
 	} elsif ($memory) {
-		$self->add_message(kind => 'warn', detail => 'Memory is less than ' . $memory_threshold, value => $memory, %message_options);
+		$self->add_message(kind => 'warn', detail => 'memory is less than ' . $memory_threshold, value => $memory, %message_options);
 	} else {
-		$self->add_message(kind => 'err', detail => 'Memory not provided', %message_options);
+		$self->add_message(kind => 'err', detail => 'memory not provided', %message_options);
 	}
 
-	my $db_size = $$chain_json{db_size};
-	if ($db_size) {
-		$self->add_message(kind => 'ok', detail => 'Database size', value => $db_size, %message_options);
+	my $database_threshold = 1000; # not sure what this should be
+	my $database = $$chain_json{db_size};
+	if ($database && $database >= $database_threshold) {
+		$self->add_message(kind => 'ok', detail => 'database size', value => $database, %message_options);
+	} elsif ($database) {
+		$self->add_message(kind => 'warn', detail => 'database size is less than ' . $database_threshold, value => $database, %message_options);
 	} else {
-		$self->add_message(kind => 'err', detail => 'Database size not provided', %message_options);
+		$self->add_message(kind => 'err', detail => 'database size not provided', %message_options);
 	}
 
 	my $oncall = $$chain_json{oncall};
 	if ($oncall) {
-		$self->add_message(kind => 'ok', detail => 'On call', value => $oncall, %message_options);
+		$self->add_message(kind => 'ok', detail => 'on call', value => $oncall, %message_options);
 	} else {
-		$self->add_message(kind => 'err', detail => 'On call not provided', %message_options);
+		$self->add_message(kind => 'err', detail => 'on call not provided', %message_options);
 	}
 
 	my $vtype = $$chain_json{vtype};
 	if ($vtype) {
-		$self->add_message(kind => 'ok', detail => 'Virtualization type', value => $vtype, %message_options);
+		$self->add_message(kind => 'ok', detail => 'virtualization type', value => $vtype, %message_options);
 	} else {
-		$self->add_message(kind => 'err', detail => 'Virtualization type not provided', %message_options);
+		$self->add_message(kind => 'err', detail => 'virtualization type not provided', %message_options);
 	}
 
 	my $timestamp = $self->{onchainheartbeat_timestamp} || 0;
 	if ($timestamp + 60 * 30 < time) {
-		$self->add_message(kind => 'err', detail => 'heartbeat is more than 30 minutes behind', last_update_time => time2str("%C", $timestamp), %message_options);
+		$self->add_message(kind => 'crit', detail => 'heartbeat is more than 30 minutes behind', last_update_time => time2str("%C", $timestamp), %message_options);
 		return;
 	}
 
