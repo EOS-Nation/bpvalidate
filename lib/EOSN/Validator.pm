@@ -249,23 +249,25 @@ sub run_validate {
 
 	$self->check_nodes;
 
-	$self->check_onchainjsonbp;
+	$self->check_onchainbpjson;
 	$self->check_onchainblacklist;
 	$self->check_onchainheartbeat;
 }
 
-sub check_onchainjsonbp {
+sub check_onchainbpjson {
 	my ($self) = @_;
 
 	my %message_options = (contract => 'producerjson', class => 'chain');
 
-	my $onchainjsonbp = $self->{onchainjsonbp};
-	if (! $onchainjsonbp) {
+	my $onchainbpjson = $self->{onchainbpjson};
+	if (! $onchainbpjson) {
 		$self->add_message(kind => 'err', detail => 'bp.json has not been provided on-chain', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', %message_options);
 		return;
 	}
 
-	my $chain_json = $self->get_json ($onchainjsonbp, %message_options);
+	#print "bpjson: $onchainbpjson\n";
+
+	my $chain_json = $self->get_json ($onchainbpjson, %message_options);
 	if (! $chain_json) {
 		return;
 	}
@@ -299,7 +301,7 @@ sub check_onchainblacklist {
 		return;
 	}
 
-	print "blacklist: " . $self->{onchainblacklist} . "\n";
+	#print "blacklist: $onchainblacklist\n";
 
 	$self->add_message(kind => 'ok', detail => 'blacklist been provided on-chain', %message_options);
 }
@@ -315,7 +317,7 @@ sub check_onchainheartbeat {
 		return;
 	}
 
-	print "heartbeat: " . $self->{onchainheartbeat_data} . "\n";
+	#print "heartbeat: $onchainheartbeat\n";
 
 	my $chain_json = $self->get_json ($onchainheartbeat, %message_options);
 	if (! $chain_json) {
