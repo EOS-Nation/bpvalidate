@@ -241,8 +241,6 @@ sub run_validate {
 	if (! ref $$json{org}) {
 		$self->add_message(kind => 'err', detail => 'not a object', field => 'org', class => 'org');
 	} else {
-		$self->check_onchainjson;
-		$self->check_onchainheartbeat;
 		$self->check_org_misc;
 		$self->check_org_location;
 		$self->check_org_branding;
@@ -250,18 +248,24 @@ sub run_validate {
 	}
 
 	$self->check_nodes;
+
+	$self->check_onchainjsonbp;
+	$self->check_onchainblacklist;
+	$self->check_onchainheartbeat;
 }
 
-sub check_onchainjson {
+sub check_onchainjsonbp {
 	my ($self) = @_;
 
-	my $onchainjson = $self->{onchainjson};
-	if (! $onchainjson) {
-		$self->add_message(kind => 'err', detail => 'bp.json has not been provided on-chain', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', class => 'chain');
+	my %message_options = (contract => 'producerjson', class => 'chain');
+
+	my $onchainjsonbp = $self->{onchainjsonbp};
+	if (! $onchainjsonbp) {
+		$self->add_message(kind => 'err', detail => 'bp.json has not been provided on-chain', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', %message_options);
 		return;
 	}
 
-	my $chain_json = $self->get_json ($onchainjson, field => 'bp.json on-chain', 'class' => 'chain');
+	my $chain_json = $self->get_json ($onchainjsonbp, %message_options);
 	if (! $chain_json) {
 		return;
 	}
@@ -276,28 +280,44 @@ sub check_onchainjson {
 			see2 => 'https://github.com/EOS-Nation/bpvalidate/blob/master/util/',
 			see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information',
 			diff => diff(\$chain_text, \$file_text),
-			field => 'bp.json on-chain',
-			class => 'chain'
+			%message_options
 		);
 		return;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'bp.json has been provided on-chain and matches what is in the regproducer URL', field => 'bp.json on-chain', class => 'chain');
+	$self->add_message(kind => 'ok', detail => 'bp.json has been provided on-chain and matches what is in the regproducer URL', %message_options);
+}
+
+sub check_onchainblacklist {
+	my ($self) = @_;
+
+	my %message_options = (contract => 'theblacklist', class => 'chain');
+
+	my $onchainblacklist = $self->{onchainblacklist};
+	if (! $onchainblacklist) {
+		$self->add_message(kind => 'err', detail => 'heartbeat has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
+		return;
+	}
+
+	print "blacklist: " . $self->{onchainblacklist} . "\n";
+
+	$self->add_message(kind => 'ok', detail => 'blacklist been provided on-chain', %message_options);
 }
 
 sub check_onchainheartbeat {
 	my ($self) = @_;
 
-	print Dumper $self->{onchainheartbeat_data};
-	my %message_options = (field => 'heartbeat on-chain', class => 'chain');
+	my %message_options = (contract => 'eosheartbeat', class => 'chain');
 
-	my $onchainjson = $self->{onchainheartbeat_data};
-	if (! $onchainjson) {
-		$self->add_message(kind => 'err', detail => 'heartbeat has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', class => 'chain');
+	my $onchainheartbeat = $self->{onchainheartbeat_data};
+	if (! $onchainheartbeat) {
+		$self->add_message(kind => 'err', detail => 'heartbeat has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
 		return;
 	}
 
-	my $chain_json = $self->get_json ($onchainjson, %message_options);
+	print "heartbeat: " . $self->{onchainheartbeat_data} . "\n";
+
+	my $chain_json = $self->get_json ($onchainheartbeat, %message_options);
 	if (! $chain_json) {
 		return;
 	}
@@ -309,7 +329,7 @@ sub check_onchainheartbeat {
 		$self->add_message(kind => 'err', detail => 'CPU not provided', %message_options);
 	}
 
-	my $memory_threshold = 64 * 2 * 1024 * 1024;
+	my $memory_threshold = 62 * 2 * 1024 * 1024;
 	my $memory = $$chain_json{memory};
 	if ($memory && $memory >= $memory_threshold) {
 		$self->add_message(kind => 'ok', detail => 'Memory', value => $memory, %message_options);
