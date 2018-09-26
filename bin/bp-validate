@@ -90,7 +90,7 @@ sub setup_jobs {
 	}
 
 	foreach my $obj (@$onchainblacklist_list) {
-		my $user = $$obj{producrer};
+		my $user = $$obj{producer};
 		my $hash = $$obj{hash};
 		$onchain{blacklist}{$user} = $hash;
 	}
@@ -128,7 +128,7 @@ sub setup_jobs {
 			$limit = time;
 
 		} else {
-			print ">> skip $$entry{owner}\n" if ($debug);
+			#print ">> skip $$entry{owner}\n" if ($debug);
 			$state = 'hold';
 			$limit = time;
 		}
@@ -184,7 +184,7 @@ sub doit {
 			onchainbpjson => $$entry{onchainbpjson_data},
 			onchainheartbeat_data => $$entry{onchainheartbeat_data},
 			onchainheartbeat_timestamp => $$entry{onchainheartbeat_timestamp},
-			onchainblacklist => $$entry{onchainblacklist_data},
+			onchainblacklist => $$entry{onchainblacklist_data}
 		);
 		my $results = $producer->validate;
 		#print "[$thread_id] >>> ", to_json ($results), "\n";
