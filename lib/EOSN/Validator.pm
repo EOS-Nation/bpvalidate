@@ -632,7 +632,7 @@ sub check_nodes {
 	} elsif (! $total_valid_peer_endpoint && ! $total_valid_bnet_endpoint) {
 		$self->add_message(kind => 'crit', detail => 'no valid P2P or BNET endpoints provided in any node; see above messages', class => 'endpoint');
 	} elsif (! $total_valid_bnet_endpoint) {
-		# 2018-07-23 apparently some bnet endpoints are crashing? 
+		# 2018-07-23 apparently some bnet endpoints are crashing?
 		#$self->add_message(kind => 'warn', detail => 'no valid BNET endpoints provided in any node', class => 'endpoint');
 	}
 }
@@ -1374,7 +1374,7 @@ sub test_error_message {
 
 	my $json = $self->get_json ($content, %options) || return undef;
 
-	if (scalar (@{$$json{error}{details}}) == 0) {
+	if ((ref $$json{error}{details} ne 'ARRAY') || (scalar (@{$$json{error}{details}}) == 0)) {
 		$self->add_message(kind => 'err', detail => 'detailed error messages not returned', explanation => 'edit config.ini to set verbose-http-errors = true', %options);
 		return undef;
 	}
