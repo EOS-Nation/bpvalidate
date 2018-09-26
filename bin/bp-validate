@@ -43,8 +43,7 @@ sub setup_jobs {
 	my $ua = eosn_ua();
 	my $dbh = do_connect('validate');
 	my $rank = 0;
-	my %onchainjson;
-	my %onchainheartbeat;
+	my %onchain;
 
 	my $producer_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_producers", limit => $limit);
 
@@ -54,21 +53,21 @@ sub setup_jobs {
 
 	# ---- on-chain json
 
-	my $onchainjson_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_table_rows", limit => $limit, code => "producerjson", scope => "producerjson", table => "producerjson");
+	my $onchainbpjson_list = get_table ($ua, 'https://api.eosn.io/v1/chain/get_table_rows', limit => $limit, code => "producerjson", scope => "producerjson", table => "producerjson");
 
-	if (! $onchainjson_list) {
-		die "$0: cannot get onchainjson list";
+	if (! $onchainbpjson_list) {
+		die "$0: cannot get onchainbpjson list";
 	}
 
-	foreach my $obj (@$onchainjson_list) {
+	foreach my $obj (@$onchainbpjson_list) {
 		my $owner = $$obj{owner};
 		my $json = $$obj{json};
-		$onchainjson{$owner} = $json;
+		$onchain{bpjson}{$owner} = $json;
 	}
 
 	# ---- on-chain heartbeat
 
-	my $onchainheartbeat_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_table_rows", limit => $limit, code => "eosheartbeat", scope => "eosheartbeat", table => "hbstruct");
+	my $onchainheartbeat_list = get_table ($ua, 'https://api.eosn.io/v1/chain/get_table_rows', limit => $limit, code => "eosheartbeat", scope => "eosheartbeat", table => "hbstruct");
 
 	if (! $onchainheartbeat_list) {
 		die "$0: cannot get onchainheartbeat list";
@@ -78,8 +77,22 @@ sub setup_jobs {
 		my $user = $$obj{user};
 		my $json = $$obj{metadata_json};
 		my $timestamp = $$obj{timestamp};
-		$onchainheartbeat{$user}{json} = $json;
-		$onchainheartbeat{$user}{timestamp} = $timestamp;
+		$onchain{heartbeat}{$user}{json} = $json;
+		$onchain{heartbeat}{$user}{timestamp} = $timestamp;
+	}
+
+	# ---- on-chain blacklist
+
+	my $onchainblacklist_list = get_table ($ua, 'https://api.eosn.io/v1/chain/get_table_rows', limit => $limit, code => "theblacklist", scope => "theblacklist", table => "producerhash");
+
+	if (! $onchainblacklist_list) {
+		die "$0: cannot get onchainblacklist list";
+	}
+
+	foreach my $obj (@$onchainblacklist_list) {
+		my $user = $$obj{producrer};
+		my $hash = $$obj{hash};
+		$onchain{blacklist}{$user} = $hash;
 	}
 
 	# ----- votes
@@ -121,9 +134,11 @@ sub setup_jobs {
 		}
 
 		$dbh->do('update producer set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, 
-			onchainjson_data = ?, onchainheartbeat_data = ?, onchainheartbeat_timestamp = ?
+			onchainbpjson_data = ?,
+			onchainheartbeat_data = ?, onchainheartbeat_timestamp = ?,
+			onchainblacklist_data = ?
 			where producer = ? and (checked_at < ? or checked_at is null)'
-			, {}, $state, time, to_json ($entry), $rank, $vote_percent, $onchainjson{$owner}, $onchainheartbeat{$owner}{json}, $onchainheartbeat{$owner}{timestamp}, $owner, $limit);
+			, {}, $state, time, to_json ($entry), $rank, $vote_percent, $onchain{bpjson}{$owner}, $onchain{heartbeat}{$owner}{json}, $onchain{heartbeat}{$owner}{timestamp}, $onchain{blacklist}{$owner}, $owner, $limit);
 	}
 }
 
@@ -166,9 +181,10 @@ sub doit {
 			versions => $versions,
 			rank => $$entry{regproducer_rank},
 			vote_percent => $$entry{regproducer_vote_percent},
-			onchainjson => $$entry{onchainjson_data},
+			onchainbpjson => $$entry{onchainbpjson_data},
 			onchainheartbeat_data => $$entry{onchainheartbeat_data},
-			onchainheartbeat_timestamp => $$entry{onchainheartbeat_timestamp}
+			onchainheartbeat_timestamp => $$entry{onchainheartbeat_timestamp},
+			onchainblacklist => $$entry{onchainblacklist_data},
 		);
 		my $results = $producer->validate;
 		#print "[$thread_id] >>> ", to_json ($results), "\n";
