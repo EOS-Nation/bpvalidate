@@ -18,8 +18,10 @@ $icons{ok} = '<span class="icon is-medium has-text-success"><i class="fas fa-lg 
 $icons{warn} = '<span class="icon is-medium has-text-warning"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{err} = '<span class="icon is-medium has-text-warning2"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
 $icons{crit} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-stop"></i></span>';
-$icons{bp_top21} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-certificate"></i></span>';
-$icons{bp_standby} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-certificate"></i></span>';
+$icons{check} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-check-square"></i></span>';
+$icons{bp_top21} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-battery-full"></i></span>';
+$icons{bp_standby} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-battery-half"></i></span>';
+$icons{bp_other} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-battery-empty"></i></span>';
 
 our $labels;
 our $languages;

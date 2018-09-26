@@ -45,7 +45,7 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 
 	my $check = 0;
 	my $msgsummary = $$entry{message_summary};
-	foreach my $key (qw (regproducer org endpoint)) {
+	foreach my $key (qw (regproducer org endpoint chain)) {
 		if (exists $$msgsummary{$key} && $$msgsummary{$key} eq 'ok') {
 			$check++;
 		}
@@ -74,7 +74,7 @@ foreach my $lang (languages) {
 		my %results;
 
 		my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
-		foreach my $key (qw (regproducer org endpoint)) {
+		foreach my $key (qw (regproducer org endpoint chain)) {
 			my $html = sev_html($msgsummary{$key} || 'skip', $key, $lang);
 			$msgsummary{$key} = $html;
 		}
@@ -84,6 +84,8 @@ foreach my $lang (languages) {
 			$selected = sev_html('bp_top21', undef, $lang);
 		} elsif ($votep > 0.5) {
 			$selected = sev_html('bp_standby', undef, $lang);
+		} else {
+			$selected = sev_html('bp_other', undef, $lang);
 		}
 
 		my $flag = '';
@@ -95,10 +97,13 @@ foreach my $lang (languages) {
 		push (@report, "<div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\">$flag</div>\n");
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$selected</div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px; height: 32px\">$selected</div>\n");
+		push (@report, "</div>\n");
+		push (@report, "<div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{regproducer}</div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{org}</div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{endpoint}</div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{chain}</div>\n");
 		push (@report, "</div>\n");
 		push (@report, "<div>$producer_name_html</div>\n");
 		push (@report, "</div>\n");
@@ -128,7 +133,7 @@ foreach my $lang (languages) {
 			push (@{$results{tags}}, 'other_y');
 		}
 
-		foreach my $key (qw (regproducer org endpoint)) {
+		foreach my $key (qw (regproducer org endpoint chain)) {
 			if (exists $$entry{message_summary}{$key} && (($$entry{message_summary}{$key} eq 'ok') || ($$entry{message_summary}{$key} eq 'info'))) {
 					push (@{$results{tags}}, $key . '_y');
 				} else {
@@ -149,12 +154,13 @@ foreach my $lang (languages) {
 
 	my @form;
 	push (@form, "<div>\n");
-	push (@form, checkbox('top21', label('bp_top21', $lang), $lang));
-	push (@form, checkbox('paid', label('bp_standby', $lang), $lang));
-	push (@form, checkbox('other', label('bp_other', $lang), $lang));
-	push (@form, checkbox('regproducer', label('class_regproducer_l', $lang), $lang));
-	push (@form, checkbox('org', label('class_org_l', $lang), $lang));
-	push (@form, checkbox('endpoint', label('class_endpoint_l', $lang), $lang));
+	push (@form, checkbox('top21', sev_html('bp_top21', undef, $lang) . ' ' . label('bp_top21', $lang), $lang));
+	push (@form, checkbox('paid', sev_html('bp_standby', undef, $lang) . ' ' . label('bp_standby', $lang), $lang));
+	push (@form, checkbox('other', sev_html('bp_other', undef, $lang) . ' ' . label('bp_other', $lang), $lang));
+	push (@form, checkbox('regproducer', sev_html('check', undef, $lang) . ' ' . label('class_regproducer_l', $lang), $lang));
+	push (@form, checkbox('org', sev_html('check', undef, $lang) . ' ' . label('class_org_l', $lang), $lang));
+	push (@form, checkbox('endpoint', sev_html('check', undef, $lang) . ' ' . label('class_endpoint_l', $lang), $lang));
+	push (@form, checkbox('chain', sev_html('check', undef, $lang) . ' ' . label('class_chain_l', $lang), $lang));
 	push (@form, "</div>\n");
 
 	unshift (@report, @form);

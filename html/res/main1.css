@@ -26,8 +26,8 @@ footer.footer {
   padding: 5px;
   border: solid 1px;
   border-color: grey;
-  width: 230px;
-  height: 70px;
+  width: 200px;
+  height: 100px;
   overflow: hidden;
   background-color: #EEEEEE;
 }
@@ -37,7 +37,7 @@ footer.footer {
   padding: 5px;
   border: solid 1px;
   border-color: grey;
-  width: 230px;
+  width: 200px;
   height: 70px;
   overflow: hidden;
   background-color: #EEEEFF;
