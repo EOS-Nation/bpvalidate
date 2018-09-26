@@ -20,8 +20,8 @@ foreach my $entry (@{$$data{producers}}) {
 		$blacklist = "zzUnknown" if (! $blacklist);
 		push (@{$sections{$blacklist}}, {
 			producer => $producer,
-			sprintf => "%s",
-			data => [$blacklist]
+			sprintf => "",
+			data => []
 		});
 	}
 }
