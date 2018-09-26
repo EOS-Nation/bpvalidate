@@ -297,7 +297,7 @@ sub check_onchainblacklist {
 
 	my $onchainblacklist = $self->{onchainblacklist};
 	if (! $onchainblacklist) {
-		$self->add_message(kind => 'err', detail => 'heartbeat has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
+		$self->add_message(kind => 'err', detail => 'blacklist has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
 		return;
 	}
 
