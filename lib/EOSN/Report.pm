@@ -168,9 +168,10 @@ sub generate_report_thtml {
 			if ($columns) {
 				$formatted .= "<tr>";
 				if ($producer) {
+					my $producer_name_html = encode_entities($$producers{$producer}{info}{name} || $producer);
 					$formatted .= "<td>$$producers{$producer}{info}{rank}</td>";
 					$formatted .= "<td>" . bp_logo ($$producers{$producer}) . "</td>";
-					$formatted .= "<td>$producer</td>";
+					$formatted .= "<td><a href=\"/producers/$producer.html\">$producer_name_html</a></td>";
 				}
 				foreach my $i (1 .. scalar(@$data)) {
 					my $value = $$data[$i-1];
