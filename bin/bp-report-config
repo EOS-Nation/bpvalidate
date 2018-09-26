@@ -38,9 +38,18 @@ foreach my $lang (languages()) {
 				my $location_name = $$entry{location}{name} || "Unknown";
 				my $location_country = $$entry{location}{country} || "??";
 				my $address = $$entry{address};
-				push (@section, ["# %s: %s, %s\n", $producer, $location_country, $location_name]);
-				push (@section, ["%s = %s\n", $map{$kind}, $$entry{address}]);
-				push (@section, ["\n"]);
+				push (@section, {
+					sprintf => "# %s: %s, %s",
+					data => [$producer, $location_country, $location_name]
+				});
+				push (@section, {
+					sprintf => "%s = %s",
+					data => [$map{$kind}, $$entry{address}]
+				});
+				push (@section, {
+					sprintf => "",
+					data => []
+				});
 			}
 
 			push (@report, {name => $kind, rows => \@section, name_prefix => '# ', section_divider => 2});

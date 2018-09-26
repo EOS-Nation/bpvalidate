@@ -22,10 +22,16 @@ foreach my $lang (languages()) {
 			my $producer = $$entry{regproducer}{owner};
 			my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
 			foreach my $message (@{$$entry{messages}}) {
-				push (@section, ["%4s, %11s, %s\n", $$message{kind}, $$message{class}, generate_message($message, lang => $lang, content_type => $content_type)]);
+				push (@section, {
+					sprintf => "%4s, %11s, %s",
+					data => [$$message{kind}, $$message{class}, generate_message($message, lang => $lang, content_type => $content_type)],
+					icons => 1,
+					class => 2,
+					noescape => 3
+				});
 			}
 
-			generate_report (lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, icons => 1, class => 2, outfile => "producers/$producer", text => 1, html => 1, noescape => 3);
+			generate_report (lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, outfile => "producers/$producer", text => 1, html => 1);
 		}
 	}
 }
@@ -33,6 +39,7 @@ foreach my $lang (languages()) {
 my @entries1;
 my @entries2;
 my @entries3;
+
 foreach my $entry (shuffle (@{$$data{producers}})) {
 	my $votep = $$entry{info}{vote_percent};
 
@@ -63,13 +70,7 @@ foreach my $lang (languages) {
 		my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
 		my $country = $$entry{info}{country_alpha2};
 
-		my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';
-		$logo = '' if ($logo !~ m#https://#);
-		if ($logo) {
-			$logo = "<figure class=\"image is-24x24\"><img src=\"$logo\"></figure>\n";
-		} else {
-			$logo = "<figure class=\"image is-24x24\"></figure>\n";
-		}
+		my $logo = bp_logo ($entry);
 		my %results;
 
 		my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});

@@ -31,7 +31,11 @@ foreach my $lang (languages()) {
 			foreach my $entry (@{$endpoints{$kind}}) {
 				my $producer = $$entry{producer};
 				my $address = $$entry{address};
-				push (@section, ["%12s, %s\n", $$entry{producer}, $$entry{address}]);
+				push (@section, {
+					producer => $producer,
+					sprintf => "%s",
+					data => [$$entry{address}]
+				});
 			}
 
 			push (@report, {name => $kind, rows => \@section});

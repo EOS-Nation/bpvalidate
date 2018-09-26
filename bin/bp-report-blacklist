@@ -18,7 +18,11 @@ foreach my $entry (@{$$data{producers}}) {
 	my $important_bp = is_important_bp ($entry);
 	if ($blacklist || $important_bp) {
 		$blacklist = "zzUnknown" if (! $blacklist);
-		push (@{$sections{$blacklist}}, ["%12s, %s\n", $producer, $blacklist]);
+		push (@{$sections{$blacklist}}, {
+			producer => $producer,
+			sprintf => "%s",
+			data => [$blacklist]
+		});
 	}
 }
 

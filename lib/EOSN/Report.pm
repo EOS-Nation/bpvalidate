@@ -23,6 +23,7 @@ $icons{bp_standby} = '<span class="icon is-medium has-text-grey"><i class="fas f
 
 our $labels;
 our $languages;
+our $producers;
 
 # --------------------------------------------------------------------------
 # Getter Subroutines
@@ -66,6 +67,14 @@ sub generate_report {
 
 	#print ">> generate report content_type=<$content_type> file=<$options{outfile}> lang=<$options{lang}>\n";
 
+	if (! $producers) {
+		my $data = $options{data};
+		foreach my $entry (@{$$data{producers}}) {
+			my $producer = $$entry{regproducer}{owner};
+			$$producers{$producer} = $entry;
+		}
+	}
+
 	if ($content_type eq 'txt') {
 		generate_report_txt (%options);
 	} elsif ($content_type eq 'html') {
@@ -103,8 +112,14 @@ sub generate_report_txt {
 		}
 
 		foreach my $line (@$rows) {
-			my ($sprintf, @data) = @$line;
-			push (@out, sprintf ($sprintf, @data));
+			my $sprintf = $$line{sprintf};
+			my $data = $$line{data};
+			my $producer = $$line{producer};
+			if ($producer) {
+				push (@out, sprintf ("%12s", $producer) . " " . sprintf ("$sprintf\n", @$data));
+			} else {
+				push (@out, sprintf ("$sprintf\n", @$data));
+			}
 		}
 
 		push (@out, "\n");
@@ -120,9 +135,6 @@ sub generate_report_thtml {
 	my $data = $options{data};
 	my $report = $options{report};
 	my $columns = $options{columns};
-	my $icons = $options{icons};
-	my $class = $options{class};
-	my $noescape = $options{noescape};
 	my $outfile = $options{outfile};
 	my $text = $options{text};
 	my @out;
@@ -146,14 +158,24 @@ sub generate_report_thtml {
 		push (@out, "<table class=\"table is-striped\">\n") if ($columns);
 
 		foreach my $line (@$rows) {
-			my ($sprintf, @data) = @$line;
+			my $sprintf = $$line{sprintf};
+			my $data = $$line{data};
+			my $producer = $$line{producer};
+			my $icons = $$line{icons};
+			my $class = $$line{class};
+			my $noescape = $$line{noescape};
 			my $formatted = '';
 			if ($columns) {
 				$formatted .= "<tr>";
-				foreach my $i (1 .. scalar(@data)) {
-					my $value = $data[$i-1];
+				if ($producer) {
+					$formatted .= "<td>$$producers{$producer}{info}{rank}</td>";
+					$formatted .= "<td>" . bp_logo ($$producers{$producer}) . "</td>";
+					$formatted .= "<td>$producer</td>";
+				}
+				foreach my $i (1 .. scalar(@$data)) {
+					my $value = $$data[$i-1];
 					if ($icons && $i == $icons) {
-						my $classx = $data[$class - 1];
+						my $classx = $$data[$class - 1];
 						$value = sev_html($value, $classx, $lang);
 					} elsif ($class && $i == $class) {
 						$value = label("class_$value", $lang);
@@ -166,7 +188,7 @@ sub generate_report_thtml {
 				}
 				$formatted .= "</tr>";
 			} else {
-				$formatted = sprintf("$sprintf<br>", @data);
+				$formatted = sprintf("$sprintf<br>\n", @$data);
 			}
 
 			push (@out, $formatted);
@@ -344,6 +366,21 @@ sub is_important_bp {
 	}
 
 	return $selected;
+}
+
+sub bp_logo {
+	my ($entry) = @_;
+
+	my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';
+	$logo = '' if ($logo !~ m#https://#);
+
+	if ($logo) {
+		$logo = "<figure class=\"image is-24x24\"><img src=\"$logo\"></figure>\n";
+	} else {
+		$logo = "<figure class=\"image is-24x24\"></figure>\n";
+	}
+
+	return $logo;
 }
 
 1;

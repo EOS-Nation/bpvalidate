@@ -21,7 +21,11 @@ foreach my $entry (@{$$data{producers}}) {
 	next if (! defined $country_alpha2);
 
 	$sections{$country_alpha2}{name} = $country_name;
-	push (@{$sections{$country_alpha2}{data}}, ["%12s\n", $producer]);
+	push (@{$sections{$country_alpha2}{data}}, {
+		producer => $producer,
+		sprintf => "",
+		data => []
+	});
 }
 
 foreach my $lang (languages()) {
