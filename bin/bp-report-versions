@@ -33,11 +33,14 @@ foreach my $kind (sort keys %endpoints) {
 		my $key = $$entry{info}{server_version} || 'zzunknown';
 		push (@{$sections{$key}}, {
 			producer => $producer,
-			sprintf => "%9s, %10s, %9s, %20s, %s",
-			data => [$kind, hex('0x'. $$entry{response}{server_version}), $$entry{response}{server_version}, ($$entry{response}{server_version_string} || 'n/a'), $$entry{address}]
+			sprintf => "%9s, %20s, %s",
+			data => [$kind, ($$entry{response}{server_version_string} || 'n/a'), $$entry{address}]
 		});
 	}
 }
+
+#			sprintf => "%9s, %10s, %9s, %20s, %s",
+#			data => [$kind, hex('0x'. $$entry{response}{server_version}), $$entry{response}{server_version}, ($$entry{response}{server_version_string} || 'n/a'), $$entry{address}]
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
