@@ -52,6 +52,6 @@ foreach my $lang (languages()) {
 			push (@report, {name => $name, rows => $section});
 		}
 
-		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/versions", text => 1, html => 1);
+		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/api_versions", text => 1, html => 1);
 	}
 }

@@ -5,9 +5,10 @@ h1 = Validator Reports
 <li><a href="/reports/endpoints.html">%title_reports/endpoints%</a>
 <li><a href="/reports/node_types.html">%title_reports/node_types%</a>
 <li><a href="/reports/resources.html">%title_reports/resources%</a>
-<li><a href="/reports/versions.html">%title_reports/versions%</a>
+<li><a href="/reports/api_versions.html">%title_reports/api_versions%</a>
 <li><a href="/reports/country.html">%title_reports/country%</a>
 <li><a href="/reports/config.html">%title_reports/config%</a>
 <li><a href="/reports/errors.html">%title_reports/errors%</a>
 <li><a href="/reports/blacklist.html">%title_reports/blacklist%</a>
+<li><a href="/reports/producer_versions.html">%title_reports/producer_versions%</a>
 </ul>

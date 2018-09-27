@@ -14,11 +14,11 @@ my %sections;
 
 foreach my $entry (@{$$data{producers}}) {
 	my $producer = $$entry{regproducer}{owner};
-	my $blacklist = $$entry{output}{chain}{blacklist};
+	my $result_version = $$entry{output}{chain}{result_version};
 	my $important_bp = is_important_bp ($entry);
-	if ($blacklist || $important_bp) {
-		$blacklist = "zzunknown" if (! $blacklist);
-		push (@{$sections{$blacklist}}, {
+	if ($result_version || $important_bp) {
+		$result_version = "zzunknown" if (! $result_version);
+		push (@{$sections{$result_version}}, {
 			producer => $producer,
 			sprintf => "",
 			data => []
@@ -36,6 +36,6 @@ foreach my $lang (languages()) {
 			push (@report, {name => $name, rows => $section});
 		}
 
-		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/blacklist", text => 1, html => 1);
+		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/producer_versions", text => 1, html => 1);
 	}
 }

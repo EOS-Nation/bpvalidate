@@ -330,12 +330,16 @@ sub check_onchainheartbeat {
 		$self->{results}{output}{chain}{$key} = $$chain_json{$key};
 	}
 
+	# ---------- cpu
+
 	my $cpu = $$chain_json{cpu};
 	if ($cpu) {
 		$self->add_message(kind => 'ok', detail => 'CPU', value => $cpu, %message_options);
 	} else {
 		$self->add_message(kind => 'err', detail => 'CPU not provided', %message_options);
 	}
+
+	# ---------- memory
 
 	my $memory_threshold = 62 * 2 * 1024 * 1024; # value is good until 2019-07-01
 	my $memory = $$chain_json{memory};
@@ -347,7 +351,9 @@ sub check_onchainheartbeat {
 		$self->add_message(kind => 'err', detail => 'memory not provided', %message_options);
 	}
 
-	my $database_threshold = 1000; # not sure what this should be
+	# ---------- database size
+
+	my $database_threshold = 6000; # not sure what this should be
 	my $database = $$chain_json{db_size};
 	if ($database && $database >= $database_threshold) {
 		$self->add_message(kind => 'ok', detail => 'database size', value => $database, %message_options);
@@ -357,6 +363,23 @@ sub check_onchainheartbeat {
 		$self->add_message(kind => 'err', detail => 'database size not provided', %message_options);
 	}
 
+	# ---------- interval
+
+	my $interval_threshold1 = 900;
+	my $interval_threshold2 = 1800;
+	my $interval = $$chain_json{db_size};
+	if ($interval && $interval >= $interval_threshold1 && $interval <= $interval_threshold2) {
+		$self->add_message(kind => 'ok', detail => 'interval size', value => $interval, %message_options);
+	} elsif ($interval < $interval_threshold1) {
+		$self->add_message(kind => 'warn', detail => 'interval size is less than ' . $interval_threshold1, value => $interval, %message_options);
+	} elsif ($interval > $interval_threshold2) {
+		$self->add_message(kind => 'warn', detail => 'interval size is greater than ' . $interval_threshold2, value => $interval, %message_options);
+	} else {
+		$self->add_message(kind => 'err', detail => 'interval size not provided', %message_options);
+	}
+
+	# ---------- on call
+
 	my $oncall = $$chain_json{oncall};
 	if ($oncall) {
 		$self->add_message(kind => 'ok', detail => 'on call', value => $oncall, %message_options);
@@ -364,12 +387,42 @@ sub check_onchainheartbeat {
 		$self->add_message(kind => 'err', detail => 'on call not provided', %message_options);
 	}
 
+	# ---------- virtualization type
+
 	my $vtype = $$chain_json{vtype};
 	if ($vtype) {
 		$self->add_message(kind => 'ok', detail => 'virtualization type', value => $vtype, %message_options);
 	} else {
 		$self->add_message(kind => 'err', detail => 'virtualization type not provided', %message_options);
 	}
+
+	# ---------- version
+
+	# request to add version_string: https://github.com/bancorprotocol/eos-producer-heartbeat-plugin/issues/1
+	my $version = $$chain_json{version_string} || $$chain_json{version};
+
+	if ($version) {
+		# remove any local suffixes
+		$version =~ s/-dirty//;
+		$version =~ s/-\d\d-[a-z0-9]*$//;
+	} else {
+		$self->add_message(kind => 'crit', detail => 'version not provided', %message_options);
+	}
+
+	my $versions = $self->versions;
+
+	if (! $$versions{$version}) {
+		$self->add_message(kind => 'warn', detail => 'unknown version', value => $version, %message_options, see1 => 'https://validate.eosnation.io/faq/#versions');
+	} else {
+		my $name = $$versions{$version}{name};
+		my $current = $$versions{$version}{current};
+		$self->{results}{output}{chain}{result_version} = $name;
+		if (! $current) {
+			$self->add_message(kind => 'warn', detail => 'version is out of date', value => $name, %message_options, see1 => 'https://validate.eosnation.io/faq/#versions');
+		}
+	}
+
+	# ---------- last update
 
 	my $timestamp = $self->{onchainheartbeat_timestamp} || 0;
 	if ($timestamp + 60 * 30 < time) {
