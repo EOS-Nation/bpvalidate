@@ -341,7 +341,7 @@ sub check_onchainheartbeat {
 
 	# ---------- memory
 
-	my $memory_threshold = 62 * 2 * 1024 * 1024; # value is good until 2019-07-01
+	my $memory_threshold = 31 * 2 * 1024 * 1024; # value is good until 2019-01-01
 	my $memory = $$chain_json{memory};
 	if ($memory && $memory >= $memory_threshold) {
 		$self->add_message(kind => 'ok', detail => 'memory', value => $memory, %message_options);
@@ -353,7 +353,7 @@ sub check_onchainheartbeat {
 
 	# ---------- database size
 
-	my $database_threshold = 6000; # not sure what this should be
+	my $database_threshold = 31 * 2 * 1024; # value is good until 2019-01-01
 	my $database = $$chain_json{db_size};
 	if ($database && $database >= $database_threshold) {
 		$self->add_message(kind => 'ok', detail => 'database size', value => $database, %message_options);
@@ -384,7 +384,7 @@ sub check_onchainheartbeat {
 	if ($oncall && ($oncall ne 'telegram:nobody')) {
 		$self->add_message(kind => 'ok', detail => 'on call', value => $oncall, %message_options);
 	} else {
-# optional for now
+# optional for now. change on 2018-10-10
 #		$self->add_message(kind => 'err', detail => 'on call not provided', %message_options);
 	}
 
