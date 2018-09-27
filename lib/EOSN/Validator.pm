@@ -301,7 +301,7 @@ sub check_onchainblacklist {
 		return;
 	}
 
-	#print "blacklist: $onchainblacklist\n";
+	print "blacklist: $onchainblacklist\n";
 
 	$self->{results}{output}{chain}{blacklist} = $onchainblacklist;
 
@@ -319,7 +319,7 @@ sub check_onchainheartbeat {
 		return;
 	}
 
-	#print "heartbeat: $onchainheartbeat\n";
+	print "heartbeat: $onchainheartbeat\n";
 
 	my $chain_json = $self->get_json ($onchainheartbeat, %message_options);
 	if (! $chain_json) {
@@ -366,8 +366,8 @@ sub check_onchainheartbeat {
 	# ---------- interval
 
 	my $interval_threshold1 = 900;
-	my $interval_threshold2 = 1800;
-	my $interval = $$chain_json{db_size};
+	my $interval_threshold2 = 3600;
+	my $interval = $$chain_json{interval};
 	if ($interval && $interval >= $interval_threshold1 && $interval <= $interval_threshold2) {
 		$self->add_message(kind => 'ok', detail => 'interval size', value => $interval, %message_options);
 	} elsif ($interval < $interval_threshold1) {
@@ -425,8 +425,8 @@ sub check_onchainheartbeat {
 	# ---------- last update
 
 	my $timestamp = $self->{onchainheartbeat_timestamp} || 0;
-	if ($timestamp + 60 * 30 < time) {
-		$self->add_message(kind => 'crit', detail => 'heartbeat is more than 30 minutes behind', last_update_time => time2str("%C", $timestamp), %message_options);
+	if ($timestamp + 3600 < time) {
+		$self->add_message(kind => 'crit', detail => 'heartbeat is more than 60 minutes behind', last_update_time => time2str("%C", $timestamp), %message_options);
 		return;
 	}
 
