@@ -384,7 +384,8 @@ sub check_onchainheartbeat {
 	if ($oncall) {
 		$self->add_message(kind => 'ok', detail => 'on call', value => $oncall, %message_options);
 	} else {
-		$self->add_message(kind => 'err', detail => 'on call not provided', %message_options);
+# optional for now
+#		$self->add_message(kind => 'err', detail => 'on call not provided', %message_options);
 	}
 
 	# ---------- virtualization type
