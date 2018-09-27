@@ -330,6 +330,17 @@ sub check_onchainheartbeat {
 		$self->{results}{output}{chain}{$key} = $$chain_json{$key};
 	}
 
+	my $version_threshold = 1.1;
+	my $version = $$chain_json{hb_version};
+	if ($version && $version >= $version_threshold) {
+		$self->add_message(kind => 'ok', detail => 'version', value => $version, %message_options);
+	} elsif ($version) {
+		$self->add_message(kind => 'warn', detail => 'version is less than ' . $version_threshold . '; upgrade required', value => $version, %message_options);
+	} else {
+# optional for now.  change on 2018-10-10
+#		$self->add_message(kind => 'err', detail => 'version not provided; upgrade required', %message_options);
+	}
+
 	# ---------- cpu
 
 	my $cpu = $$chain_json{cpu};
