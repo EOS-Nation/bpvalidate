@@ -381,7 +381,7 @@ sub check_onchainheartbeat {
 	# ---------- on call
 
 	my $oncall = $$chain_json{oncall};
-	if ($oncall) {
+	if ($oncall && ($oncall ne 'telegram:nobody')) {
 		$self->add_message(kind => 'ok', detail => 'on call', value => $oncall, %message_options);
 	} else {
 # optional for now
