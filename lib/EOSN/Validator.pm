@@ -330,15 +330,17 @@ sub check_onchainheartbeat {
 		$self->{results}{output}{chain}{$key} = $$chain_json{$key};
 	}
 
-	my $version_threshold = 1.1;
-	my $version = $$chain_json{hb_version};
-	if ($version && $version >= $version_threshold) {
-		$self->add_message(kind => 'ok', detail => 'version', value => $version, %message_options);
-	} elsif ($version) {
-		$self->add_message(kind => 'warn', detail => 'version is less than ' . $version_threshold . '; upgrade required', value => $version, %message_options);
+	my $hbversion_threshold = '01.01.01';
+	my $hbversion = $$chain_json{hb_version};
+	my ($a, $b, $c) = split (/\./, $hbversion);
+	my $hbversionx = sprintf ("%02d.%02d.%02d", $a || 0, $b || 0, $c || 0);
+	print ">>[$hbversionx]\n";
+	if ($hbversion && $hbversionx ge $hbversion_threshold) {
+		$self->add_message(kind => 'ok', detail => 'heartbeat version', value => $hbversion, %message_options);
+	} elsif ($hbversion) {
+		$self->add_message(kind => 'warn', detail => 'heartbeat version is less than ' . $hbversion_threshold . '; upgrade required', value => $hbversion, %message_options);
 	} else {
-# optional for now.  change on 2018-10-10
-#		$self->add_message(kind => 'err', detail => 'version not provided; upgrade required', %message_options);
+		$self->add_message(kind => 'err', detail => 'heartbat version not provided; upgrade required', %message_options);
 	}
 
 	# ---------- cpu
@@ -352,7 +354,7 @@ sub check_onchainheartbeat {
 
 	# ---------- memory
 
-	my $memory_threshold = 31 * 2 * 1024 * 1024; # value is good until 2019-01-01
+	my $memory_threshold = 31 * 2 * 1024 * 1024; # value is good until 2019-01-01, probably
 	my $memory = $$chain_json{memory};
 	if ($memory && $memory >= $memory_threshold) {
 		$self->add_message(kind => 'ok', detail => 'memory', value => $memory, %message_options);
@@ -364,7 +366,7 @@ sub check_onchainheartbeat {
 
 	# ---------- database size
 
-	my $database_threshold = 31 * 2 * 1024; # value is good until 2019-01-01
+	my $database_threshold = 31 * 2 * 1024; # value is good until 2019-01-01, probably
 	my $database = $$chain_json{db_size};
 	if ($database && $database >= $database_threshold) {
 		$self->add_message(kind => 'ok', detail => 'database size', value => $database, %message_options);
