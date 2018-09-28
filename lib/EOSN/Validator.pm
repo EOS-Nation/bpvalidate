@@ -332,7 +332,7 @@ sub check_onchainheartbeat {
 
 	my $hbversion_threshold = '01.01.01';
 	my $hbversion = $$chain_json{hb_version};
-	my ($a, $b, $c) = split (/\./, $hbversion);
+	my ($a, $b, $c) = split (/\./, $hbversion || '');
 	my $hbversionx = sprintf ("%02d.%02d.%02d", $a || 0, $b || 0, $c || 0);
 	print ">>[$hbversionx]\n";
 	if ($hbversion && $hbversionx ge $hbversion_threshold) {
