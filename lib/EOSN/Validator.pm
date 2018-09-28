@@ -312,7 +312,7 @@ sub check_onchainheartbeat {
 	my ($self) = @_;
 
 	my %message_options = (contract => 'eosheartbeat', class => 'chain');
-	my $current_memory_mb = (int ($self->{globals}{total_ram_stake} / 1024 / 1024 / 1024) + 5) * 1024 * 1024;
+	my $current_memory_mb = (int ($self->{globals}{total_ram_stake} / 1024 / 1024 / 1024) + 5) * 1024;
 
 	my $onchainheartbeat = $self->{onchainheartbeat_data};
 	if (! $onchainheartbeat) {
