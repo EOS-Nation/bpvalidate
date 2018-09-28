@@ -312,6 +312,7 @@ sub check_onchainheartbeat {
 	my ($self) = @_;
 
 	my %message_options = (contract => 'eosheartbeat', class => 'chain');
+	my $current_memory_mb = (int ($self->{globals}{total_ram_stake} / 1024 / 1024 / 1024) + 5) * 1024 * 1024;
 
 	my $onchainheartbeat = $self->{onchainheartbeat_data};
 	if (! $onchainheartbeat) {
@@ -354,7 +355,7 @@ sub check_onchainheartbeat {
 
 	# ---------- memory
 
-	my $memory_threshold = 31 * 2 * 1024 * 1024; # value is good until 2019-01-01, probably
+	my $memory_threshold = $current_memory_mb * 1024;
 	my $memory = $$chain_json{memory};
 	if ($memory && $memory >= $memory_threshold) {
 		$self->add_message(kind => 'ok', detail => 'memory', value => $memory, %message_options);
@@ -366,7 +367,7 @@ sub check_onchainheartbeat {
 
 	# ---------- database size
 
-	my $database_threshold = 31 * 2 * 1024; # value is good until 2019-01-01, probably
+	my $database_threshold = $current_memory_mb;
 	my $database = $$chain_json{db_size};
 	if ($database && $database >= $database_threshold) {
 		$self->add_message(kind => 'ok', detail => 'database size', value => $database, %message_options);
