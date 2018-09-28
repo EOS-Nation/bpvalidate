@@ -340,7 +340,7 @@ sub check_onchainheartbeat {
 	} elsif ($hbversion) {
 		$self->add_message(kind => 'warn', detail => 'heartbeat version is less than ' . $hbversion_threshold . '; upgrade required', value => $hbversion, %message_options);
 	} else {
-		$self->add_message(kind => 'err', detail => 'heartbat version not provided; upgrade required', %message_options);
+		$self->add_message(kind => 'err', detail => 'heartbeat version not provided; upgrade required', %message_options);
 	}
 
 	# ---------- cpu
