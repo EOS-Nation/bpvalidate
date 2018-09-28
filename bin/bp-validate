@@ -22,6 +22,7 @@ my $outfile = undef;
 my $versionsfile = undef;
 my $limit = 1000;
 my $debug = 0;
+my $globals;
 
 GetOptions('max_processes=i' => \$max_processes, 'producer=s' => \$filter_producer, 'output=s' => \$outfile, 'versions=s' => \$versionsfile, 'limit=i' => \$limit, 'debug' => \$debug) || exit 1;
 
@@ -44,6 +45,12 @@ sub setup_jobs {
 	my $dbh = do_connect('validate');
 	my $rank = 0;
 	my %onchain;
+
+	$globals = get_table ($ua, 'https://api.eosn.io/v1/chain/get_table_rows', limit => $limit, code => "eosio", scope => "eosio", table => "global");
+	if (! $globals) {
+		die "$0: cannot get global list";
+	}
+	$globals = $$globals[0];
 
 	my $producer_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_producers", limit => $limit);
 
@@ -181,6 +188,7 @@ sub doit {
 		warn "[$thread_id] processing: $$entry{producer}\n" if ($debug);
 		my $ua = eosn_ua();
 		my $producer = new EOSN::Validator (ua => $ua,
+			globals => $globals,
 			properties => from_json ($$entry{regproducer_data}),
 			versions => $versions,
 			rank => $$entry{regproducer_rank},
