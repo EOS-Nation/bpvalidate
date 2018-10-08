@@ -331,7 +331,7 @@ sub check_onchainheartbeat {
 		$self->{results}{output}{chain}{$key} = $$chain_json{$key};
 	}
 
-	my $hbversion_threshold = '01.01.01';
+	my $hbversion_threshold = '01.01.02';
 	my $hbversion = $$chain_json{hb_version};
 	my ($a, $b, $c) = split (/\./, $hbversion || '');
 	my $hbversionx = sprintf ("%02d.%02d.%02d", $a || 0, $b || 0, $c || 0);
