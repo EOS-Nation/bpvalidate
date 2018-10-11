@@ -1169,6 +1169,9 @@ sub validate_api_extra_check {
 	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
+	if (! $self->test_history_actions_12_to_13_upgrade (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+		$errors++;
+	}
 	if (! $self->test_system_symbol (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
@@ -1493,6 +1496,26 @@ sub test_history_actions {
 
 	if (! $res->is_success) {
 		$self->add_message(kind => 'err', detail => 'error retriving actions history', value => $status_message, explanation => 'edit config.ini to turn on history and replay all blocks', see1 => 'https://steemit.com/eos/@greymass/consistency-in-configuration-of-public-eos-full-nodes', see2 => 'http://t.me/eosfullnodes', %options);
+		return undef;
+	}
+	$self->add_message(kind => 'ok', detail => 'basic history test passed', %options);
+
+	return 1;
+}
+
+sub test_history_actions_12_to_13_upgrade {
+	my ($self, %options) = @_;
+	$options{api_url} .= '/v1/history/get_actions';
+
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "account_name": "hackerdarwin"}');
+	$self->ua->timeout(10);
+	my $res = $self->ua->request($req);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+
+	if (! $res->is_success) {
+		$self->add_message(kind => 'err', detail => 'error retriving actions history', value => $status_message, explanation => 'replay all blocks', see1 => 'https://github.com/EOSIO/eos/issues/5818', %options);
 		return undef;
 	}
 	$self->add_message(kind => 'ok', detail => 'basic history test passed', %options);
