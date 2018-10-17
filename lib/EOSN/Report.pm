@@ -7,6 +7,7 @@ use Carp qw(confess);
 use Getopt::Long;
 use Date::Parse;
 use Date::Format;
+use Data::Dumper;
 
 our $infile = undef;
 our $outdir = undef;
@@ -102,6 +103,7 @@ sub generate_report_txt {
 	push (@out, "\n");
 	foreach my $section (@$report) {
 		my $name = $$section{name};
+		$name = label ('unknown', $lang) if (defined $name && $name eq 'zzunknown');
 		my $rows = $$section{rows};
 		my $prefix = $$section{name_prefix} || '';
 		my $divider = $$section{section_divider} || 1;
@@ -148,6 +150,7 @@ sub generate_report_thtml {
 
 	foreach my $section (@$report) {
 		my $name = $$section{title} || $$section{name};
+		$name = label ('unknown', $lang) if (defined $name && $name eq 'zzunknown');
 		my $rows = $$section{rows};
 
 		push (@out, "<div class=\"card\">\n");
