@@ -10,30 +10,35 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $data = get_report_options ();
-my %sections;
+my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {
-	my $producer = $$entry{regproducer}{owner};
-	my $result_version = $$entry{output}{chain}{result_version};
-	my $important_bp = is_important_bp ($entry);
-	if ($result_version || $important_bp) {
-		$result_version = "zzunknown" if (! $result_version);
-		push (@{$sections{$result_version}}, {
-			producer => $producer,
-			sprintf => "",
-			data => []
-		});
-	}
+	my $key = $$entry{output}{chain}{result_version} || 'zzunknown';
+	$kinds{$key} = 1;
 }
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
 		my @report;
-		foreach my $key (sort keys %sections) {
-			my $section = $sections{$key};
-			my $name = $key;
-			$name = 'Unknown' if ($key eq 'zzunknown');
-			push (@report, {name => $name, rows => $section});
+		foreach my $kind (sort keys %kinds) {
+			my @section;
+
+			foreach my $entry (@{$$data{producers}}) {
+				my $producer = $$entry{regproducer}{owner};
+				my $important_bp = is_important_bp ($entry);
+				my $key = $$entry{output}{chain}{result_version} || 'zzunknown';
+				next if ($key ne $kind);
+
+				if ($key ne 'zzunknown' || $important_bp) {
+					push (@section, {
+						producer => $producer,
+						sprintf => "",
+						data => []
+					});
+				}
+			}
+
+			push (@report, {name => $kind, rows => \@section});
 		}
 
 		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/producer_versions", text => 1, html => 1);

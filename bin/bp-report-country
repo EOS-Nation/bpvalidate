@@ -11,34 +11,41 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $data = get_report_options ();
-my %sections;
+my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {
-	my $producer = $$entry{regproducer}{owner};
-	my $country_name = $$entry{info}{country_name};
-	my $country_alpha2 = $$entry{info}{country_alpha2};
-
-	next if (! defined $country_alpha2);
-
-	$sections{$country_alpha2}{name} = $country_name;
-	push (@{$sections{$country_alpha2}{data}}, {
-		producer => $producer,
-		sprintf => "",
-		data => []
-	});
+	my $key = $$entry{info}{country_alpha2} || 'zzunknown';
+	$kinds{$key} = 1;
 }
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
 		my @report;
-		foreach my $key (sort keys %sections) {
-			my $name = $sections{$key}{name};
-			my $section = $sections{$key}{data};
+		foreach my $kind (sort keys %kinds) {
+			my @section;
+			my $name = $kind;
 
-			my $flag = flag_html($key);
-			my $header = "$name &nbsp; $flag";
-	
-			push (@report, {name => $name, title => $header, rows => $section});
+			foreach my $entry (@{$$data{producers}}) {
+				my $producer = $$entry{regproducer}{owner};
+				my $important_bp = is_important_bp ($entry);
+				my $country_name = $$entry{info}{country_name};
+				my $key = $$entry{info}{country_alpha2} || 'zzunknown';
+				next if ($key ne $kind);
+				$name = $$entry{info}{country_name} if ($$entry{info}{country_name});
+
+				if ($key ne 'zzunknown' || $important_bp) {
+					push (@section, {
+						producer => $producer,
+						sprintf => "",
+						data => []
+					});
+				}
+			}
+			if ($kind eq 'zzunknown') {
+				push (@report, {name => $name, rows => \@section});
+			} else {
+				push (@report, {name => $name, title => "$name &nbsp; " . flag_html ($kind), rows => \@section});
+			}
 		}
 
 		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/country", text => 1, html => 1);

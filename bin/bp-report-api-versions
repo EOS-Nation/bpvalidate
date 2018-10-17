@@ -10,46 +10,42 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $data = get_report_options ();
-my %endpoints;
+my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {
-	my $producer = $$entry{regproducer}{owner};
 	foreach my $kind (sort keys %{$$entry{output}{nodes}}) {
 		foreach my $node (@{$$entry{output}{nodes}{$kind}}) {
-			$$node{producer} = $producer;
-			push (@{$endpoints{$kind}}, $node);
+			my $key = $$node{info}{server_version} || 'zzunknown';
+			$kinds{$key} = 1;
 		}
 	}
 }
 
-my %sections;
-
-foreach my $kind (sort keys %endpoints) {
-	next if (($kind ne 'api_http') && ($kind ne 'api_https') && ($kind ne 'api_https2'));
-
-	foreach my $entry (@{$endpoints{$kind}}) {
-		my $producer = $$entry{producer};
-		my $address = $$entry{address};
-		my $key = $$entry{info}{server_version} || 'zzunknown';
-		push (@{$sections{$key}}, {
-			producer => $producer,
-			sprintf => "%9s, %20s, %s",
-			data => [$kind, ($$entry{response}{server_version_string} || 'n/a'), $$entry{address}]
-		});
-	}
-}
-
-#			sprintf => "%9s, %10s, %9s, %20s, %s",
-#			data => [$kind, hex('0x'. $$entry{response}{server_version}), $$entry{response}{server_version}, ($$entry{response}{server_version_string} || 'n/a'), $$entry{address}]
-
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
 		my @report;
-		foreach my $key (sort keys %sections) {
-			my $section = $sections{$key};
-			my $name = $key;
-			$name = 'Unknown' if ($key eq 'zzunknown');
-			push (@report, {name => $name, rows => $section});
+		foreach my $kind (sort keys %kinds) {
+			my @section;
+
+			foreach my $entry (@{$$data{producers}}) {
+				my $producer = $$entry{regproducer}{owner};
+				my $important_bp = is_important_bp ($entry);
+
+				foreach my $node_type (sort keys %{$$entry{output}{nodes}}) {
+					next if (($node_type ne 'api_http') && ($node_type ne 'api_https') && ($node_type ne 'api_https2'));
+					foreach my $node (@{$$entry{output}{nodes}{$node_type}}) {
+						my $key = $$node{info}{server_version} || 'zzunknown';
+						next if ($key ne $kind);
+						push (@section, {
+							producer => $producer,
+							sprintf => "%9s, %20s, %s",
+							data => [$node_type, ($$node{response}{server_version_string} || 'n/a'), $$node{address}]
+						});
+					}
+				}
+			}
+
+			push (@report, {name => $kind, rows => \@section});
 		}
 
 		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/api_versions", text => 1, html => 1);

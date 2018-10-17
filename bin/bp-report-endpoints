@@ -10,32 +10,31 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $data = get_report_options ();
-my %endpoints;
+my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {
-	my $producer = $$entry{regproducer}{owner};
 	foreach my $kind (sort keys %{$$entry{output}{nodes}}) {
-		foreach my $node (@{$$entry{output}{nodes}{$kind}}) {
-			$$node{producer} = $producer;
-			push (@{$endpoints{$kind}}, $node);
-		}
+		$kinds{$kind} = 1;
 	}
 }
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
 		my @report;
-		foreach my $kind (sort keys %endpoints) {
+		foreach my $kind (sort keys %kinds) {
 			my @section;
 
-			foreach my $entry (@{$endpoints{$kind}}) {
-				my $producer = $$entry{producer};
-				my $address = $$entry{address};
-				push (@section, {
-					producer => $producer,
-					sprintf => "%s",
-					data => [$$entry{address}]
-				});
+			foreach my $entry (@{$$data{producers}}) {
+				my $producer = $$entry{regproducer}{owner};
+				my $important_bp = is_important_bp ($entry);
+
+				foreach my $node (@{$$entry{output}{nodes}{$kind}}) {
+					push (@section, {
+						producer => $producer,
+						sprintf => "%s",
+						data => [$$node{address}]
+					});
+				}
 			}
 
 			push (@report, {name => $kind, rows => \@section});
