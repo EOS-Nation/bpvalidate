@@ -9,8 +9,8 @@ h1 = Frequently Asked Questions Regarding the Block Producer Validator
   </header>
   <div class="card-content">
   <p>
-The nodeos software does not provide the exact version number being used. Instead it provides a hash of the version number. Depending on how the
-software is compiled, the same version may generate different hashes. Therefore the list of version numbers is maintained by hand in
+The nodeos software provides a version number based on the git commit. Depending on local patches, the same version may generate different version numbers.
+The list of version numbers is maintained by hand in
 <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions.csv">GitHub</a>. The list also specifies which versions are considered
 current vs out-of-date. Generally the last 2 to 3 versions are considered current, although if a long time passes with out a new version being
 issued or there is a critical issue, then only latest version is considered current.
