@@ -1166,12 +1166,13 @@ sub validate_api_extra_check {
 	if (! $self->test_abi_serializer (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
-		$errors++;
-	}
-	if (! $self->test_history_actions_12_to_13_upgrade (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
-		$errors++;
-	}
+# remove history test 2018-12-02
+#	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+#		$errors++;
+#	}
+#	if (! $self->test_history_actions_12_to_13_upgrade (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+#		$errors++;
+#	}
 	if (! $self->test_system_symbol (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
