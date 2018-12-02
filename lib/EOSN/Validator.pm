@@ -1566,7 +1566,7 @@ sub test_regproducer_key {
 
 	my $json = $self->get_json ($content, %options) || return 1;  #skip if down
 
-	if (scalar @{$$json{account_names}} != 0) {
+	if ((ref $$json{error}{details} ne 'ARRAY') || (scalar @{$$json{account_names}} != 0)) {
 		$self->add_message(kind => 'err', detail => 'regproducer key is assigned to an account; better to use a dedicated signing key', see1 => 'https://steemit.com/eos/@eostribe/eos-bp-guide-on-how-to-setup-a-block-signing-key', %options);
 		return undef;
 	}
