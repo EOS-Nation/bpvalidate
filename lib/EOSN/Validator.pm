@@ -1555,7 +1555,8 @@ sub test_regproducer_key {
 	my ($self, %options) = @_;
 
 	my $key = $options{key};
-	my $url = 'https://api.eosn.io/v1/history/get_key_accounts';
+#	my $url = 'https://api.eosn.io/v1/history/get_key_accounts';
+	my $url = 'http://eos.greymass.com/v1/history/get_key_accounts';
 
 	my $req = HTTP::Request->new('POST', $url, undef, '{"json": true, "public_key": "' . $key . '"}');
 	$self->ua->timeout(10);
