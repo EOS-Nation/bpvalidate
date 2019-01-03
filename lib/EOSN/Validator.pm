@@ -436,7 +436,7 @@ sub check_onchainheartbeat {
 		$self->add_message(kind => 'warn', detail => 'unknown version', value => $version, %message_options, see1 => 'https://validate.eosnation.io/faq/#versions');
 	} else {
 		my $name = $$versions{$version}{name};
-		my $current = $$versions{$version}{current};
+		my $current = $$versions{$version}{producer_current};
 		$self->{results}{output}{chain}{result_version} = $name;
 		if (! $current) {
 			$self->add_message(kind => 'warn', detail => 'version is out of date', value => $name, %message_options, see1 => 'https://validate.eosnation.io/faq/#versions');
@@ -1156,7 +1156,7 @@ sub validate_api_extra_check {
 		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version}, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
 	} else {
 		my $name = $$versions{$server_version}{name};
-		my $current = $$versions{$server_version}{current};
+		my $current = $$versions{$server_version}{api_current};
 		$info{server_version} = $name;
 		if (! $current) {
 			$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
