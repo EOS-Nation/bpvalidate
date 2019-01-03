@@ -3,7 +3,6 @@
 use utf8;
 use strict;
 use EOSN::Report;
-use Data::Dumper;
 
 binmode(STDOUT, ":utf8");
 

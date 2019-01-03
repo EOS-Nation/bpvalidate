@@ -7,7 +7,6 @@ use EOSN::FileUtil qw(read_file write_file);
 use File::Find;
 use JSON;
 use Getopt::Long;
-use Data::Dumper;
 
 binmode(STDOUT, ":utf8");
 
