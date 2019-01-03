@@ -327,6 +327,12 @@ sub check_onchainheartbeat {
 		return;
 	}
 
+	if (($self->{onchainheartbeat_timestamp} || 0) + 3600 * 48 < time) {
+		$self->add_message(kind => 'crit', detail => 'heartbeat on-chain is older than 48 hours: ignored', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
+		print "heartbeat $onchainheartbeat too old\n";
+		return;
+	}
+
 	foreach my $key (keys %$chain_json) {
 		$self->{results}{output}{chain}{$key} = $$chain_json{$key};
 	}

@@ -193,7 +193,7 @@ sub generate_report_thtml {
 					} else {
 						$value = encode_entities ($value);
 					}
-					$formatted .= "<td>$value</td>"
+					$formatted .= "<td>$value</td>";
 				}
 				$formatted .= "</tr>";
 			} else {
