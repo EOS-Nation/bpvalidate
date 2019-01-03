@@ -32,8 +32,8 @@ foreach my $lang (languages()) {
 				if ($key ne 'zzunknown' || $important_bp) {
 					push (@section, {
 						producer => $producer,
-						sprintf => "",
-						data => []
+						sprintf => "%s",
+						data => [($$entry{output}{chain}{version_string} || 'n/a')]
 					});
 				}
 			}
