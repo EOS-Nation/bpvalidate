@@ -31,7 +31,10 @@ title_producers/index,Producer Scorecard,出块节点计分卡
 title_reports/resources,Resources Report,资源报告
 title_reports/api_versions,API Versions Report,API版本报告
 title_reports/blacklist,Blacklist Report,
-title_reports/producer_versions,Producer Versions Report,
+title_reports/producer_version,Producer Nodeos Version Report,
+title_reports/producer_cpu,Producer CPU Report,
+title_reports/producer_virtualization,Producer Virtualization Report,
+title_reports/producer_hbversion,Producer Heartbeat Version Report,
 label_text_version,text version,文字内容版本
 filter_yes,Yes,是
 filter_na,n/a,无内容
@@ -45,4 +48,10 @@ nav_about,About,关于
 nav_update,Validator last update: %last_update%, 验证器最后更新: %last_update%
 txt_update,Validator last update:, 验证器最后更新:
 txt_about,For details on how this is generated see https://validate.eosnation.io/about/,
-unknown,Unknown
+unknown,Unknown,
+cpu_zzother,Other,
+cpu_xeon_silver,Xeon Silver,
+cpu_xeon_gold,Xeon Gold,
+cpu_xeon_platinum,Xeon Platinum,
+cpu_xeon_zzother,Xeon Other,
+vtype_bare-metal,Bare-metal

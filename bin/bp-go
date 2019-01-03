@@ -22,7 +22,10 @@ do
 	bp-report-country --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 	bp-report-config --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 	bp-report-blacklist --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-producer-versions --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+	bp-report-producer-version --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+	bp-report-producer-cpu --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+	bp-report-producer-virtualization --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+	bp-report-producer-hbversion --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 	bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 	echo "done"
 

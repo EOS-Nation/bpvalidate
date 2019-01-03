@@ -5,7 +5,7 @@
 ./bp-schema
 #./bp-validate --output=/var/www/html/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=alohaeosprod,eosnationftw,cryptolions1,eoscanadacom,bitfinexeos1,hexlantttttt,eosriobrazil,acroeos12345,eosriobrazil
 #./bp-validate --output=/var/www/html/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=eosnationftw,teamgreymass,eosvipvipvip,eosbixinboot,eostitanprod,cypherglasss,blockgenesys
-./bp-validate --output=/var/www/html/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=eosliquideos,eosauthority,eosnationftw
+./bp-validate --output=/var/www/html/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=eosliquideos,eosauthority,eosnationftw,atticlabeosb,cryptolions1,eosbeijingbp,eostribeprod,sheos21sheos,eosswedenorg
 #./bp-validate --output=/var/www/html/bps.json --versions=../config/versions.csv --limit=1000 --debug
 ./bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
 ./bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
@@ -16,5 +16,8 @@
 ./bp-report-country --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
 ./bp-report-config --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
 ./bp-report-blacklist --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
-./bp-report-producer-versions --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
+./bp-report-producer-version --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
+./bp-report-producer-cpu --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
+./bp-report-producer-virtualization --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
+./bp-report-producer-hbversion --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/
 ./bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/ --config=../config/

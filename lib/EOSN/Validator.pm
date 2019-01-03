@@ -355,6 +355,17 @@ sub check_onchainheartbeat {
 	my $cpu = $$chain_json{cpu};
 	if ($cpu) {
 		$self->add_message(kind => 'ok', detail => 'CPU', value => $cpu, %message_options);
+		my $cpu_name = 'cpu_zzother';
+		if ($cpu =~ /Xeon.*Silver/) {
+			$cpu_name = 'cpu_xeon_silver';
+		} elsif ($cpu =~ /Xeon.*Gold/) {
+			$cpu_name = 'cpu_xeon_gold';
+		} elsif ($cpu =~ /Xeon.*Platinum/) {
+			$cpu_name = 'cpu_xeon_platinum';
+		} elsif ($cpu =~ /Xeon/) {
+			$cpu_name = 'cpu_xeon_zzother';
+		}
+		$self->{results}{output}{chain}{result_cpu} = $cpu_name;
 	} else {
 		$self->add_message(kind => 'err', detail => 'CPU not provided', %message_options);
 	}
@@ -412,6 +423,7 @@ sub check_onchainheartbeat {
 
 	my $vtype = $$chain_json{vtype};
 	if ($vtype) {
+		$self->{results}{output}{chain}{result_vtype} = 'vtype_' . lc ($vtype);
 		$self->add_message(kind => 'ok', detail => 'virtualization type', value => $vtype, %message_options);
 	} else {
 		$self->add_message(kind => 'err', detail => 'virtualization type not provided', %message_options);
