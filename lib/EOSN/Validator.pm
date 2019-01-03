@@ -783,7 +783,7 @@ sub validate_url {
 
 	$xurl =~ s/#.*$//;
 
-	if ($xurl !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
+	if ($xurl !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_%]*$#) {
 		$self->add_message(kind => 'err', detail => 'invalid URL', %options);
 		return undef;
 	}
