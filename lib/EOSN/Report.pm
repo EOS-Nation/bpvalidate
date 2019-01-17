@@ -157,7 +157,7 @@ sub generate_report_thtml {
 	my @out;
 
 	if ($text) {
-		push (@out, "<p><a href=\"/$outfile.txt\">" . label('label_text_version', $lang) . "</a></p>");
+		push (@out, "<p><a href=\"../$outfile.txt\">" . label('label_text_version', $lang) . "</a></p>");
 		push (@out, "<br>\n");
 	}
 
@@ -190,7 +190,7 @@ sub generate_report_thtml {
 					my $producer_name_html = encode_entities($$producers{$producer}{info}{name} || $producer);
 					$formatted .= "<td>$$producers{$producer}{info}{rank}</td>";
 					$formatted .= "<td>" . bp_logo ($$producers{$producer}) . "</td>";
-					$formatted .= "<td><a href=\"/producers/$producer.html\">$producer_name_html</a></td>";
+					$formatted .= "<td><a href=\"../producers/$producer.html\">$producer_name_html</a></td>";
 				}
 				foreach my $i (1 .. scalar(@$data)) {
 					my $value = $$data[$i-1];
