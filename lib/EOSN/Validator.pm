@@ -241,15 +241,15 @@ sub run_validate {
 		} else {
 			my $time_zone = '';
 			if ($location == 0) {
-				$time_zone = 'UTC exactly';
+				$time_zone = 'UTC+0';
 			} elsif ($location >= 12) {
 				$time_zone = 'UTC-' . (24 - $location);
 			} else {
-				$time_zone = 'UTC+' . (12 - $location);
+				$time_zone = 'UTC+' . $location;
 			}
 			$self->add_message(kind => 'crit', detail => 'location time zone', value => $time_zone, class => 'regproducer');
 			$self->{results}{info}{timezone} = $time_zone;
-			print ">>> TIME ZONE: $time_zone for url=<$url>\n";
+			print ">>> TIME ZONE: $time_zone for location=<$location> url=<$url>\n";
 		}	
 	} else {
 		$self->add_message(kind => 'skip', detail => 'location check function needs to be fixed', class => 'regproducer');
