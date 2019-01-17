@@ -233,6 +233,24 @@ sub run_validate {
 				$self->{results}{info}{country_alpha2} = $alpha;
 			}
 		}
+	} elsif ($location_check eq 'timezone') {
+		if ($location !~ /^\d+/) {
+			$self->add_message(kind => 'crit', detail => 'location is not a number (UTC offset)', value => $location, class => 'regproducer');
+		} elsif ($location < 0 || $location > 23) {
+			$self->add_message(kind => 'crit', detail => 'location is not a number between 0 and 23 (UTC offset)', value => $location, class => 'regproducer');
+		} else {
+			my $time_zone = '';
+			if ($location == 0) {
+				$time_zone = 'UTC exactly';
+			} elsif ($location >= 12) {
+				$time_zone = 'UTC-' + (24 - $location);
+			} else {
+				$time_zone = 'UTC+' + (12 - $location);
+			}
+			$self->add_message(kind => 'crit', detail => 'location time zone', value => $time_zone, class => 'regproducer');
+			$self->{results}{info}{timezone} = $time_zone;
+			print ">>> TIME ZONE: $time_zone for url=<$url>\n";
+		}	
 	} else {
 		$self->add_message(kind => 'skip', detail => 'location check function needs to be fixed', class => 'regproducer');
 	}
