@@ -23,6 +23,9 @@ do
         bp-schema --chain=$chain
 done
 
+echo "generate website"
+bp-website-builder --out=/var/www/html/ --config=/etc/bpvalidate/
+
 while [ 1 ]
 do
 	for chain in mainnet bos telos
