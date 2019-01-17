@@ -247,7 +247,7 @@ sub run_validate {
 	my $chains_json = $self->validate_url(url => "$xurl/chains.json", failure_code => 'info', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/chainjson', see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json');
 	if ($chains_json) {
 		my $count = scalar (keys %{$$chains_json{chains}});
-		$self->add_message(kind => 'info', detail => 'chains found in chains.json', value => $count, class => 'regproducer');
+		$self->add_message(kind => 'info', detail => 'chains found in chains.json', value => $count, class => 'org');
 		my $new_filename = $$chains_json{chains}{$chain_id};
 		if ($new_filename) {
 			$self->add_message(kind => 'ok', detail => 'using chain-specific bp.json', value => $new_filename, class => 'org');
