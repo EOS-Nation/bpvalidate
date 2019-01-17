@@ -147,14 +147,14 @@ sub setup_jobs {
 		}
 
 		$dbh->do("update producer_$chain set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, 
-			onchainbpjson_data = ?,
-			onchainheartbeat_data = ?, onchainheartbeat_timestamp = ?,
-			onchainblacklist_data = ?
+			onchainbpjson_enabled = ?, onchainbpjson_data = ?,
+			onchainheartbeat_enabled = ?, onchainheartbeat_data = ?, onchainheartbeat_timestamp = ?,
+			onchainblacklist_enabled = ?, onchainblacklist_data = ?
 			where producer = ? and (checked_at < ? or checked_at is null)"
 			, {}, $state, time, to_json ($entry), $rank, $vote_percent,
-			$onchain{bpjson}{$owner},
-			$onchain{heartbeat}{$owner}{json}, $onchain{heartbeat}{$owner}{timestamp},
-			$onchain{blacklist}{$owner},
+			(scalar (@$onchainbpjson_list) ? 1 : 0), $onchain{bpjson}{$owner},
+			(scalar (@$onchainheartbeat_list) ? 1 : 0), $onchain{heartbeat}{$owner}{json}, $onchain{heartbeat}{$owner}{timestamp},
+			(scalar (@$onchainblacklist_list) ? 1 : 0), $onchain{blacklist}{$owner},
 			$owner, $limit);
 	}
 }
@@ -199,10 +199,13 @@ sub doit {
 			versions => $versions,
 			rank => $$entry{regproducer_rank},
 			vote_percent => $$entry{regproducer_vote_percent},
-			onchainbpjson => $$entry{onchainbpjson_data},
+			onchainbpjson_enabled => $$entry{onchainbpjson_enabled},
+			onchainbpjson_data => $$entry{onchainbpjson_data},
+			onchainheartbeat_enabled => $$entry{onchainheartbeat_enabled},
 			onchainheartbeat_data => $$entry{onchainheartbeat_data},
 			onchainheartbeat_timestamp => $$entry{onchainheartbeat_timestamp},
-			onchainblacklist => $$entry{onchainblacklist_data},
+			onchainblacklist_enabled => $$entry{onchainblacklist_enabled},
+			onchainblacklist_data => $$entry{onchainblacklist_data},
 			chain => $chain,
 			chain_properties => $$chains{$chain}
 		);

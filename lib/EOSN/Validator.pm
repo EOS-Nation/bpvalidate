@@ -261,15 +261,20 @@ sub check_onchainbpjson {
 
 	my %message_options = (contract => 'producerjson', class => 'chain');
 
-	my $onchainbpjson = $self->{onchainbpjson};
-	if (! $onchainbpjson) {
+	my $onchainbpjson_enabled = $self->{onchainbpjson_enabled};
+	my $onchainbpjson_data = $self->{onchainbpjson_data};
+	if (! $onchainbpjson_enabled) {
+		print "onchainbpjson not enabled\n";
+		return;
+	}
+	if (! $onchainbpjson_data) {
 		$self->add_message(kind => 'crit', detail => 'bp.json has not been provided on-chain', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', %message_options);
 		return;
 	}
 
-	#print "bpjson: $onchainbpjson\n";
+	#print "bpjson: $onchainbpjson_data\n";
 
-	my $chain_json = $self->get_json ($onchainbpjson, %message_options);
+	my $chain_json = $self->get_json ($onchainbpjson_data, %message_options);
 	if (! $chain_json) {
 		return;
 	}
@@ -297,17 +302,22 @@ sub check_onchainblacklist {
 
 	my %message_options = (contract => 'theblacklist', class => 'chain');
 
-	my $onchainblacklist = $self->{onchainblacklist};
-	if (! $onchainblacklist) {
+	my $onchainblacklist_enabled = $self->{onchainblacklist_enabled};
+	my $onchainblacklist_data = $self->{onchainblacklist_data};
+	if (! $onchainblacklist_enabled) {
+		print "onchainblacklist not enabled\n";
+		return;
+	}
+	if (! $onchainblacklist_data) {
 		$self->add_message(kind => 'crit', detail => 'blacklist has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
 		return;
 	}
 
-	print "blacklist: $onchainblacklist\n";
+	#print "blacklist: $onchainblacklist_data\n";
 
-	$self->{results}{output}{chain}{blacklist} = $onchainblacklist;
+	$self->{results}{output}{chain}{blacklist} = $onchainblacklist_data;
 
-	$self->add_message(kind => 'ok', detail => 'blacklist has been provided on-chain', value => $onchainblacklist,  %message_options);
+	$self->add_message(kind => 'ok', detail => 'blacklist has been provided on-chain', value => $onchainblacklist_data,  %message_options);
 }
 
 sub check_onchainheartbeat {
@@ -316,22 +326,27 @@ sub check_onchainheartbeat {
 	my %message_options = (contract => 'eosheartbeat', class => 'chain');
 	my $current_memory_mb = (int ($self->{globals}{total_ram_stake} / 1024 / 1024 / 1024) + 2) * 1024;
 
-	my $onchainheartbeat = $self->{onchainheartbeat_data};
-	if (! $onchainheartbeat) {
+	my $onchainheartbeat_enabled = $self->{onchainheartbeat_enabled};
+	my $onchainheartbeat_data = $self->{onchainheartbeat_data};
+	if (! $onchainheartbeat_enabled) {
+		print "onchainheartbeat not enabled\n";
+		return;
+	}
+	if (! $onchainheartbeat_data) {
 		$self->add_message(kind => 'crit', detail => 'heartbeat has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
 		return;
 	}
 
-	print "heartbeat: $onchainheartbeat\n";
+	#print "heartbeat: $onchainheartbeat_data\n";
 
-	my $chain_json = $self->get_json ($onchainheartbeat, %message_options);
+	my $chain_json = $self->get_json ($onchainheartbeat_data, %message_options);
 	if (! $chain_json) {
 		return;
 	}
 
 	if (($self->{onchainheartbeat_timestamp} || 0) + 3600 * 48 < time) {
 		$self->add_message(kind => 'crit', detail => 'heartbeat on-chain is older than 48 hours: ignored', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
-		print "heartbeat $onchainheartbeat too old\n";
+		#print "heartbeat $onchainheartbeat_data too old\n";
 		return;
 	}
 
@@ -343,7 +358,7 @@ sub check_onchainheartbeat {
 	my $hbversion = $$chain_json{hb_version};
 	my ($a, $b, $c) = split (/\./, $hbversion || '');
 	my $hbversionx = sprintf ("%02d.%02d.%02d", $a || 0, $b || 0, $c || 0);
-	print ">>[$hbversionx]\n";
+	#print ">>[$hbversionx]\n";
 	if ($hbversion && $hbversionx ge $hbversion_threshold) {
 		$self->add_message(kind => 'ok', detail => 'heartbeat version', value => $hbversion, %message_options);
 	} elsif ($hbversion) {
