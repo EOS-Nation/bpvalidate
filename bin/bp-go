@@ -20,7 +20,7 @@ do
         cp -p /var/www/html/res/chain/data/* /var/www/html/$chain/data
         cp -p /var/www/html/res/chain/reports/* /var/www/html/$chain/reports
 
-        ./bp-schema --chain=$chain
+        bp-schema --chain=$chain
 done
 
 while [ 1 ]
