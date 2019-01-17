@@ -244,10 +244,14 @@ sub run_validate {
 
 	# ----------- chains
 
-	my $chains_json = $self->validate_url(url => "$xurl/chains.json", failure_code => 'info', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/chainjson', see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json');
+	my $chains_json = $self->validate_url(url => "$xurl/chains.json", field => "CHAINS JSON", failure_code => 'info', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/chainjson', see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json');
 	if ($chains_json) {
 		my $count = scalar (keys %{$$chains_json{chains}});
-		$self->add_message(kind => 'ok', detail => 'chains found in chains.json', value => $count, class => 'org');
+		if ($count) {
+			$self->add_message(kind => 'ok', detail => 'chains found in chains.json', value => $count, class => 'org');
+		} else {
+			$self->add_message(kind => 'err', detail => 'no chains found in chains.json', class => 'org');
+		}
 		my $new_filename = $$chains_json{chains}{$chain_id};
 		if ($new_filename) {
 			$self->add_message(kind => 'ok', detail => 'using chain-specific bp.json', value => $new_filename, class => 'org');
@@ -805,7 +809,7 @@ sub validate_url {
 	my ($self, %options) = @_;
 
 	my $xurl = $options{url} || $options{api_url};
-	my $field = $options{field} || confess "type not provided";
+	my $field = $options{field} || confess "field not provided";
 	my $class = $options{class} || confess "class not provided";
 	my $content_type = $options{content_type} || confess "content_type not provided";
 	my $ssl = $options{ssl} || 'either'; # either, on, off
