@@ -204,6 +204,7 @@ sub run_validate {
 	my $chain = $self->{chain};
 	my $bpjson_filename = $self->{chain_properties}{filename};
 	my $location_check = $self->{chain_properties}{location_check};
+	my $chain_id = $self->{chain_properties}{chain_id};
 
 	$self->add_message(kind => 'info', detail => 'voting rank', value => $self->{rank}, class => 'general');
 	$self->{results}{info}{rank} = $self->{rank};
@@ -240,6 +241,28 @@ sub run_validate {
 
 	my $xurl = $url;
 	$xurl =~ s#/$##;
+
+	# ----------- chains
+
+	my $chains_json = $self->validate_url(url => "$xurl/chains.json", failure_code => 'info', field => 'chains.json', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/chainjson', see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json');
+	if ($chains_json) {
+		my $count = scalar (keys %{$$chains_json{chains}});
+		$self->add_message(kind => 'info', detail => 'chains found', value => $count, class => 'regproducer');
+		my $new_filename = $$chains_json{chains}{$chain_id};
+		if ($new_filename) {
+			$self->add_message(kind => 'ok', detail => 'found chain specific bp.json', value => $new_filename, class => 'regproducer');
+			$new_filename =~ s#/$##;
+			$bpjson_filename = $new_filename;
+		} else {
+			$self->add_message(kind => 'err', detail => 'could not find found chain specific bp.json', class => 'regproducer');
+		}
+		#print ">>> CHAINS JSON: $count $new_filename\n";
+	} else {
+		#print ">>> NO CHAINS JSON\n";
+	}
+
+	# ----------- bp.json
+
 	my $json = $self->validate_url(url => "$xurl/$bpjson_filename", field => 'BP info JSON URL', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
@@ -790,6 +813,7 @@ sub validate_url {
 	my $url_ext = $options{url_ext} || '';
 	my $non_standard_port = $options{non_standard_port}; # true/false
 	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
+	my $failure_code = $options{failure_code} || 'crit'; # any valid options for 'kind'
 	my $timeout = $options{timeout} || 10;
 
 	#print ">> check url=[GET $xurl$url_ext]\n";
@@ -910,7 +934,7 @@ sub validate_url {
 	my $time = time - $clock;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => 'invalid URL', value => $status_message, %options);
+		$self->add_message(kind => $failure_code, detail => 'invalid URL', value => $status_message, %options);
 		return undef;
 	}
 
