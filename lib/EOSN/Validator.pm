@@ -1570,7 +1570,10 @@ sub test_system_symbol {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/chain/get_currency_balance';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "account": "eosnationftw", "code":"eosio.token", "symbol": "EOS"}');
+	my $core_symbol = $self->{chain_properties}{core_symbol};
+	my $test_account = $self->{chain_properties}{test_account};
+
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "account": "' . $test_account . '", "code":"eosio.token", "symbol": "' . $core_symbol . '"}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
