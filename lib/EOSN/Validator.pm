@@ -203,6 +203,7 @@ sub run_validate {
 	my $key = $self->{properties}{producer_key};
 	my $chain = $self->{chain};
 	my $bpjson_filename = $self->{chain_properties}{filename};
+	my $location_check = $self->{chain_properties}{location_check};
 
 	$self->add_message(kind => 'info', detail => 'voting rank', value => $self->{rank}, class => 'general');
 	$self->{results}{info}{rank} = $self->{rank};
@@ -220,15 +221,19 @@ sub run_validate {
 
 	$self->test_regproducer_key (key => $key, class => 'regproducer');
 
-	my $country = $self->validate_country_n (country => $location, class => 'regproducer');
-	if ($country) {
-		$self->{results}{info}{country_number} = $country;
-		my $countryx = code2country($country, LOCALE_CODE_NUMERIC);
-		if ($countryx) {
-			$self->{results}{info}{country_name} = $countryx;
-			my $alpha = country_code2code($country, LOCALE_CODE_NUMERIC, LOCALE_CODE_ALPHA_2);
-			$self->{results}{info}{country_alpha2} = $alpha;
+	if ($location_check eq 'country') {
+		my $country = $self->validate_country_n (country => $location, class => 'regproducer');
+		if ($country) {
+			$self->{results}{info}{country_number} = $country;
+			my $countryx = code2country($country, LOCALE_CODE_NUMERIC);
+			if ($countryx) {
+				$self->{results}{info}{country_name} = $countryx;
+				my $alpha = country_code2code($country, LOCALE_CODE_NUMERIC, LOCALE_CODE_ALPHA_2);
+				$self->{results}{info}{country_alpha2} = $alpha;
+			}
 		}
+	} else {
+		$self->add_message(kind => 'skip', detail => 'location check function needs to be fixed', class => 'regproducer');
 	}
 
 	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
@@ -264,7 +269,7 @@ sub check_onchainbpjson {
 	my $onchainbpjson_enabled = $self->{onchainbpjson_enabled};
 	my $onchainbpjson_data = $self->{onchainbpjson_data};
 	if (! $onchainbpjson_enabled) {
-		print "onchainbpjson not enabled\n";
+		#print "onchainbpjson not enabled\n";
 		return;
 	}
 	if (! $onchainbpjson_data) {
@@ -305,7 +310,7 @@ sub check_onchainblacklist {
 	my $onchainblacklist_enabled = $self->{onchainblacklist_enabled};
 	my $onchainblacklist_data = $self->{onchainblacklist_data};
 	if (! $onchainblacklist_enabled) {
-		print "onchainblacklist not enabled\n";
+		#print "onchainblacklist not enabled\n";
 		return;
 	}
 	if (! $onchainblacklist_data) {
@@ -329,7 +334,7 @@ sub check_onchainheartbeat {
 	my $onchainheartbeat_enabled = $self->{onchainheartbeat_enabled};
 	my $onchainheartbeat_data = $self->{onchainheartbeat_data};
 	if (! $onchainheartbeat_enabled) {
-		print "onchainheartbeat not enabled\n";
+		#print "onchainheartbeat not enabled\n";
 		return;
 	}
 	if (! $onchainheartbeat_data) {
