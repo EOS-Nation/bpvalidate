@@ -1132,7 +1132,9 @@ sub validate_api_extra_check {
 		$errors++;
 	}
 
-	if ($$result{chain_id} ne 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906') {
+	my $chain_id = $self->{chain_properties}{chain_id};
+
+	if ($$result{chain_id} ne $chain_id) {
 		$self->add_message(kind => 'crit', detail => 'invalid chain_id', value => $$result{chain_id}, url => $url, field => $field, class => $class, node_type => $node_type);
 		$errors++;
 	}
