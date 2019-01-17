@@ -250,13 +250,13 @@ sub run_validate {
 		$self->add_message(kind => 'info', detail => 'chains found', value => $count, class => 'regproducer');
 		my $new_filename = $$chains_json{chains}{$chain_id};
 		if ($new_filename) {
-			$self->add_message(kind => 'ok', detail => 'found chain specific bp.json', value => $new_filename, class => 'regproducer');
-			$new_filename =~ s#/$##;
+			$self->add_message(kind => 'ok', detail => 'found chain specific bp.json', value => $new_filename, class => 'org');
+			$new_filename =~ s#^/##;
 			$bpjson_filename = $new_filename;
+			print ">>> CHAINS JSON: count=<$count> url=<$xurl/$new_filename>\n";
 		} else {
-			$self->add_message(kind => 'err', detail => 'could not find found chain specific bp.json', class => 'regproducer');
+			$self->add_message(kind => 'err', detail => 'could not find found chain specific bp.json', class => 'org', see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json');
 		}
-		#print ">>> CHAINS JSON: $count $new_filename\n";
 	} else {
 		#print ">>> NO CHAINS JSON\n";
 	}
