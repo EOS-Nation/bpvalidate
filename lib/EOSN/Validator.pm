@@ -243,9 +243,9 @@ sub run_validate {
 			if ($location == 0) {
 				$time_zone = 'UTC exactly';
 			} elsif ($location >= 12) {
-				$time_zone = 'UTC-' + (24 - $location);
+				$time_zone = 'UTC-' . (24 - $location);
 			} else {
-				$time_zone = 'UTC+' + (12 - $location);
+				$time_zone = 'UTC+' . (12 - $location);
 			}
 			$self->add_message(kind => 'crit', detail => 'location time zone', value => $time_zone, class => 'regproducer');
 			$self->{results}{info}{timezone} = $time_zone;
