@@ -40,7 +40,7 @@ sub generate_content {
 	$filename_out =~ s/\.thtml.(\w\w)$/.html.$1/;
 	return if ($filename_in =~ m#${outdir}res/#);
 	my $lang = $1;
-	print "generate file=<$filename_in> lang=<$lang>\n";
+	#print "generate file=<$filename_in> lang=<$lang>\n";
 	my (@content) = read_file ($filename_in);
 
 	my $header = 1;
