@@ -247,7 +247,7 @@ sub run_validate {
 			} else {
 				$time_zone = 'UTC+' . $location;
 			}
-			$self->add_message(kind => 'crit', detail => 'location time zone', value => $time_zone, class => 'regproducer');
+			$self->add_message(kind => 'ok', detail => 'location time zone', value => $time_zone, class => 'regproducer');
 			$self->{results}{info}{timezone} = $time_zone;
 			print ">>> TIME ZONE: $time_zone for location=<$location> url=<$url>\n";
 		}	
