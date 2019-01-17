@@ -1,0 +1,17 @@
+title = EOS Block Producer bp.json Validator
+h1 = Block Producer bp.json Validator
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Main Menu
+    </p>
+  </header>
+  <div class="card-content">
+    <ul class="menu-list">
+    <li> <a href="producers/">Producer Scorecard</a>
+    <li> <a href="reports/">Validator Reports</a>
+    <li> <a href="data/">Data Download</a>
+    </ul>
+  </div>
+</div>

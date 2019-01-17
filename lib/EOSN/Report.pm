@@ -9,6 +9,7 @@ use Date::Parse;
 use Date::Format;
 use Data::Dumper;
 
+our $chain = undef;
 our $infile = undef;
 our $outdir = undef;
 our $confdir = undef;
@@ -51,8 +52,9 @@ sub outdir {
 # Subroutines
 
 sub get_report_options {
-	GetOptions('input=s' => \$infile, 'output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
+	GetOptions('chain=s' => \$chain, 'input=s' => \$infile, 'output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
 
+	confess "$0: chain not given" if (! $chain);
 	confess "$0: input filename not given" if (! $infile);
 	confess "$0: output dir not given" if (! $outdir);
 	confess "$0: config dir not given" if (! $confdir);
@@ -60,6 +62,17 @@ sub get_report_options {
 	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
 	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
 	return from_json(read_file($infile) || confess "$0: no data read");
+}
+
+sub get_report_options_website {
+	GetOptions('output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
+
+	confess "$0: output dir not given" if (! $outdir);
+	confess "$0: config dir not given" if (! $confdir);
+
+	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
+	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
+	return undef;
 }
 
 sub generate_report {
@@ -342,7 +355,8 @@ sub format_message_entry {
 sub report_write_file {
 	my ($filename, @out) = @_;
 
-	write_file ($outdir . "/" . $filename, @out);
+	my $report_dir = $outdir . "/$chain";
+	write_file ($report_dir . "/" . $filename, @out);
 }
 
 sub label {

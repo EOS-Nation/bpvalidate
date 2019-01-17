@@ -201,6 +201,8 @@ sub run_validate {
 	my $is_active = $self->{properties}{is_active};
 	my $location = $self->{properties}{location};
 	my $key = $self->{properties}{producer_key};
+	my $chain = $self->{chain};
+	my $bpjson_filename = $self->{chain_properties}{filename};
 
 	$self->add_message(kind => 'info', detail => 'voting rank', value => $self->{rank}, class => 'general');
 	$self->{results}{info}{rank} = $self->{rank};
@@ -233,7 +235,7 @@ sub run_validate {
 
 	my $xurl = $url;
 	$xurl =~ s#/$##;
-	my $json = $self->validate_url(url => "$xurl/bp.json", field => 'BP info JSON URL', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
+	my $json = $self->validate_url(url => "$xurl/$bpjson_filename", field => 'BP info JSON URL', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;

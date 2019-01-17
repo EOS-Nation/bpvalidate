@@ -24,6 +24,6 @@ this file in any projects you may have.
     </p>
   </header>
   <div class="card-content">
-    <a href=/bps.json>JSON Format</a>
+    <a href=../bps.json>JSON Format</a>
   </div>
 </div>

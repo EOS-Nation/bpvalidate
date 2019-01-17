@@ -27,9 +27,8 @@ EOS community determine which organizations to vote for.
   </header>
   <div class="card-content">
     <ul class="menu-list">
-    <li> <a href="producers/">Producer Scorecard</a>
-    <li> <a href="reports/">Validator Reports</a>
-    <li> <a href="data/">Data Download</a>
+    <li> <a href="mainnet/">Mainnet</a>
+    <br>
     <li> <a href="faq/">Frequently Asked Questions</a>
     <li> <a href="about/">About</a>
     </ul>

@@ -3,7 +3,6 @@
 use utf8;
 use strict;
 use EOSN::Report;
-use HTML::Entities;
 use List::Util qw(shuffle);
 use Date::Format qw(time2str);
 

@@ -2,32 +2,51 @@
 
 /etc/init.d/apache2 start
 cp -pra /var/www/html_template/* /var/www/html
-if [ ! -e /var/www/html/producers ]
-then
-	mkdir /var/www/html/producers
-fi
 
-bp-schema
+for chain in mainnet bos telos
+do
+        echo "setup chain: $chain"
+
+        #rm -r /var/www/html/$chain
+
+        if [ ! -e /var/www/html/$chain ]
+        then
+                mkdir /var/www/html/$chain
+                mkdir /var/www/html/$chain/data
+                mkdir /var/www/html/$chain/reports
+                mkdir /var/www/html/$chain/producers
+        fi
+        cp -p /var/www/html/res/chain/index* /var/www/html/$chain
+        cp -p /var/www/html/res/chain/data/* /var/www/html/$chain/data
+        cp -p /var/www/html/res/chain/reports/* /var/www/html/$chain/reports
+
+        ./bp-schema --chain=$chain
+done
 
 while [ 1 ]
 do
-	echo "running..."
-	bp-validate --versions=/etc/bpvalidate/versions.csv --output=/var/www/html/bps.json --limit=1000
-	bp-report-errors --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-producers --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-endpoints --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-node_types --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-resources --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-api-versions --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-country --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-config --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-blacklist --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-producer-version --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-producer-cpu --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-producer-virtualization --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-report-producer-hbversion --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-	bp-website-builder --input=/var/www/html/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+	for chain in mainnet bos telos
+	do
+		echo "running chain: $chain"
+		bp-validate --chain=$chain --versions=/etc/bpvalidate/versions.csv --output=/var/www/html/$chain/bps.json --limit=1000
+		bp-report-errors --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-producers --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-endpoints --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-node_types --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-resources --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-api-versions --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-country --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-config --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-blacklist --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-producer-version --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-producer-cpu --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-producer-virtualization --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-producer-hbversion --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+	done
+
+	echo "generate website"
+	bp-website-builder --out=/var/www/html/ --config=/etc/bpvalidate/
 	echo "done"
 
-	sleep 300
+	sleep 240
 done

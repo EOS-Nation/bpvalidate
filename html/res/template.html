@@ -14,7 +14,7 @@
 <nav class="navbar is-light" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
     <a class="navbar-item" href="/">
-      %nav_title% (%lang%)
+      %nav_title%
     </a>
     <a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false">
       <span aria-hidden="true"></span>
@@ -23,15 +23,24 @@
     </a>
   </div>
   <div class="navbar-menu" id="navMenu">
-    <a class="navbar-item" href="/producers/">
-      %nav_producers%
-    </a>
-    <a class="navbar-item" href="/reports/">
-      %nav_reports%
-    </a>
-    <a class="navbar-item" href="/data/">
-      %nav_data%
-    </a>
+   <div class="navbar-item has-dropdown is-hoverable">
+    <a class="navbar-item">%nav_producers%</a>
+      <div class="navbar-dropdown">
+        <a class="navbar-item" href="/mainnet/producers/">Mainnet</a>
+      </div>
+    </div>
+    <div class="navbar-item has-dropdown is-hoverable">
+      <a class="navbar-item">%nav_reports%</a>
+      <div class="navbar-dropdown">
+        <a class="navbar-item" href="/mainnet/reports/">Mainnet</a>
+      </div>
+    </div>
+    <div class="navbar-item has-dropdown is-hoverable">
+      <a class="navbar-item">%nav_data%</a>
+      <div class="navbar-dropdown">
+        <a class="navbar-item" href="/mainnet/data/">Mainnet</a>
+      </div>
+    </div>
     <a class="navbar-item" href="/faq/">
       %nav_faq%
     </a>
@@ -45,6 +54,8 @@
 %content%</section>
 <footer class="footer is-light">
 %nav_update%
+<br>
+%lang%
 </footer>
 </body>
 </html>

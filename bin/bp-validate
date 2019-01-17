@@ -16,21 +16,27 @@ binmode(STDOUT, ":utf8");
 # ---------------------------------------------------------------------------
 # Main
 
+my $chain = undef;
 my $max_processes = 8;
 my $filter_producer = undef;
 my $outfile = undef;
 my $versionsfile = undef;
+my $chainsfile = undef;
 my $limit = 1000;
 my $debug = 0;
 my $globals;
 
-GetOptions('max_processes=i' => \$max_processes, 'producer=s' => \$filter_producer, 'output=s' => \$outfile, 'versions=s' => \$versionsfile, 'limit=i' => \$limit, 'debug' => \$debug) || exit 1;
+GetOptions('chain=s' => \$chain, 'max_processes=i' => \$max_processes, 'producer=s' => \$filter_producer, 'output=s' => \$outfile, 'versions=s' => \$versionsfile, 'chains=s' => \$chainsfile, 'limit=i' => \$limit, 'debug' => \$debug) || exit 1;
 
 my %filter_producers = map {$_ => 1} split (/,/, $filter_producer || '');
 if (! defined $versionsfile) {
-	die "$0: versions file not provided";
+	die "$0: $chain: versions file not provided";
 }
 my $versions = read_csv_hash ($versionsfile, 'hash');
+my $chains = read_csv_hash ($chainsfile, 'name');
+my $base_url = $$chains{$chain}{url};
+
+print "read from url=<$base_url>\n";
 
 setup_jobs();
 run_validation();
@@ -46,24 +52,24 @@ sub setup_jobs {
 	my $rank = 0;
 	my %onchain;
 
-	$globals = get_table ($ua, 'https://api.eosn.io/v1/chain/get_table_rows', limit => $limit, code => "eosio", scope => "eosio", table => "global");
+	$globals = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "eosio", scope => "eosio", table => "global");
 	if (! $globals) {
-		die "$0: cannot get global list";
+		die "$0: $chain: cannot get global list";
 	}
 	$globals = $$globals[0];
 
-	my $producer_list = get_table ($ua, "https://api.eosn.io/v1/chain/get_producers", limit => $limit);
+	my $producer_list = get_table ($ua, $base_url . '/v1/chain/get_producers', limit => $limit);
 
 	if (! $producer_list) {
-		die "$0: cannot get producer list";
+		die "$0: $chain: cannot get producer list";
 	}
 
 	# ---- on-chain json
 
-	my $onchainbpjson_list = get_table ($ua, 'https://api.eosn.io/v1/chain/get_table_rows', limit => $limit, code => "producerjson", scope => "producerjson", table => "producerjson");
+	my $onchainbpjson_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "producerjson", scope => "producerjson", table => "producerjson");
 
 	if (! $onchainbpjson_list) {
-		die "$0: cannot get onchainbpjson list";
+		warn "$0: $chain: cannot get onchainbpjson list";
 	}
 
 	foreach my $obj (@$onchainbpjson_list) {
@@ -74,10 +80,10 @@ sub setup_jobs {
 
 	# ---- on-chain heartbeat
 
-	my $onchainheartbeat_list = get_table ($ua, 'https://api.eosn.io/v1/chain/get_table_rows', limit => $limit, code => "eosheartbeat", scope => "eosheartbeat", table => "hbstruct");
+	my $onchainheartbeat_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "eosheartbeat", scope => "eosheartbeat", table => "hbstruct");
 
 	if (! $onchainheartbeat_list) {
-		die "$0: cannot get onchainheartbeat list";
+		warn "$0: $chain: cannot get onchainheartbeat list";
 	}
 
 	foreach my $obj (@$onchainheartbeat_list) {
@@ -90,10 +96,10 @@ sub setup_jobs {
 
 	# ---- on-chain blacklist
 
-	my $onchainblacklist_list = get_table ($ua, 'https://api.eosn.io/v1/chain/get_table_rows', limit => $limit, code => "theblacklist", scope => "theblacklist", table => "producerhash");
+	my $onchainblacklist_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "theblacklist", scope => "theblacklist", table => "producerhash");
 
 	if (! $onchainblacklist_list) {
-		die "$0: cannot get onchainblacklist list";
+		warn "$0: $chain: cannot get onchainblacklist list";
 	}
 
 	foreach my $obj (@$onchainblacklist_list) {
@@ -116,7 +122,7 @@ sub setup_jobs {
 		$rank++;
 		my $owner = $$entry{owner};
 
-		$dbh->do('insert ignore into producer (producer, status, regproducer_at) values (?, ?, ?)', {}, $owner, 'hold', time);
+		$dbh->do("insert ignore into producer_$chain (producer, status, regproducer_at) values (?, ?, ?)", {}, $owner, 'hold', time);
 
 		my $vote_percent = 0;
 		if ($$entry{is_active}) {
@@ -140,11 +146,11 @@ sub setup_jobs {
 			$limit = time;
 		}
 
-		$dbh->do('update producer set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, 
+		$dbh->do("update producer_$chain set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, 
 			onchainbpjson_data = ?,
 			onchainheartbeat_data = ?, onchainheartbeat_timestamp = ?,
 			onchainblacklist_data = ?
-			where producer = ? and (checked_at < ? or checked_at is null)'
+			where producer = ? and (checked_at < ? or checked_at is null)"
 			, {}, $state, time, to_json ($entry), $rank, $vote_percent,
 			$onchain{bpjson}{$owner},
 			$onchain{heartbeat}{$owner}{json}, $onchain{heartbeat}{$owner}{timestamp},
@@ -171,7 +177,7 @@ sub run_validation {
 
 sub cleanup {
 	my $dbh = do_connect('validate');
-	$dbh->do('delete from producer where regproducer_at < ?', {}, time - (3600 * 9));
+	$dbh->do("delete from producer_$chain where regproducer_at < ?", {}, time - (3600 * 9));
 }
 
 sub doit {
@@ -179,8 +185,8 @@ sub doit {
 
 	while (1) {
 		my $dbh = do_connect('validate');
-		$dbh->do('update producer set thread_id = ? where status = ? and thread_id is null order by producer limit 1', {}, $thread_id, 'check');
-		my $entry = $dbh->selectrow_hashref ('select * from producer where thread_id = ? and status = ?', {}, $thread_id, 'check');
+		$dbh->do("update producer_$chain set thread_id = ? where status = ? and thread_id is null order by producer limit 1", {}, $thread_id, 'check');
+		my $entry = $dbh->selectrow_hashref ("select * from producer_$chain where thread_id = ? and status = ?", {}, $thread_id, 'check');
 		if (! $entry) {
 			# nothing left to do
 			return;
@@ -196,18 +202,20 @@ sub doit {
 			onchainbpjson => $$entry{onchainbpjson_data},
 			onchainheartbeat_data => $$entry{onchainheartbeat_data},
 			onchainheartbeat_timestamp => $$entry{onchainheartbeat_timestamp},
-			onchainblacklist => $$entry{onchainblacklist_data}
+			onchainblacklist => $$entry{onchainblacklist_data},
+			chain => $chain,
+			chain_properties => $$chains{$chain}
 		);
 		my $results = $producer->validate;
 		#print "[$thread_id] >>> ", to_json ($results), "\n";
-		$dbh->do('update producer set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?', {}, 'done', time, to_json ($results), $$entry{id});
+		$dbh->do("update producer_$chain set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?", {}, 'done', time, to_json ($results), $$entry{id});
 	}
 }
 
 sub write_results {
 	my $dbh = do_connect('validate');
 	my @results;
-	my $data = $dbh->selectall_arrayref('select * from producer where not results_data is null order by producer', { Slice => {}});
+	my $data = $dbh->selectall_arrayref("select * from producer_$chain where not results_data is null order by producer", { Slice => {}});
 	foreach my $entry (@$data) {
 		push (@results, from_json ($$entry{results_data}));
 	}

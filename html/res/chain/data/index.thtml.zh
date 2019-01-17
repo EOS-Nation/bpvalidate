@@ -23,6 +23,6 @@ h1 = 下载出块节点验证结果
     </p>
   </header>
   <div class="card-content">
-    <a href=/bps.json>JSON Format</a>
+    <a href=../bps.json>JSON Format</a>
   </div>
 </div>

@@ -41,7 +41,7 @@ sub get_table {
 		my $response_url = $res->request->uri;
 	
 		if (! $res->is_success) {
-			warn "$0: cannot retrieve producers: $status_message";
+			warn "$0: cannot retrieve table: $status_message";
 			return undef;
 		}
 
@@ -53,7 +53,7 @@ sub get_table {
 		};
 
 		if ($@) {
-			warn "$0: cannot retrieve producers: invalid json";
+			warn "$0: cannot retrieve table: invalid json";
 			return undef;
 		}
 

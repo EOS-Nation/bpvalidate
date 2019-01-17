@@ -1,0 +1,4 @@
+name,label,url,filename
+mainnet,Mainnet,http://api.eosn.io,bp.json
+bos,BOS,http://bostest.eosn.io,bos.json
+telos,Telos,http://api.kainosbp.com:8888,bp.json
