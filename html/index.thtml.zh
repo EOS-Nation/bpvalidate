@@ -19,14 +19,27 @@ bp.json验证器是一个检查出块节点和备选出块节点是否以“标�
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      主菜单
+      网络
     </p>
   </header>
   <div class="card-content">
     <ul class="menu-list">
-    <li> <a href="mainnet/">Mainnet</a>
-    <li> <a href="bos/">BOS</a>
-    <br>
+    <li> <a href="mainnet/">%chain_mainnet%</a>
+    <li> <a href="bos/">%chain_bos%</a>
+    </ul>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Information
+    </p>
+  </header>
+  <div class="card-content">
+    <ul class="menu-list">
     <li> <a href="faq/">常见问题</a>
     <li> <a href="about/">关于</a>
     </ul>

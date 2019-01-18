@@ -22,14 +22,27 @@ EOS community determine which organizations to vote for.
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Main Menu
+      Networks
     </p>
   </header>
   <div class="card-content">
     <ul class="menu-list">
-    <li> <a href="mainnet/">Mainnet</a>
-    <li> <a href="bos/">BOS</a>
-    <br>
+    <li> <a href="mainnet/">%chain_mainnet%</a>
+    <li> <a href="bos/">%chain_bos%</a>
+    </ul>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Information
+    </p>
+  </header>
+  <div class="card-content">
+    <ul class="menu-list">
     <li> <a href="faq/">Frequently Asked Questions</a>
     <li> <a href="about/">About</a>
     </ul>
