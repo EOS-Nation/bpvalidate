@@ -14,8 +14,12 @@ my $chain = chain ();
 my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {
-	my $key = $$entry{info}{timezone} || 'zzunknown';
-	$kinds{$key} = $$entry{regproducer}{location};
+	if ($$entry{info}{timezone}) {
+		my $key = $$entry{info}{timezone};
+		$kinds{$key} = $$entry{regproducer}{location};
+	} else {
+		$kinds{zzunknown} = 99;
+	}
 }
 
 foreach my $lang (languages()) {
