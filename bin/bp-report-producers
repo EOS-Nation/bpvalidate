@@ -12,6 +12,7 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $data = get_report_options ();
+my $chain = chain ();
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
@@ -30,7 +31,7 @@ foreach my $lang (languages()) {
 				});
 			}
 
-			generate_report (lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, outfile => "producers/$producer", text => 1, html => 1);
+			generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, outfile => "producers/$producer", text => 1, html => 1);
 		}
 	}
 }
@@ -166,7 +167,7 @@ foreach my $lang (languages) {
 
 	push (@report, "<script>\nvar filterData = $final_result\n</script>\n");
 
-	write_report_thtml (lang => $lang, content => \@report, outfile => "producers/index");
+	write_report_thtml (chain => $chain, lang => $lang, content => \@report, outfile => "producers/index");
 }
 
 sub checkbox {

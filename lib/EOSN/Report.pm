@@ -48,6 +48,10 @@ sub outdir {
 	return $outdir;
 }
 
+sub chain {
+	return $chain;
+}
+
 # --------------------------------------------------------------------------
 # Subroutines
 
@@ -107,11 +111,13 @@ sub generate_report_txt {
 	my $data = $options{data};
 	my $report = $options{report};
 	my $outfile = $options{outfile};
+	my $chain = $options{chain} || confess "missing chain";
 	my $title = $options{title} || label("title_$outfile", $lang);
 	my @out;
 
 	push (@out, "# $title\n");
-	push (@out, "# " . label('txt_update', $lang) . ' ' .datetime($$data{meta}{generated_at}, $lang) . "\n");
+	push (@out, "# " . label('txt_chain', $lang) . ' ' . label('chain_' . $chain, $lang) . "\n");
+	push (@out, "# " . label('txt_update', $lang) . ' ' . datetime($$data{meta}{generated_at}, $lang) . "\n");
 	push (@out, "# " . label('txt_about', $lang) . "\n");
 	push (@out, "\n");
 	foreach my $section (@$report) {
@@ -233,9 +239,11 @@ sub write_report_thtml {
 	my $lang = $options{lang};
 	my $content = $options{content};
 	my $outfile = $options{outfile};
+	my $chain = $options{chain} || confess "missing chain";
 	my $title = $options{title} || label("title_$outfile", $lang);
 	my @out;
 
+	push (@out, "chain = $chain\n");
 	push (@out, "title = EOS Block Producer bp.json Validator: $title\n");
 	push (@out, "h1 = $title\n");
 	push (@out, "\n");

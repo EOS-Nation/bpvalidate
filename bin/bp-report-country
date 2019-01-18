@@ -10,6 +10,7 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $data = get_report_options ();
+my $chain = chain ();
 my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {
@@ -47,6 +48,6 @@ foreach my $lang (languages()) {
 			}
 		}
 
-		generate_report (lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/country", text => 1, html => 1);
+		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/country", text => 1, html => 1);
 	}
 }

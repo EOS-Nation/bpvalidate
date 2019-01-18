@@ -46,6 +46,9 @@ nav_data,Data,数据
 nav_faq,FAQ,常见问题
 nav_about,About,关于
 nav_update,Validator last update: %last_update%, 验证器最后更新: %last_update%
+nav_lang,Lang: %lang%,
+nav_chain,Network: %chain%,
+txt_chain,Network:,
 txt_update,Validator last update:, 验证器最后更新:
 txt_about,For details on how this is generated see https://validate.eosnation.io/about/,
 unknown,Unknown,
@@ -54,4 +57,7 @@ cpu_xeon_silver,Xeon Silver,
 cpu_xeon_gold,Xeon Gold,
 cpu_xeon_platinum,Xeon Platinum,
 cpu_xeon_zzother,Xeon Other,
-vtype_bare-metal,Bare-metal
+vtype_bare-metal,Bare-metal,
+chain_mainnet,Mainnet,
+chain_bos,BOS,
+chain_telos,Telos,
