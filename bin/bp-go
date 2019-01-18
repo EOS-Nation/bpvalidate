@@ -20,7 +20,7 @@ do
 	for chain in mainnet bos
 	do
 		echo "running chain: $chain"
-		bp-validate --chain=$chain --versions=/etc/bpvalidate/versions.csv --chains=/etc/bpvalidate/chains.csv --output=/var/www/html/$chain/bps.json --limit=1000
+		bp-validate --chain=$chain --versions=/etc/bpvalidate/versions_${chain}.csv --chains=/etc/bpvalidate/chains.csv --output=/var/www/html/$chain/bps.json --limit=1000
 		bp-report-errors --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 		bp-report-producers --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 		bp-report-endpoints --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
