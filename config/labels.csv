@@ -1,5 +1,5 @@
 key,label_en,label_zh
-format_datetime,%Y-%m-%d %R %Z,%Y年-%m月-%d日 %R24小时制时间 %Z时区
+format_datetime,%Y-%m-%d %R %Z,%Y-%m-%d %R %Z
 class_general,General Info,基本信息
 class_regproducer,Regproducer,注册出块节点
 class_org,Organization,机构
