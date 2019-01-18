@@ -23,6 +23,7 @@ do
 	./bp-report-resources --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/
 	./bp-report-api-versions --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/
 	./bp-report-country --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/
+	./bp-report-timezone --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/
 	./bp-report-config --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/
 	./bp-report-blacklist --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/
 	./bp-report-producer-version --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/

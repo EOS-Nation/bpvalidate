@@ -7,6 +7,7 @@ h1 = Validator Reports
 <li><a href="resources.html">%title_reports/resources%</a>
 <li><a href="api_versions.html">%title_reports/api_versions%</a>
 <li><a href="country.html">%title_reports/country%</a>
+<li><a href="timezone.html">%title_reports/timezone%</a>
 <li><a href="config.html">%title_reports/config%</a>
 <li><a href="errors.html">%title_reports/errors%</a>
 <li><a href="blacklist.html">%title_reports/blacklist%</a>

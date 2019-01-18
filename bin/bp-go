@@ -28,6 +28,7 @@ do
 		bp-report-resources --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 		bp-report-api-versions --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 		bp-report-country --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-report-timezone --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 		bp-report-config --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 		bp-report-blacklist --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 		bp-report-producer-version --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
