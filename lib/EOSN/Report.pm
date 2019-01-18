@@ -111,7 +111,7 @@ sub generate_report_txt {
 	my @out;
 
 	push (@out, "# $title\n");
-	push (@out, "# " . label('txt_update', $lang) . ": " . datetime($$data{meta}{generated_at}, $lang) . "\n");
+	push (@out, "# " . label('txt_update', $lang) . ' ' .datetime($$data{meta}{generated_at}, $lang) . "\n");
 	push (@out, "# " . label('txt_about', $lang) . "\n");
 	push (@out, "\n");
 	foreach my $section (@$report) {
