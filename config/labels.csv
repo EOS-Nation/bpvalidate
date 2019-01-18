@@ -46,7 +46,7 @@ nav_data,Data,数据
 nav_faq,FAQ,常见问题
 nav_about,About,关于
 nav_update,Validator last update: %last_update%, 验证器最后更新: %last_update%
-nav_lang,Lang: %lang%,语言: %lang%
+nav_lang,Language: %lang%,语言: %lang%
 nav_chain,Network: %chain%,网络：%chain%
 txt_chain,Network:,网络：
 txt_update,Validator last update:, 验证器最后更新:
