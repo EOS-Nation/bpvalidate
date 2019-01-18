@@ -5,13 +5,13 @@ class_regproducer,Regproducer,注册出块节点
 class_org,Organization,机构
 class_endpoint,Endpoints,终端
 class_ipv6,IPv6,IPv6协议
-class_chain,On-Chain,
+class_chain,On-Chain,链上
 class_general_l,General Info Check,基本信息 证实
 class_regproducer_l,Regproducer Check,注册出块节点 证实
 class_org_l,Organization Check,机构 证实
-class_endpoint_l,Endpoints Check,是终端 证实
+class_endpoint_l,Endpoints Check,终端 证实
 class_ipv6_l,IPv6 Check,IPv6协议 证实
-class_chain_l,On-Chain Check,
+class_chain_l,On-Chain Check,链上 证实
 check_skip,Skipped,跳过
 check_info,Information,信息
 check_ok,OK,OK
@@ -19,45 +19,45 @@ check_warn,Warning,警告
 check_err,Error,错误
 check_crit,Critical,批评
 bp_top21,Top 21 BP,前21名BP
-bp_standby,Paid Standby BP,有报酬的候选节点
-bp_other,Not-Paid Standby BP,无报酬候选节点
+bp_standby,Paid Standby BP,有报酬的备选节点
+bp_other,Not-Paid Standby BP,无报酬的备选节点
 title_reports/config,Endpoints config.ini,终端配置初始化
 title_reports/country,Country Report,国家报告
 title_reports/endpoints,Endpoints Report,终端报告
 title_reports/errors,Errors Report,错误信息报告
-title_reports/node_types,Node Types Report,节点类型
-title_producers/producer,Report for %producer%,%producer% 的报告
+title_reports/node_types,Node Types Report,节点类型报告
+title_producers/producer,Report for %producer%,%producer% 报告
 title_producers/index,Producer Scorecard,出块节点计分卡
 title_reports/resources,Resources Report,资源报告
 title_reports/api_versions,API Versions Report,API版本报告
-title_reports/blacklist,Blacklist Report,
-title_reports/producer_version,Producer Nodeos Version Report,
-title_reports/producer_cpu,Producer CPU Report,
-title_reports/producer_virtualization,Producer Virtualization Report,
-title_reports/producer_hbversion,Producer Heartbeat Version Report,
+title_reports/blacklist,Blacklist Report,黑名单报告
+title_reports/producer_version,Producer Nodeos Version Report,出块节点Nodeos版本报告
+title_reports/producer_cpu,Producer CPU Report,出块节点CPU报告
+title_reports/producer_virtualization,Producer Virtualization Report,出块节点虚拟化技术报告
+title_reports/producer_hbversion,Producer Heartbeat Version Report,出块节点Heartbeat版本报告
 label_text_version,text version,文字内容版本
 filter_yes,Yes,是
 filter_na,n/a,无内容
 filter_no,No,不是
 nav_title,bp.json Validator,bp.json 验证器
-nav_producers,Producer Scorecard, 节点计分卡
+nav_producers,Producer Scorecard, 出块节点计分卡
 nav_reports,Reports,报告
 nav_data,Data,数据
 nav_faq,FAQ,常见问题
 nav_about,About,关于
 nav_update,Validator last update: %last_update%, 验证器最后更新: %last_update%
-nav_lang,Lang: %lang%,
-nav_chain,Network: %chain%,
-txt_chain,Network:,
+nav_lang,Lang: %lang%,语言: %lang%
+nav_chain,Network: %chain%,网络：%chain%
+txt_chain,Network:,网络：
 txt_update,Validator last update:, 验证器最后更新:
-txt_about,For details on how this is generated see https://validate.eosnation.io/about/,
-unknown,Unknown,
-cpu_zzother,Other,
-cpu_xeon_silver,Xeon Silver,
-cpu_xeon_gold,Xeon Gold,
-cpu_xeon_platinum,Xeon Platinum,
-cpu_xeon_zzother,Xeon Other,
-vtype_bare-metal,Bare-metal,
-chain_mainnet,Mainnet,
-chain_bos,BOS,
-chain_telos,Telos,
+txt_about,For details on how this is generated see https://validate.eosnation.io/about/,关于如何生成的详细信息请参见https://validate.eosnation.io/about/
+unknown,Unknown,未知
+cpu_zzother,Other,其它
+cpu_xeon_silver,Xeon Silver,Xeon Silver系列
+cpu_xeon_gold,Xeon Gold,Xeon Gold系列
+cpu_xeon_platinum,Xeon Platinum,Xeon Platinum系列
+cpu_xeon_zzother,Xeon Other,Xeon其他系列
+vtype_bare-metal,Bare-metal,裸金属架构
+chain_mainnet,Mainnet,主网
+chain_bos,BOS,BOS
+chain_telos,Telos,Telos
