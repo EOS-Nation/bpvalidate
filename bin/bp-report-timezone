@@ -1,0 +1,53 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::Report;
+
+binmode(STDOUT, ":utf8");
+
+# --------------------------------------------------------------------------
+# Main
+
+my $data = get_report_options ();
+my $chain = chain ();
+my %kinds;
+
+foreach my $entry (@{$$data{producers}}) {
+	my $key = $$entry{info}{timezone} || 'zzunknown';
+	$kinds{$key} = $$entry{regproducer}{location};
+}
+
+foreach my $lang (languages()) {
+	foreach my $content_type (content_types()) {
+		my @report;
+		foreach my $kind (sort {$kinds{$a} <=> $kinds{$b}} keys %kinds) {
+			my @section;
+			my $name = $kind;
+
+			foreach my $entry (@{$$data{producers}}) {
+				my $producer = $$entry{regproducer}{owner};
+				my $important_bp = is_important_bp ($entry);
+				my $country_name = $$entry{info}{country_name};
+				my $key = $$entry{info}{timezone} || 'zzunknown';
+				next if ($key ne $kind);
+				$name = $$entry{info}{country_name} if ($$entry{info}{country_name});
+
+				if ($key ne 'zzunknown' || $important_bp) {
+					push (@section, {
+						producer => $producer,
+						sprintf => "",
+						data => []
+					});
+				}
+			}
+			if ($kind eq 'zzunknown') {
+				push (@report, {name => $name, rows => \@section});
+			} else {
+				push (@report, {name => $name, title => "$name &nbsp; " . flag_html ($kind), rows => \@section});
+			}
+		}
+
+		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/timezone", text => 1, html => 1);
+	}
+}
