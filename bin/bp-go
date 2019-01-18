@@ -3,7 +3,7 @@
 /etc/init.d/apache2 start
 cp -pra /var/www/html_template/* /var/www/html
 
-for chain in mainnet bos telos
+for chain in mainnet bos
 do
         echo "setup chain: $chain"
 
@@ -28,7 +28,7 @@ bp-website-builder --out=/var/www/html/ --config=/etc/bpvalidate/
 
 while [ 1 ]
 do
-	for chain in mainnet bos telos
+	for chain in mainnet bos
 	do
 		echo "running chain: $chain"
 		bp-validate --chain=$chain --versions=/etc/bpvalidate/versions.csv --chains=/etc/bpvalidate/chains.csv --output=/var/www/html/$chain/bps.json --limit=1000
