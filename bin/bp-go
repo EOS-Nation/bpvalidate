@@ -9,7 +9,7 @@ do
 
 	#rm -r /var/www/html/$chain
 	bp-schema --chain=$chain
-	bp-website-chain --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+	bp-website-chain --chain=$chain --out=/var/www/html/ --config=/etc/bpvalidate/
 done
 
 echo "generate website"

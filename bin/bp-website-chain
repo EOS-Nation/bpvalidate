@@ -9,15 +9,17 @@ binmode(STDOUT, ":utf8");
 # --------------------------------------------------------------------------
 # Main
 
-my $data = get_report_options ();
+get_report_options_chain ();
 my $chain = chain ();
 my $outdir = outdir ();
 
-if (! -e "$outdir/$chain") {
+if (! -d "$outdir/$chain") {
+	print "Create directory structure for location=<$outdir/$chain>...\n";
 	mkdir "$outdir/$chain";
 	mkdir "$outdir/$chain/data";
 	mkdir "$outdir/$chain/reports";
 	mkdir "$outdir/$chain/producers";
+	write_file ("$outdir/$chain/bps.json", "{}");
 }
 
 do_copy ("$outdir/res/chain", "$outdir/$chain");
