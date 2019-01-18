@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::Report;
+
+binmode(STDOUT, ":utf8");
+
+# --------------------------------------------------------------------------
+# Main
+
+my $data = get_report_options ();
+my $chain = chain ();
+my $outdir = outdir ();
+
+if (! -e "$outdir/$chain") {
+	mkdir "$outdir/$chain";
+	mkdir "$outdir/$chain/data";
+	mkdir "$outdir/$chain/reports";
+	mkdir "$outdir/$chain/producers";
+}
+
+do_copy ("$outdir/res/chain", "$outdir/$chain");
+do_copy ("$outdir/res/chain/data", "$outdir/$chain/data");
+do_copy ("$outdir/res/chain/reports", "$outdir/$chain/reports");
+
+sub do_copy {
+	my ($from, $to) = @_;
+
+	my $dh;
+	opendir ($dh, $from);
+	my @files = grep /\.thtml\./, readdir ($dh);
+	closedir ($dh);
+
+	foreach my $file (sort @files) {
+		#print ">> [$from/$file] [$to/$file]\n";
+		my $data = read_file ("$from/$file");
+		write_file ("$to/$file", "chain = $chain\n$data");
+	}
+}
+

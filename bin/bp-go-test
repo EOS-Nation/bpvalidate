@@ -8,23 +8,14 @@ do
 
 	#rm -r /var/www/html/$chain
 
-	if [ ! -e /var/www/html/$chain ]
-	then
-		mkdir /var/www/html/$chain
-		mkdir /var/www/html/$chain/data
-		mkdir /var/www/html/$chain/reports
-		mkdir /var/www/html/$chain/producers
-	fi
-	cp -p /var/www/html/res/chain/index* /var/www/html/$chain
-	cp -p /var/www/html/res/chain/data/* /var/www/html/$chain/data
-	cp -p /var/www/html/res/chain/reports/* /var/www/html/$chain/reports
-
 	./bp-schema --chain=$chain
+	./bp-website-chain --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/
 	#./bp-validate --chain=$chain --output=/var/www/html/$chain/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=alohaeosprod,eosnationftw,cryptolions1,eoscanadacom,bitfinexeos1,hexlantttttt,eosriobrazil,acroeos12345,eosriobrazil
 	#./bp-validate --chain=$chain --output=/var/www/html/$chain/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=eosnationftw,teamgreymass,eosvipvipvip,eosbixinboot,eostitanprod,cypherglasss,blockgenesys
 	#./bp-validate --chain=$chain --output=/var/www/html/$chain/bps.json --versions=../config/versions.csv --limit=1000 --debug --producer=eosliquideos,eosauthority,eosnationftw,atticlabeosb,cryptolions1,eosbeijingbp,eostribeprod,sheos21sheos,eosswedenorg
 	#./bp-validate --chain=$chain --output=/var/www/html/$chain/bps.json --versions=../config/versions.csv --limit=1000 --debug
-	./bp-validate --chain=$chain --output=/var/www/html/$chain/bps.json --versions=../config/versions.csv --chains=../config/chains.csv --limit=1000 --debug --producer=eosnationftw,bosnationftw,kainosblkpro
+	#./bp-validate --chain=$chain --output=/var/www/html/$chain/bps.json --versions=../config/versions.csv --chains=../config/chains.csv --limit=1000 --debug --producer=eosnationftw,bosnationftw,kainosblkpro,eosiodetroit,bosriobrazil,boseouldotio
+	#./bp-validate --chain=$chain --output=/var/www/html/$chain/bps.json --versions=../config/versions.csv --chains=../config/chains.csv --limit=1000 --debug --producer=bosnationftw,bosriobrazil,boseouldotio
 	./bp-report-errors --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/
 	./bp-report-producers --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/
 	./bp-report-endpoints --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=../config/

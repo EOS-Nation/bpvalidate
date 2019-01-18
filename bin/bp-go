@@ -5,22 +5,11 @@ cp -pra /var/www/html_template/* /var/www/html
 
 for chain in mainnet bos
 do
-        echo "setup chain: $chain"
+	echo "setup chain: $chain"
 
-        #rm -r /var/www/html/$chain
-
-        if [ ! -e /var/www/html/$chain ]
-        then
-                mkdir /var/www/html/$chain
-                mkdir /var/www/html/$chain/data
-                mkdir /var/www/html/$chain/reports
-                mkdir /var/www/html/$chain/producers
-        fi
-        cp -p /var/www/html/res/chain/index* /var/www/html/$chain
-        cp -p /var/www/html/res/chain/data/* /var/www/html/$chain/data
-        cp -p /var/www/html/res/chain/reports/* /var/www/html/$chain/reports
-
-        bp-schema --chain=$chain
+	#rm -r /var/www/html/$chain
+	bp-schema --chain=$chain
+	bp-website-chain --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
 done
 
 echo "generate website"
