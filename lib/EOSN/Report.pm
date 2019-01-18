@@ -79,6 +79,18 @@ sub get_report_options_website {
 	return undef;
 }
 
+sub get_report_options_chain {
+	GetOptions('chain=s' => \$chain, 'output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
+
+	confess "$0: chain not given" if (! $chain);
+	confess "$0: output dir not given" if (! $outdir);
+	confess "$0: config dir not given" if (! $confdir);
+
+	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
+	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
+	return undef;
+}
+
 sub generate_report {
 	my (%options) = @_;
 
