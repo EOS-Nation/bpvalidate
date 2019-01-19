@@ -1,5 +1,5 @@
-title = %title_site%: Reports
-h1 = Validator Reports
+title = %title_site%: 报告
+h1 = 验证器报告
 
 <ul class="menu-list">
 <li><a href="endpoints.html">%title_reports/endpoints%</a>
