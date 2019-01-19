@@ -9,10 +9,10 @@ h1 = 关于出块节点验证器
   </header>
   <div class="card-content">
     <ul class="bullet">
-    <li class="bullet"> 这份出块节点名单由运行的“注册节点”生成
+    <li class="bullet"> 这份出块节点名单由运行的“注册出块节点”生成
     <li class="bullet"> 获取元数据, "/bp.json" 附加了在注册节点会议中使用的URL
     <li class="bullet"> API终端验证, "/v1/chain/get_info" 附加了带有元数据的URL
-    <li class="bullet"> 大约每30秒更新一次每个出块节点的最新数据
+    <li class="bullet"> 大约每30分钟更新验证一次每个出块节点的最新数据
     </ul>
   </div>
 </div>
