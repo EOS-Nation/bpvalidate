@@ -37,7 +37,7 @@ title_reports/producer_version,Producer Nodeos Version Report,出块节点Nodeos
 title_reports/producer_cpu,Producer CPU Report,出块节点CPU报告
 title_reports/producer_virtualization,Producer Virtualization Report,出块节点虚拟化技术报告
 title_reports/producer_hbversion,Producer Heartbeat Version Report,出块节点Heartbeat版本报告
-title_producers,Report for %producer_name_html%,
+title_producers,Report for %producer_name_html%,%producer_name_html%报告
 label_text_version,text version,文字内容版本
 filter_yes,Yes,是
 filter_na,n/a,无内容
