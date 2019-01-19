@@ -21,6 +21,7 @@ check_crit,Critical,批评
 bp_top21,Top 21 BP,前21名BP
 bp_standby,Paid Standby BP,有报酬的备选节点
 bp_other,Not-Paid Standby BP,无报酬的备选节点
+title_site,Block Producer bp.json Validator,出块节点 bp.json 验证器
 title_reports/config,Endpoints config.ini,终端配置初始化
 title_reports/country,Country Report,国家报告
 title_reports/timezone,Time Zone Report,时区报告

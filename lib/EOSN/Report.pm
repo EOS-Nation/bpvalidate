@@ -256,7 +256,7 @@ sub write_report_thtml {
 	my @out;
 
 	push (@out, "chain = $chain\n");
-	push (@out, "title = EOS Block Producer bp.json Validator: $title\n");
+	push (@out, "title = %title_site%: $title\n");
 	push (@out, "h1 = $title\n");
 	push (@out, "\n");
 	push (@out, @$content);
