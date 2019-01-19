@@ -787,6 +787,10 @@ sub check_nodes {
 		# $self->add_message(kind => 'warn', detail => 'no valid HTTP API endpoints provided in any node', class => 'endpoint');
 	}
 
+	if ($total_valid_bnet_endpoint) {
+		$self->add_message(kind => 'warn', detail => 'it is not recommended to run BNET endpoints', class => 'endpoint');
+	}
+
 	if (! $total_found_peer_bnet_endpoint) {
 		$self->add_message(kind => 'crit', detail => 'no P2P or BNET endpoints provided in any node', class => 'endpoint');
 	} elsif (! $total_valid_peer_endpoint && ! $total_valid_bnet_endpoint) {
