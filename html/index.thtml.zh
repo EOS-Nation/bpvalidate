@@ -1,5 +1,5 @@
-title = %title_site%
-h1 = %title_site%
+title = 出块节点 bp.json 验证器
+h1 = 出块节点 bp.json 验证器
 
 <div class="card">
   <header class="card-header">
@@ -9,7 +9,7 @@ h1 = %title_site%
   </header>
   <div class="card-content">
 
-bp.json验证器是一个检查出块节点和备选出块节点是否以“标准”的方式向社区提供信息的小工具。验证器上有一系列的“证实标记”，在“证实”了信息之后，它会把每个出块节点发布的BPJSON文件与“发布标准”对比并做出报告。要全面了解一个出块节点或备选出块节点对社区作出贡献的程度，仅仅在这里观察检查结果是远远不够的。但这些检查结果可以在一定程度上帮助EOS社区做出给应该哪些节点投票的决定
+bp.json验证器是一个检查出块节点和备选出块节点是否以“标准”的方式向社区提供信息的小工具。验证器上有一系列的“验证标记”，在“验证”了信息之后，它会把每个出块节点发布的BPJSON文件与“发布标准”对比并做出报告。要全面了解一个出块节点或备选出块节点对社区作出贡献的程度，仅仅在这里观察检查结果是远远不够的。但这些检查结果可以在一定程度上帮助EOS社区做出给应该哪些节点投票的决定
 
   </div>
 </div>
@@ -35,7 +35,7 @@ bp.json验证器是一个检查出块节点和备选出块节点是否以“标�
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Information
+      信息
     </p>
   </header>
   <div class="card-content">
