@@ -13,6 +13,7 @@ binmode(STDOUT, ":utf8");
 
 my $data = get_report_options ();
 my $chain = chain ();
+my $labels = labels ();
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
@@ -31,7 +32,9 @@ foreach my $lang (languages()) {
 				});
 			}
 
-			generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => "Report for $producer_name_html", columns => 1, outfile => "producers/$producer", text => 1, html => 1);
+			my $title = $$labels{title_producers}{"label_$lang"} || $$labels{title_producers}{"label_en"};
+			$title =~ s/%producer_name_html%/$producer_name_html/;
+			generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => $title, columns => 1, outfile => "producers/$producer", text => 1, html => 1);
 		}
 	}
 }
