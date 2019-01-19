@@ -23,7 +23,7 @@ bp_standby,Paid Standby BP,有报酬的备选节点
 bp_other,Not-Paid Standby BP,无报酬的备选节点
 title_reports/config,Endpoints config.ini,终端配置初始化
 title_reports/country,Country Report,国家报告
-title_reports/timezone,Time Zone Report,
+title_reports/timezone,Time Zone Report,时区报告
 title_reports/endpoints,Endpoints Report,终端报告
 title_reports/errors,Errors Report,错误信息报告
 title_reports/node_types,Node Types Report,节点类型报告
