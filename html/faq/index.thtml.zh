@@ -4,20 +4,18 @@ h1 = 关于出块节点验证器的常见问题
 <div class="card" id="versions">
   <header class="card-header">
     <p class="card-header-title">
-      How are server versions determined? Why are some unknown? Why are some not considered current?
+      如何确定服务器版本？为什么存在一些未知项？为什么有些被认作为非当前版本？
     </p>
   </header>
   <div class="card-content">
   <p>
-The nodeos software provides a version number based on the git commit. Depending on local patches, the same version may generate different version numbers.
-The list of version numbers is maintained by hand in
-<a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions.csv">GitHub</a>. The list also specifies which versions are considered
-current vs out-of-date. Generally the last 2 to 3 versions are considered current, although if a long time passes with out a new version being
-issued or there is a critical issue, then only latest version is considered current.
+nodeos软件提供了一个基于git提交的版本编号。根据本地补丁，相同版本可能会生成不同的版本编号。
+版本编号列表是手动维护的
+<a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions.csv">GitHub</a>. 该列表同时还明确了哪些是当前的版本和过期的版本。通常最新的2至3个版本被认作是当前版本，但是如果很长时间都没有新版本发布或存在关键问题，则只有最新版本才被视为当前版本。
   </p>
   <p>
-If your version is missing, please generate a pull request or request it be added by contacting 
-<a href="mailto:matthew@eosnation.io">matthew@eosnation.io</a> or @mdarwin on telegram and keybase.
+如果列表中没有您的版本，您可以生成一个pull request或者将请求添加的信息发送至 
+<a href="mailto:matthew@eosnation.io">matthew@eosnation.io</a>，或在电报群和keybase中联系 @mdarwin。
   </p>
   </div>
 </div>
@@ -28,15 +26,13 @@ If your version is missing, please generate a pull request or request it be adde
 <div class="card" id="cloudflare">
   <header class="card-header">
     <p class="card-header-title">
-      Why is there a specific warning about Cloudflare?
+      为什么针对Cloudflare会有特别警告？
     </p>
   </header>
   <div class="card-content">
 <p>
-The validator checks that the server returns cookie requests or not. Cloudflare always issues cookies and it cannot be disabled in Cloudflare
-configuration.
-Cookies are a problem in the case where someone wants to add multiple API endpoints to a single global loadbalancer (across multiple Block Producers). 
-If every endpoint uses its own cookies, that's a hassle to deal with.
+验证器会检验服务器是否返回cookie请求。Cloudflare一直会发出cookie，而且在Cloudflare中不能禁用cookie配置。 
+如果有人想要将多个API端点添加到单个全局负载均衡器（跨多个出块节点），cookie就会是一个问题。如果每个端点都使用自己的cookie，那么处理起来就很麻烦。
 </p>
   </div>
 </div>
