@@ -1,5 +1,5 @@
-title = %title_site%: FAQ
-h1 = Frequently Asked Questions Regarding the Block Producer Validator
+title = %title_site%: 常见问题
+h1 = 关于出块节点验证器的常见问题
 
 <div class="card" id="versions">
   <header class="card-header">
