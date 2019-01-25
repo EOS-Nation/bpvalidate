@@ -9,7 +9,7 @@ h1 = 下载出块节点验证结果
   </header>
   <div class="card-content">
   <p>
-所有可解析的bp.json输入文件以及分析报告都被合并在bps.json的输出文件中。以下文件均可下载。欢迎在其他项目中使用这些文件 
+所有可解析的bp.json输入文件以及分析报告都被整合在bps.json的输出文件中。以下文件均可下载。欢迎在其他项目中使用这些文件。
   </p>
   </div>
 </div>
@@ -23,6 +23,6 @@ h1 = 下载出块节点验证结果
     </p>
   </header>
   <div class="card-content">
-    <a href=../bps.json>JSON Format</a>
+    <a href=../bps.json>JSON格式</a>
   </div>
 </div>
