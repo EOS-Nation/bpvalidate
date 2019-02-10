@@ -498,8 +498,7 @@ sub check_onchainheartbeat {
 
 	# ---------- version
 
-	# request to add version_string: https://github.com/bancorprotocol/eos-producer-heartbeat-plugin/issues/1
-	my $version = $$chain_json{version_string} || $$chain_json{version};
+	my $version = $$chain_json{version_string};
 
 	if ($version) {
 		# remove any local suffixes
@@ -1226,8 +1225,7 @@ sub validate_api_extra_check {
 		$errors++;
 	}
 
-	# $$result{server_version} should be removed by 2018-11-01 (once 1.1.x is no longer in use)
-	my $server_version = $$result{server_version_string} || $$result{server_version};
+	my $server_version = $$result{server_version_string};
 
 	if ($server_version) {
 		# remove any local suffixes
@@ -1239,7 +1237,7 @@ sub validate_api_extra_check {
 	}
 
 	if (! $$versions{$server_version}) {
-		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version}, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
+		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version_string}, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
 	} else {
 		my $name = $$versions{$server_version}{name};
 		my $current = $$versions{$server_version}{api_current};
