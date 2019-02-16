@@ -1269,6 +1269,9 @@ sub validate_api_extra_check {
 	if (! $self->test_producer_api (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
+	if (! $self->test_net_api (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+		$errors++;
+	}
 
 	if ($errors) {
 		return undef;
@@ -1643,6 +1646,28 @@ sub test_system_symbol {
 		return undef;
 	}
 	$self->add_message(kind => 'ok', detail => 'basic symbol test passed', %options);
+
+	return 1;
+}
+
+sub test_net_api {
+	my ($self, %options) = @_;
+	$options{api_url} .= '/v1/net/connections';
+
+	my $req = HTTP::Request->new('GET', $options{api_url}, undef);
+	$self->ua->timeout(10);
+	my $res = $self->ua->request($req);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $content = $res->content;
+
+	if ($res->is_success) {
+		$self->add_message(kind => 'err', detail => 'net api is enabled', value => $status_message, %options);
+		return undef;
+	}
+
+	$self->add_message(kind => 'ok', detail => 'net api disabled', %options);
 
 	return 1;
 }
