@@ -1661,8 +1661,9 @@ sub test_net_api {
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
 	my $content = $res->content;
+        my $response_content_type = $res->content_type;
 
-	if ($res->is_success) {
+	if (($res->is_success) && ($response_url eq $options{api_url}))  {
 		$self->add_message(kind => 'err', detail => 'net api is enabled', value => $status_message, %options);
 		return undef;
 	}
@@ -1683,8 +1684,9 @@ sub test_producer_api {
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
 	my $content = $res->content;
+        my $response_content_type = $res->content_type;
 
-	if ($res->is_success) {
+	if (($res->is_success) && ($response_url eq $options{api_url}))  {
 		$self->add_message(kind => 'err', detail => 'producer api is enabled', value => $status_message, %options);
 		return undef;
 	}
