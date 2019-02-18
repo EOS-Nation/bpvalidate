@@ -524,8 +524,8 @@ sub check_onchainheartbeat {
 	# ---------- last update
 
 	my $timestamp = $self->{onchainheartbeat_timestamp} || 0;
-	if ($timestamp + 3600 < time) {
-		$self->add_message(kind => 'crit', detail => 'heartbeat is more than 60 minutes behind', last_update_time => time2str("%C", $timestamp), %message_options);
+	if ($timestamp + (3600 * 2) < time) {
+		$self->add_message(kind => 'crit', detail => 'heartbeat is more than 2 hours behind', last_update_time => time2str("%C", $timestamp), %message_options);
 		return;
 	}
 
