@@ -652,8 +652,8 @@ sub check_nodes {
 	};
 
 	my $node_number = 0;
-	my $total_valid_api_endpoint = 0;
-	my $total_valid_ssl_endpoint = 0;
+	my $total_valid_basic_api_endpoint = 0;
+	my $total_valid_basic_ssl_endpoint = 0;
 	my $total_valid_peer_endpoint = 0;
 	my $total_valid_bnet_endpoint = 0;
 	my $total_found_api_ssl_endpoint = 0;
@@ -664,8 +664,10 @@ sub check_nodes {
 	foreach my $node (@nodes) {
 		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'org');
 		my $node_type = $$node{node_type};
-		my $valid_api_endpoint = 0;
-		my $valid_ssl_endpoint = 0;
+		my $valid_basic_api_endpoint = 0;
+		my $valid_basic_ssl_endpoint = 0;
+		my $valid_history_api_endpoint = 0;
+		my $valid_history_ssl_endpoint = 0;
 		my $valid_peer_endpoint = 0;
 		my $valid_bnet_endpoint = 0;
 		my $found_api_ssl_endpoint = 0;
@@ -675,17 +677,25 @@ sub check_nodes {
 
 		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
 			$found_api_ssl_endpoint++;
-			my $result = $self->validate_api(api_url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
+			my $result = $self->validate_basic_api(api_url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
 			if ($result) {
-				$valid_api_endpoint++;
+				$valid_basic_api_endpoint++;
+				my $result2 = $self->validate_history_api(api_url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/history_http', node_type => $node_type, location => $location);
+				if ($result2) {
+					$valid_history_api_endpoint++;
+				}
 			}
 		}
 
 		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
 			$found_api_ssl_endpoint++;
-			my $result = $self->validate_api(api_url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
+			my $result = $self->validate_basic_api(api_url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
 			if ($result) {
-				$valid_ssl_endpoint++;
+				$valid_basic_ssl_endpoint++;
+				my $result2 = $self->validate_history_api(api_url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/history_https', node_type => $node_type, location => $location);
+				if ($result2) {
+					$valid_history_ssl_endpoint++;
+				}
 			}
 		}
 
@@ -730,7 +740,7 @@ sub check_nodes {
 			if (! $valid_peer_endpoint && ! $valid_bnet_endpoint && $count_node_type_seed == 1) {
 				$self->add_message(kind => 'warn', detail => 'no valid peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
-			if ($valid_api_endpoint || $valid_ssl_endpoint) {
+			if ($valid_basic_api_endpoint || $valid_basic_ssl_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'extranious API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} elsif ($node_type eq 'query') {
@@ -740,7 +750,7 @@ sub check_nodes {
 			if ($valid_peer_endpoint || $valid_bnet_endpoint) {
 				$self->add_message(kind => 'warn', detail => 'extranious peer endpoints provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
-			if (! $valid_api_endpoint && ! $valid_ssl_endpoint && $count_node_type_full == 1) {
+			if (! $valid_basic_api_endpoint && ! $valid_basic_ssl_endpoint && $count_node_type_full == 1) {
 				$self->add_message(kind => 'warn', detail => 'no valid API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
 			}
 		} else {
@@ -750,8 +760,8 @@ sub check_nodes {
 			}
 		}
 
-		$total_valid_api_endpoint += $valid_api_endpoint;
-		$total_valid_ssl_endpoint += $valid_ssl_endpoint;
+		$total_valid_basic_api_endpoint += $valid_basic_api_endpoint;
+		$total_valid_basic_ssl_endpoint += $valid_basic_ssl_endpoint;
 		$total_valid_peer_endpoint += $valid_peer_endpoint;
 		$total_valid_bnet_endpoint += $valid_bnet_endpoint;
 		$total_found_api_ssl_endpoint += $found_api_ssl_endpoint;
@@ -777,11 +787,11 @@ sub check_nodes {
 
 	if (! $total_found_api_ssl_endpoint) {
 		$self->add_message(kind => 'crit', detail => 'no HTTP or HTTPS API endpoints provided in any node', class => 'endpoint');
-	} elsif (! $total_valid_api_endpoint && ! $total_valid_ssl_endpoint) {
+	} elsif (! $total_valid_basic_api_endpoint && ! $total_valid_basic_ssl_endpoint) {
 		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided in any node; see above messages', class => 'endpoint');
-	} elsif (! $total_valid_ssl_endpoint) {
+	} elsif (! $total_valid_basic_ssl_endpoint) {
 		$self->add_message(kind => 'warn', detail => 'no valid HTTPS API endpoints provided in any node', class => 'endpoint');
-	} elsif (! $total_valid_api_endpoint) {
+	} elsif (! $total_valid_basic_api_endpoint) {
 		# similar check is implemented on https://eosreport.franceos.fr/
 		# $self->add_message(kind => 'warn', detail => 'no valid HTTP API endpoints provided in any node', class => 'endpoint');
 	}
@@ -1136,7 +1146,7 @@ sub validate_connection {
 	return 1;
 }
 
-sub validate_api {
+sub validate_basic_api {
 	my ($self, %options) = @_;
 
 	my $api_url = $options{api_url};
@@ -1150,7 +1160,7 @@ sub validate_api {
 		content_type => 'json',
 		cors => 'on',
 		non_standard_port => 1,
-		extra_check => 'validate_api_extra_check',
+		extra_check => 'validate_basic_api_extra_check',
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
 		dupe => 'err',
@@ -1159,7 +1169,30 @@ sub validate_api {
 	);
 }
 
-sub validate_api_extra_check {
+sub validate_history_api {
+	my ($self, %options) = @_;
+
+	my $api_url = $options{api_url};
+	my $field = $options{field};
+
+	return $self->validate_url(
+		api_url => $api_url,
+		field => $field,
+		class => 'history',
+		url_ext => '/v1/chain/get_info',
+		content_type => 'json',
+		cors => 'on',
+		non_standard_port => 1,
+		extra_check => 'validate_history_api_extra_check',
+		add_result_to_list => 'response',
+		add_info_to_list => 'info',
+		dupe => 'skip',
+		timeout => 2,
+		%options
+	);
+}
+
+sub validate_basic_api_extra_check {
 	my ($self, $result, $res, %options) = @_;
 
 	my $url = $options{api_url};
@@ -1227,23 +1260,23 @@ sub validate_api_extra_check {
 
 	my $server_version = $$result{server_version_string};
 
-	if ($server_version) {
+	if (! $server_version) {
+		$self->add_message(kind => 'crit', detail => 'cannot find server_version_string in response', url => $url, field => $field, class => $class, node_type => $node_type);
+		$errors++;
+	} else {
 		# remove any local suffixes
 		$server_version =~ s/-dirty//;
 		$server_version =~ s/-\d\d-[a-z0-9]*$//;
-	} else {
-		$self->add_message(kind => 'crit', detail => 'cannot find server_version_string in response', url => $url, field => $field, class => $class, node_type => $node_type);
-		$errors++;
-	}
 
-	if (! $$versions{$server_version}) {
-		$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version_string}, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
-	} else {
-		my $name = $$versions{$server_version}{name};
-		my $current = $$versions{$server_version}{api_current};
-		$info{server_version} = $name;
-		if (! $current) {
-			$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
+		if (! $$versions{$server_version}) {
+			$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version_string}, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
+		} else {
+			my $name = $$versions{$server_version}{name};
+			my $current = $$versions{$server_version}{api_current};
+			$info{server_version} = $name;
+			if (! $current) {
+				$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
+			}
 		}
 	}
 
@@ -1256,13 +1289,6 @@ sub validate_api_extra_check {
 	if (! $self->test_abi_serializer (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
-# remove history test 2018-12-02
-#	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
-#		$errors++;
-#	}
-#	if (! $self->test_history_actions_12_to_13_upgrade (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
-#		$errors++;
-#	}
 	if (! $self->test_system_symbol (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
@@ -1270,6 +1296,34 @@ sub validate_api_extra_check {
 		$errors++;
 	}
 	if (! $self->test_net_api (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+		$errors++;
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	return \%info;
+}
+
+sub validate_history_api_extra_check {
+	my ($self, $result, $res, %options) = @_;
+
+	my $url = $options{api_url};
+	my $field = $options{field};
+	my $class = $options{class};
+	my $node_type = $options{node_type};
+	my $ssl = $options{ssl} || 'either'; # either, on, off
+	my $url_ext = $options{url_ext} || '';
+
+	my %info;
+	my $errors;
+	my $versions = $self->versions;
+
+	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+		$errors++;
+	}
+	if (! $self->test_history_key_accounts (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
 
@@ -1590,32 +1644,70 @@ sub test_history_actions {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $content = $res->content;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'err', detail => 'error retriving actions history', value => $status_message, explanation => 'edit config.ini to turn on history and replay all blocks', see1 => 'https://steemit.com/eos/@greymass/consistency-in-configuration-of-public-eos-full-nodes', see2 => 'http://t.me/eosfullnodes', %options);
+		$self->add_message(kind => 'crit',
+			detail => 'error retriving actions history',
+			value => $status_message,
+			explanation => 'edit config.ini to turn on history and replay all blocks',
+			see1 => 'http://t.me/eosfullnodes',
+			%options
+		);
 		return undef;
 	}
-	$self->add_message(kind => 'ok', detail => 'basic history test passed', %options);
+
+	my $json = $self->get_json ($content, %options) || return undef;
+	if (! scalar (@{$$json{actions}})) {
+		$self->add_message(kind => 'err', detail => 'invalid JSON response', %options);
+		return undef;
+	}
+
+	my @actions = @{$$json{actions}};
+	foreach my $action (@actions) {
+		my $time = str2time($$action{block_time} . ' UTC');
+		my $delta = abs(time - $time);
+		if ($delta > 3600) {
+			$self->add_message(kind => 'err', detail => 'history not up-to-date: eosio.ram action is more than 1 hour in the past', value => $$action{block_time}, %options);
+			return undef;
+		}
+	}
+
+	$self->add_message(kind => 'ok', detail => 'get_actions history test passed', %options);
 
 	return 1;
 }
 
-sub test_history_actions_12_to_13_upgrade {
+sub test_history_key_accounts {
 	my ($self, %options) = @_;
-	$options{api_url} .= '/v1/history/get_actions';
+	$options{api_url} .= '/v1/history/get_key_accounts';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "account_name": "hackerdarwin"}');
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "public_key": "EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd"}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $content = $res->content;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'err', detail => 'error retriving actions history', value => $status_message, explanation => 'replay all blocks', see1 => 'https://github.com/EOSIO/eos/issues/5818', %options);
+		$self->add_message(kind => 'crit',
+			detail => 'error retriving key_accounts history',
+			value => $status_message,
+			explanation => 'edit config.ini to turn on history and replay all blocks',
+			see1 => 'http://t.me/eosfullnodes',
+			%options
+		);
 		return undef;
 	}
-	$self->add_message(kind => 'ok', detail => 'basic history test passed', %options);
+
+	my $json = $self->get_json ($content, %options) || return undef;
+	if (! scalar (@{$$json{account_names}})) {
+		$self->add_message(kind => 'err', detail => 'invalid JSON response', %options);
+		return undef;
+	}
+
+	$self->add_message(kind => 'ok', detail => 'get_key_accounts history test passed', %options);
 
 	return 1;
 }
@@ -1714,7 +1806,11 @@ sub test_regproducer_key {
 	my $json = $self->get_json ($content, %options) || return 1;  #skip if down
 
 	if ((ref $$json{account_names} ne 'ARRAY') || (scalar @{$$json{account_names}} != 0)) {
-		$self->add_message(kind => 'err', detail => 'regproducer key is assigned to an account; better to use a dedicated signing key', see1 => 'https://steemit.com/eos/@eostribe/eos-bp-guide-on-how-to-setup-a-block-signing-key', %options);
+		$self->add_message(kind => 'err',
+			detail => 'regproducer key is assigned to an account; better to use a dedicated signing key',
+			see1 => 'https://steemit.com/eos/@eostribe/eos-bp-guide-on-how-to-setup-a-block-signing-key',
+			%options
+		);
 		return undef;
 	}
 
