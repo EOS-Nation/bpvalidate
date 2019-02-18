@@ -463,8 +463,8 @@ sub check_onchainheartbeat {
 
 	# ---------- interval
 
-	my $interval_threshold1 = 900;
-	my $interval_threshold2 = 3600;
+	my $interval_threshold1 = 3600;
+	my $interval_threshold2 = 14400;
 	my $interval = $$chain_json{interval};
 	if ($interval && $interval >= $interval_threshold1 && $interval <= $interval_threshold2) {
 		$self->add_message(kind => 'ok', detail => 'interval size', value => $interval, %message_options);
@@ -524,8 +524,8 @@ sub check_onchainheartbeat {
 	# ---------- last update
 
 	my $timestamp = $self->{onchainheartbeat_timestamp} || 0;
-	if ($timestamp + (3600 * 2) < time) {
-		$self->add_message(kind => 'crit', detail => 'heartbeat is more than 2 hours behind', last_update_time => time2str("%C", $timestamp), %message_options);
+	if ($timestamp + 14400 < time) {
+		$self->add_message(kind => 'crit', detail => 'heartbeat is more than 4 hours behind', last_update_time => time2str("%C", $timestamp), %message_options);
 		return;
 	}
 
