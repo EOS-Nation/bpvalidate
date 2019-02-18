@@ -48,7 +48,7 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 
 	my $check = 0;
 	my $msgsummary = $$entry{message_summary};
-	foreach my $key (qw (regproducer org endpoint chain)) {
+	foreach my $key (qw (regproducer org endpoint history chain)) {
 		if (exists $$msgsummary{$key} && $$msgsummary{$key} eq 'ok') {
 			$check++;
 		}
@@ -77,7 +77,7 @@ foreach my $lang (languages) {
 		my %results;
 
 		my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
-		foreach my $key (qw (regproducer org endpoint chain)) {
+		foreach my $key (qw (regproducer org endpoint history chain)) {
 			my $html = sev_html($msgsummary{$key} || 'skip', $key, $lang);
 			$msgsummary{$key} = $html;
 		}
@@ -106,6 +106,7 @@ foreach my $lang (languages) {
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{regproducer}</div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{org}</div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{endpoint}</div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{history}</div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{chain}</div>\n");
 		push (@report, "</div>\n");
 		push (@report, "<div>$producer_name_html</div>\n");
@@ -136,7 +137,7 @@ foreach my $lang (languages) {
 			push (@{$results{tags}}, 'other_y');
 		}
 
-		foreach my $key (qw (regproducer org endpoint chain)) {
+		foreach my $key (qw (regproducer org endpoint history chain)) {
 			if (exists $$entry{message_summary}{$key} && (($$entry{message_summary}{$key} eq 'ok') || ($$entry{message_summary}{$key} eq 'info'))) {
 					push (@{$results{tags}}, $key . '_y');
 				} else {
@@ -163,6 +164,7 @@ foreach my $lang (languages) {
 	push (@form, checkbox('regproducer', sev_html('check', undef, $lang) . ' ' . label('class_regproducer_l', $lang), $lang));
 	push (@form, checkbox('org', sev_html('check', undef, $lang) . ' ' . label('class_org_l', $lang), $lang));
 	push (@form, checkbox('endpoint', sev_html('check', undef, $lang) . ' ' . label('class_endpoint_l', $lang), $lang));
+	push (@form, checkbox('history', sev_html('check', undef, $lang) . ' ' . label('class_history_l', $lang), $lang));
 	push (@form, checkbox('chain', sev_html('check', undef, $lang) . ' ' . label('class_chain_l', $lang), $lang));
 	push (@form, "</div>\n");
 

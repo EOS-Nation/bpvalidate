@@ -61,8 +61,10 @@ sub generate_content {
 	$globals{last_update} = datetime($globals{generated_at}, $lang);
 	if ($variables{chain}) {
 		$globals{chain} = $$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain};
+		$globals{chain_title} = ($$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain}) . ": ";
 	} else {
 		$globals{chain} = '--';
+		$globals{chain_title} = '';
 	}
 
 	foreach my $key (keys %variables) {
