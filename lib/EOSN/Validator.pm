@@ -467,13 +467,13 @@ sub check_onchainheartbeat {
 	my $interval_threshold2 = 14400;
 	my $interval = $$chain_json{interval};
 	if ($interval && $interval >= $interval_threshold1 && $interval <= $interval_threshold2) {
-		$self->add_message(kind => 'ok', detail => 'interval size', value => $interval, %message_options);
+		$self->add_message(kind => 'ok', detail => 'XX interval size', value => $interval, %message_options);
 	} elsif ($interval < $interval_threshold1) {
-		$self->add_message(kind => 'warn', detail => 'interval size is less than ' . $interval_threshold1 . '; updates can be less frequent', value => $interval, %message_options);
+		$self->add_message(kind => 'warn', detail => 'XX interval size is less than ' . $interval_threshold1 . '; updates can be less frequent', value => $interval, %message_options);
 	} elsif ($interval > $interval_threshold2) {
-		$self->add_message(kind => 'warn', detail => 'interval size is greater than ' . $interval_threshold2 . '; updates should be more frequent', value => $interval, %message_options);
+		$self->add_message(kind => 'warn', detail => 'XX interval size is greater than ' . $interval_threshold2 . '; updates should be more frequent', value => $interval, %message_options);
 	} else {
-		$self->add_message(kind => 'err', detail => 'interval size not provided', %message_options);
+		$self->add_message(kind => 'err', detail => 'XX interval size not provided', %message_options);
 	}
 
 	# ---------- on call
@@ -1702,6 +1702,10 @@ sub test_history_key_accounts {
 	}
 
 	my $json = $self->get_json ($content, %options) || return undef;
+	if (! ref $json{account_names} eq 'HASH') {
+		$self->add_message(kind => 'err', detail => 'invalid JSON response 1', %options);
+		return undef;
+	}
 	if (! scalar (@{$$json{account_names}})) {
 		$self->add_message(kind => 'err', detail => 'invalid JSON response', %options);
 		return undef;
