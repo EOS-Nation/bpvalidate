@@ -1647,13 +1647,14 @@ sub test_history_actions {
 	my $content = $res->content;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit',
-			detail => 'error retriving actions history',
-			value => $status_message,
-			explanation => 'edit config.ini to turn on history and replay all blocks',
-			see1 => 'http://t.me/eosfullnodes',
-			%options
-		);
+		# history is a bonus... no error messages
+		#$self->add_message(kind => 'crit',
+		#	detail => 'error retriving actions history',
+		#	value => $status_message,
+		#	explanation => 'edit config.ini to turn on history and replay all blocks',
+		#	see1 => 'http://t.me/eosfullnodes',
+		#	%options
+		#);
 		return undef;
 	}
 
@@ -1691,13 +1692,14 @@ sub test_history_key_accounts {
 	my $content = $res->content;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit',
-			detail => 'error retriving key_accounts history',
-			value => $status_message,
-			explanation => 'edit config.ini to turn on history and replay all blocks',
-			see1 => 'http://t.me/eosfullnodes',
-			%options
-		);
+		# history is a bonus... no error messages
+		# $self->add_message(kind => 'crit',
+		#	detail => 'error retriving key_accounts history',
+		#	value => $status_message,
+		#	explanation => 'edit config.ini to turn on history and replay all blocks',
+		#	see1 => 'http://t.me/eosfullnodes',
+		#	%options
+		#);
 		return undef;
 	}
 
