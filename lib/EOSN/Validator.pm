@@ -1702,8 +1702,8 @@ sub test_history_key_accounts {
 	}
 
 	my $json = $self->get_json ($content, %options) || return undef;
-	if (! ref $$json{account_names} eq 'HASH') {
-		$self->add_message(kind => 'err', detail => 'invalid JSON response 1', %options);
+	if (ref $json eq 'ARRAY') {
+		$self->add_message(kind => 'err', detail => 'invalid JSON response (array)', %options);
 		return undef;
 	}
 	if (! scalar (@{$$json{account_names}})) {
