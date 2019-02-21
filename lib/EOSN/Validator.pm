@@ -1668,8 +1668,8 @@ sub test_history_actions {
 	foreach my $action (@actions) {
 		my $time = str2time($$action{block_time} . ' UTC');
 		my $delta = abs(time - $time);
-		if ($delta > 3600) {
-			$self->add_message(kind => 'err', detail => 'history not up-to-date: eosio.ram action is more than 1 hour in the past', value => $$action{block_time}, %options);
+		if ($delta > 3600 * 2) {
+			$self->add_message(kind => 'err', detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past', value => $$action{block_time}, %options);
 			return undef;
 		}
 	}
