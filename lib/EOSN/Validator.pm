@@ -1698,7 +1698,7 @@ sub test_history_actions {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/history/get_actions';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.ram"}');
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
