@@ -5,6 +5,7 @@ use strict;
 use JSON;
 use EOSN::UA qw(eosn_ua get_table);
 use Locale::Country;
+use List::Util qw(maxstr);
 use Data::Validate qw(is_integer is_numeric is_between);
 use Data::Validate::IP qw(is_public_ip);
 use IO::Socket;
@@ -1697,7 +1698,7 @@ sub test_history_actions {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/history/get_actions';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "pos":-1, "offset":-20, "account_name": "eosio.ram"}');
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.ram"}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1723,13 +1724,16 @@ sub test_history_actions {
 	}
 
 	my @actions = @{$$json{actions}};
+	my $block_time = '2000-01-01';
 	foreach my $action (@actions) {
-		my $time = str2time($$action{block_time} . ' UTC');
-		my $delta = abs(time - $time);
-		if ($delta > 3600 * 2) {
-			$self->add_message(kind => 'err', detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past', value => $$action{block_time}, %options);
-			return undef;
-		}
+		$block_time = maxstr ($$action{block_time}, $block_time);
+	}
+
+	my $time = str2time($block_time . ' UTC');
+	my $delta = abs(time - $time);
+	if ($delta > 3600 * 2) {
+		$self->add_message(kind => 'err', detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past', value => $block_time, %options);
+		return undef;
 	}
 
 	$self->add_message(kind => 'ok', detail => 'get_actions history test passed', %options);
