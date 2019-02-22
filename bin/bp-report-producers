@@ -8,6 +8,13 @@ use Date::Format qw(time2str);
 
 binmode(STDOUT, ":utf8");
 
+my %handler;
+$handler{regproducer} = 'regular';
+$handler{org} = 'regular';
+$handler{endpoint} = 'regular';
+$handler{chain} = 'regular';
+$handler{history} = 'bonus';
+
 # --------------------------------------------------------------------------
 # Main
 
@@ -78,8 +85,17 @@ foreach my $lang (languages) {
 
 		my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
 		foreach my $key (qw (regproducer org endpoint chain history)) {
-			my $html = sev_html($msgsummary{$key} || 'skip', $key, $lang);
-			$msgsummary{$key} = $html;
+			if ($handler{$key} eq 'regular') {
+				$msgsummary{$key} = sev_html($msgsummary{$key} || 'skip', $key, $lang);
+			} elsif ($handler{$key} eq 'bonus') {
+				if (defined $msgsummary{$key} && $msgsummary{$key} eq 'ok') {
+					$msgsummary{$key} = sev_html('bonus', $key, $lang);
+				} else {
+					$msgsummary{$key} = sev_html('none', $key, $lang);
+				}
+			} else {
+				die "$0: unknown hanndler=<$key>";
+			}
 		}
 
 		my $selected = '';
@@ -165,7 +181,7 @@ foreach my $lang (languages) {
 	push (@form, checkbox('org', sev_html('check', undef, $lang) . ' ' . label('class_org_l', $lang), $lang));
 	push (@form, checkbox('endpoint', sev_html('check', undef, $lang) . ' ' . label('class_endpoint_l', $lang), $lang));
 	push (@form, checkbox('chain', sev_html('check', undef, $lang) . ' ' . label('class_chain_l', $lang), $lang));
-	push (@form, checkbox('history', sev_html('check', undef, $lang) . ' ' . label('class_history_l', $lang), $lang));
+	push (@form, checkbox('history', sev_html('bonus', undef, $lang) . ' ' . label('class_history_l', $lang), $lang));
 	push (@form, "</div>\n");
 
 	unshift (@report, @form);

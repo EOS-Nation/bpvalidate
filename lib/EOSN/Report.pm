@@ -14,6 +14,8 @@ our $infile = undef;
 our $outdir = undef;
 our $confdir = undef;
 our %icons;
+$icons{none} = '<!-- none -->';
+$icons{bonus} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-align-justify"></i></span>';
 $icons{skip} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-ban"></i></span>';
 $icons{info} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-info-circle"></i></span>';
 $icons{ok} = '<span class="icon is-medium has-text-success"><i class="fas fa-lg fa-check-square"></i></span>';
