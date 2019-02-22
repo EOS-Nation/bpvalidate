@@ -1092,7 +1092,7 @@ sub validate_connection {
 	#print ">> peer=[$peer]\n";
 
 	if ($self->{urls}{$peer}) {
-		$self->add_message(kind => 'err', detail => 'duplicate peer', field => $field, class => $class, host => $peer);
+		$self->add_message(kind => 'info', detail => 'duplicate peer', field => $field, class => $class, host => $peer);
 		return undef;
 	}
 	$self->{urls}{$peer} = 1;
@@ -1164,7 +1164,7 @@ sub validate_basic_api {
 		extra_check => 'validate_basic_api_extra_check',
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
-		dupe => 'err',
+		dupe => 'info',
 		timeout => 2,
 		%options
 	);
