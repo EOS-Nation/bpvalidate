@@ -66,6 +66,7 @@ cpu_xeon_gold,Xeon Gold,Xeon Gold系列
 cpu_xeon_platinum,Xeon Platinum,Xeon Platinum系列
 cpu_xeon_zzother,Xeon Other,Xeon其他系列
 vtype_bare-metal,Bare-metal,裸金属架构
+vtype_hvm,HVM,
 chain_mainnet,Mainnet,主网
 chain_bos,BOS,BOS
 chain_telos,Telos,Telos
