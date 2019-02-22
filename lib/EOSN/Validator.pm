@@ -202,9 +202,9 @@ sub run_validate {
 	my $location = $self->{properties}{location};
 	my $key = $self->{properties}{producer_key};
 	my $chain = $self->{chain};
-	my $bpjson_filename = $self->{chain_properties}{filename};
-	my $location_check = $self->{chain_properties}{location_check};
-	my $chain_id = $self->{chain_properties}{chain_id};
+	my $bpjson_filename = $self->{chain_properties}{filename} || die "$0: filename is undefined in chains.csv";
+	my $location_check = $self->{chain_properties}{location_check} || die "$0: location_check is undefined in chains.csv";
+	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.csv";
 
 	$self->add_message(kind => 'info', detail => 'voting rank', value => $self->{rank}, class => 'general');
 	$self->{results}{info}{rank} = $self->{rank};
@@ -1234,7 +1234,7 @@ sub validate_basic_api_extra_check {
 		$errors++;
 	}
 
-	my $chain_id = $self->{chain_properties}{chain_id};
+	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.csv";
 
 	if ($$result{chain_id} ne $chain_id) {
 		$self->add_message(kind => 'crit', detail => 'invalid chain_id', value => $$result{chain_id}, url => $url, field => $field, class => $class, node_type => $node_type);
@@ -1280,6 +1280,9 @@ sub validate_basic_api_extra_check {
 		}
 	}
 
+	if (! $self->test_block_one (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+		$errors++;
+	}
 	if (! $self->test_patreonous (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
@@ -1320,6 +1323,9 @@ sub validate_history_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
+	if (! $self->test_history_transaction (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+		$errors++;
+	}
 	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
 		$errors++;
 	}
@@ -1568,6 +1574,27 @@ sub validate_country_n {
 # --------------------------------------------------------------------------
 # API Test Methods
 
+sub test_block_one {
+	my ($self, %options) = @_;
+	$options{api_url} .= "/v1/chain/get_block";
+
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"block_num_or_id": "1", "json": true}');
+	$self->ua->timeout(10);
+	my $res = $self->ua->request($req);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+
+	if (! $res->is_success) {
+		$self->add_message(kind => 'crit', detail => 'invalid block one', value => $status_message, %options);
+		return undef;
+	}
+
+	$self->add_message(kind => 'ok', detail => 'block one test passed', %options);
+
+	return 1;
+}
+
 sub test_patreonous {
 	my ($self, %options) = @_;
 	$options{api_url} .= "/v1/chain/get_table_rows";
@@ -1617,7 +1644,9 @@ sub test_abi_serializer {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/chain/get_block';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "block_num_or_id": 447}');
+	my $test_big_block = $self->{chain_properties}{test_big_block} || die "$0: test_big_block is undefined in chains.csv";
+
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "block_num_or_id": ' . $test_big_block . '}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1630,6 +1659,36 @@ sub test_abi_serializer {
 	}
 
 	$self->add_message(kind => 'ok', detail => 'abi serializer test passed', %options);
+
+	return 1;
+}
+
+sub test_history_transaction {
+	my ($self, %options) = @_;
+	$options{api_url} .= '/v1/history/get_transaction';
+
+	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
+
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "id": "' . $transaction . '"}');
+	$self->ua->timeout(10);
+	my $res = $self->ua->request($req);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $content = $res->content;
+
+	if (! $res->is_success) {
+		$self->add_message(kind => 'crit',
+			detail => 'error retriving transaction history',
+			value => $status_message,
+			explanation => 'edit config.ini to turn on history and replay all blocks',
+			see1 => 'http://t.me/eosfullnodes',
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message(kind => 'ok', detail => 'get_transaction history test passed', %options);
 
 	return 1;
 }
@@ -1682,7 +1741,9 @@ sub test_history_key_accounts {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/history/get_key_accounts';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "public_key": "EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd"}');
+	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
+
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "public_key": "' . $public_key . '"}');
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1720,8 +1781,8 @@ sub test_system_symbol {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/chain/get_currency_balance';
 
-	my $core_symbol = $self->{chain_properties}{core_symbol};
-	my $test_account = $self->{chain_properties}{test_account};
+	my $core_symbol = $self->{chain_properties}{core_symbol} || die "$0: core_symbol is undefined in chains.csv";
+	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.csv";
 
 	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "account": "' . $test_account . '", "code":"eosio.token", "symbol": "' . $core_symbol . '"}');
 	$self->ua->timeout(10);

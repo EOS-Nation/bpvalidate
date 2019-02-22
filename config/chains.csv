@@ -1,4 +1,4 @@
-name,url,filename,chain_id,location_check,core_symbol,test_account
-mainnet,http://api.eosn.io,bp.json,aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906,country,EOS,eosnationftw
-bos,http://bos.eosn.io,bos.json,d5a3d18fbb3c084e3b1f3fa98c21014b5f3db536cc15d08f9f6479517c6a3d86,timezone,BOS,bosnationftw
-telos,http://api.kainosbp.com:8888,bp.json,4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11,country,TLOS,kainosblkpro
+name,url,filename,chain_id,location_check,core_symbol,test_account,test_transaction,test_big_block,test_public_key
+mainnet,http://api.eosn.io,bp.json,aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906,country,EOS,eosnationftw,1bc395276f4bdde15a7992e50e61938457673e861d9480b51762b6e4457e5b79,11302924,EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
+bos,http://bos.eosn.io,bos.json,d5a3d18fbb3c084e3b1f3fa98c21014b5f3db536cc15d08f9f6479517c6a3d86,timezone,BOS,bosnationftw,c4a2ef620464e3b199996a6b50a35771be39b50f2d6f6a5781ff0bbf850917a2,196058,EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
+telos,http://api.kainosbp.com:8888,bp.json,4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11,country,TLOS,kainosblkpro,,,
