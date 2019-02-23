@@ -1281,25 +1281,25 @@ sub validate_basic_api_extra_check {
 		}
 	}
 
-	if (! $self->test_block_one (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_block_one (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_patreonous (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_patreonous (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_error_message (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_error_message (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_abi_serializer (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_abi_serializer (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_system_symbol (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_system_symbol (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_producer_api (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_producer_api (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_net_api (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_net_api (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -1324,13 +1324,13 @@ sub validate_history_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	if (! $self->test_history_transaction (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_history_transaction (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_key_accounts (api_url => $url, field => $field, class => $class, node_type => $node_type)) {
+	if (! $self->test_history_key_accounts (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -1722,6 +1722,17 @@ sub test_history_actions {
 		$self->add_message(kind => 'err', detail => 'invalid JSON response', %options);
 		return undef;
 	}
+
+	my $last_irreversible_block = $$json{last_irreversible_block};
+	my $history_type = undef;
+	if ($last_irreversible_block) {
+		$self->add_message(kind => 'ok', detail => 'detect traditional history node', %options);
+		$history_type = 'traditional';
+	} else {
+		$self->add_message(kind => 'ok', detail => 'detect mongo history node', %options);
+		$history_type = 'mongo';
+	}
+	$options{info}{history_type} = $history_type;
 
 	my @actions = @{$$json{actions}};
 	my $block_time = '2000-01-01';
