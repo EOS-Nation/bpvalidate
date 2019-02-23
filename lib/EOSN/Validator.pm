@@ -1069,7 +1069,7 @@ sub validate_url {
 	my $info;
 	if ($options{extra_check}) {
 		my $function = $options{extra_check};
-		$info = $self->$function ($return, $res, %options);
+		$info = $self->$function ($return, $res, \%options);
 		if (! $info) {
 			return undef;
 		}
@@ -1194,14 +1194,14 @@ sub validate_history_api {
 }
 
 sub validate_basic_api_extra_check {
-	my ($self, $result, $res, %options) = @_;
+	my ($self, $result, $res, $options) = @_;
 
-	my $url = $options{api_url};
-	my $field = $options{field};
-	my $class = $options{class};
-	my $node_type = $options{node_type};
-	my $ssl = $options{ssl} || 'either'; # either, on, off
-	my $url_ext = $options{url_ext} || '';
+	my $url = $$options{api_url};
+	my $field = $$options{field};
+	my $class = $$options{class};
+	my $node_type = $$options{node_type};
+	my $ssl = $$options{ssl} || 'either'; # either, on, off
+	my $url_ext = $$options{url_ext} || '';
 
 	my %info;
 	my $errors;
@@ -1224,7 +1224,7 @@ sub validate_basic_api_extra_check {
 		# LWP doesn't seem to support HTTP2, so make an extra call
 		my $check_http2 = `curl '$url$url_ext' --verbose --max-time 3 --stderr -`;
 		if ($check_http2 =~ m#HTTP/2 200#) {
-			$options{add_to_list} .= '2';
+			$$options{add_to_list} .= '2';
 		} else {
 			$self->add_message(kind => 'warn', detail => 'HTTPS API nodes would have better performance by using HTTP/2', url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
 		}
@@ -1311,14 +1311,14 @@ sub validate_basic_api_extra_check {
 }
 
 sub validate_history_api_extra_check {
-	my ($self, $result, $res, %options) = @_;
+	my ($self, $result, $res, $options) = @_;
 
-	my $url = $options{api_url};
-	my $field = $options{field};
-	my $class = $options{class};
-	my $node_type = $options{node_type};
-	my $ssl = $options{ssl} || 'either'; # either, on, off
-	my $url_ext = $options{url_ext} || '';
+	my $url = $$options{api_url};
+	my $field = $$options{field};
+	my $class = $$options{class};
+	my $node_type = $$options{node_type};
+	my $ssl = $$options{ssl} || 'either'; # either, on, off
+	my $url_ext = $$options{url_ext} || '';
 
 	my %info;
 	my $errors;
@@ -1332,6 +1332,11 @@ sub validate_history_api_extra_check {
 	}
 	if (! $self->test_history_key_accounts (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
+	}
+
+	if ($info{history_type}) {
+		my $new_value = 'history_' . $info{history_type} . '_';
+		$$options{add_to_list} =~ s/history_/$new_value/;
 	}
 
 	if ($errors) {
