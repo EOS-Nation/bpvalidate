@@ -88,7 +88,7 @@ foreach my $lang (languages) {
 			if ($handler{$key} eq 'regular') {
 				$msgsummary{$key} = sev_html($msgsummary{$key} || 'skip', $key, $lang);
 			} elsif ($handler{$key} eq 'bonus') {
-				if (defined $msgsummary{$key} && $msgsummary{$key} eq 'ok') {
+				if (defined $msgsummary{$key} && ($msgsummary{$key} eq 'ok' || $msgsummary{$key} eq 'info')) {
 					$msgsummary{$key} = sev_html('bonus', $key, $lang);
 				} else {
 					$msgsummary{$key} = sev_html('none', $key, $lang);
