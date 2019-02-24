@@ -702,14 +702,14 @@ sub check_nodes {
 
 		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
 			$found_peer_bnet_endpoint++;
-			if ($self->validate_connection(peer => $$node{p2p_endpoint}, field => "node[$node_number].p2p_endpoint", connection_field => 'p2p', add_to_list => 'nodes/p2p', node_type => $node_type, location => $location)) {
+			if ($self->validate_connection(peer => $$node{p2p_endpoint}, field => "node[$node_number].p2p_endpoint", connection_field => 'p2p', add_to_list => 'nodes/p2p', node_type => $node_type, location => $location, dupe => 'info')) {
 				$valid_peer_endpoint++;
 			}
 		}
 
 		if ((defined $$node{bnet_endpoint}) && ($$node{bnet_endpoint} ne '')) {
 			$found_peer_bnet_endpoint++;
-			if ($self->validate_connection(peer => $$node{bnet_endpoint}, field => "node[$node_number].bnet_endpoint", connection_field => 'bnet', add_to_list => 'nodes/bnet', node_type => $node_type, location => $location)) {
+			if ($self->validate_connection(peer => $$node{bnet_endpoint}, field => "node[$node_number].bnet_endpoint", connection_field => 'bnet', add_to_list => 'nodes/bnet', node_type => $node_type, location => $location, dupe => 'info')) {
 				$valid_bnet_endpoint++;
 			}
 		}
@@ -868,11 +868,7 @@ sub validate_url {
 	}
 
 	if ($dupe ne 'skip') {
-		if ($self->{urls}{$xurl}) {
-			$self->add_message(kind => $dupe, detail => 'duplicate URL', %options);
-			return undef if ($dupe eq 'err');
-		}
-		$self->{urls}{$xurl} = 1;
+		return undef if (! $self->check_duplicates ($xurl, 'duplicate URL', %options));
 	}
 
 	$xurl =~ s/#.*$//;
@@ -1088,14 +1084,11 @@ sub validate_connection {
 	my $peer = $options{peer};
 	my $field = $options{field};
 	my $class = $options{class};
+	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
 
 	#print ">> peer=[$peer]\n";
 
-	if ($self->{urls}{$peer}) {
-		$self->add_message(kind => 'info', detail => 'duplicate peer', field => $field, class => $class, host => $peer);
-		return undef;
-	}
-	$self->{urls}{$peer} = 1;
+	return undef if (! $self->check_duplicates ($peer, 'duplicate peer', field => $field, class => $class, host => $peer, dupe => $dupe));
 
 	if ($peer =~ m#^https?://#) {
 		$self->add_message(kind => 'err', detail => 'peer cannot begin with http(s)://', field => $field, class => $class, host => $peer);
@@ -1988,6 +1981,21 @@ sub get_json {
 	}
 
 	return $json;
+}
+
+sub check_duplicates {
+	my ($self, $url, $message, %options) = @_;
+
+	my $class = $options{class} || confess "class not provided";
+	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
+
+	if ($self->{urls}{$class}{$url}) {
+		$self->add_message(kind => $dupe, detail => 'duplicate URL', %options);
+		return undef if ($dupe eq 'err');
+	}
+	$self->{urls}{$class}{$url} = 1;
+
+	return 1;
 }
 
 1;
