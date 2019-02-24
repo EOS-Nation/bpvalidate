@@ -2529,6 +2529,9 @@ sub test_block_one {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+
+	$self->check_response_errors (response => $res, %options);
 
 	if (! $res->is_success) {
 		$self->add_message(
@@ -2536,6 +2539,7 @@ sub test_block_one {
 			detail => 'invalid block one',
 			value => $status_message,
 			post_data => $post_data,
+			response_host => $response_host,
 			%options
 		);
 		return undef;
@@ -2545,6 +2549,7 @@ sub test_block_one {
 		kind => 'ok',
 		detail => 'block one test passed',
 		post_data => $post_data,
+		response_host => $response_host,
 		%options
 		);
 
@@ -2562,6 +2567,9 @@ sub test_patreonous {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+
+	$self->check_response_errors (response => $res, %options);
 
 	if (! $res->is_success) {
 		$self->add_message(
@@ -2569,6 +2577,7 @@ sub test_patreonous {
 			detail => 'invalid patreonous filter message',
 			value => $status_message,
 			post_data => $post_data,
+			response_host => $response_host,
 			see1 => 'https://github.com/EOSIO/patroneos/issues/36',
 			%options
 		);
@@ -2579,6 +2588,7 @@ sub test_patreonous {
 		kind => 'ok',
 		detail => 'patreonous filter test passed',
 		post_data => $post_data,
+		response_host => $response_host,
 		%options
 	);
 
@@ -2596,14 +2606,18 @@ sub test_error_message {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
 	my $content = $res->content;
 
 	my $json = $self->get_json ($content, %options) || return undef;
+
+	$self->check_response_errors (response => $res, %options);
 
 	if ((ref $$json{error}{details} ne 'ARRAY') || (scalar (@{$$json{error}{details}}) == 0)) {
 		$self->add_message(
 			kind => 'err',
 			post_data => $post_data,
+			response_host => $response_host,
 			detail => 'detailed error messages not returned',
 			explanation => 'edit config.ini to set verbose-http-errors = true',
 			%options
@@ -2615,6 +2629,7 @@ sub test_error_message {
 		kind => 'ok',
 		detail => 'verbose errors test passed',
 		post_data => $post_data,
+		response_host => $response_host,
 		%options
 	);
 
@@ -2634,6 +2649,9 @@ sub test_abi_serializer {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+
+	$self->check_response_errors (response => $res, %options);
 
 	if (! $res->is_success) {
 		$self->add_message(
@@ -2641,6 +2659,7 @@ sub test_abi_serializer {
 			detail => 'error retriving large block',
 			value => $status_message,
 			post_data => $post_data,
+			response_host => $response_host,
 			explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)',
 			%options
 		);
@@ -2651,6 +2670,7 @@ sub test_abi_serializer {
 		kind => 'ok',
 		detail => 'abi serializer test passed',
 		post_data => $post_data,
+		response_host => $response_host,
 		%options
 	);
 
@@ -2670,7 +2690,10 @@ sub test_history_transaction {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
 	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
 
 	if (! $res->is_success) {
 		$self->add_message(
@@ -2679,6 +2702,7 @@ sub test_history_transaction {
 			value => $status_message,
 			explanation => 'edit config.ini to turn on history and replay all blocks',
 			post_data => $post_data,
+			response_host => $response_host,
 			see1 => 'http://t.me/eosfullnodes',
 			%options
 		);
@@ -2689,6 +2713,7 @@ sub test_history_transaction {
 		kind => 'ok',
 		detail => 'get_transaction history test passed',
 		post_data => $post_data,
+		response_host => $response_host,
 		%options
 	);
 
@@ -2706,7 +2731,10 @@ sub test_history_actions {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
 	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
 
 	if (! $res->is_success) {
 		$self->add_message(
@@ -2714,6 +2742,7 @@ sub test_history_actions {
 			detail => 'error retriving actions history',
 			value => $status_message,
 			post_data => $post_data,
+			response_host => $response_host,
 			explanation => 'edit config.ini to turn on history and replay all blocks',
 			see1 => 'http://t.me/eosfullnodes',
 			%options
@@ -2727,6 +2756,7 @@ sub test_history_actions {
 			kind => 'err',
 			detail => 'invalid JSON response',
 			post_data => $post_data,
+			response_host => $response_host,
 			%options
 		);
 		return undef;
@@ -2737,6 +2767,7 @@ sub test_history_actions {
 	if ($last_irreversible_block) {
 		$self->add_message(
 			kind => 'ok',
+			response_host => $response_host,
 			detail => 'detect traditional history node',
 			%options
 		);
@@ -2744,6 +2775,7 @@ sub test_history_actions {
 	} else {
 		$self->add_message(
 			kind => 'ok',
+			response_host => $response_host,
 			detail => 'detect mongo history node',
 			%options
 		);
@@ -2765,6 +2797,7 @@ sub test_history_actions {
 			detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past',
 			value => $block_time,
 			post_data => $post_data,
+			response_host => $response_host,
 			%options
 		);
 		return undef;
@@ -2774,8 +2807,9 @@ sub test_history_actions {
 		kind => 'ok',
 		detail => 'get_actions history test passed',
 		post_data => $post_data,
+		response_host => $response_host,
 		%options
-		);
+	);
 
 	return 1;
 }
@@ -2793,7 +2827,10 @@ sub test_history_key_accounts {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
 	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
 
 	if (! $res->is_success) {
 		$self->add_message(
@@ -2801,6 +2838,7 @@ sub test_history_key_accounts {
 			detail => 'error retriving key_accounts history',
 			value => $status_message,
 			post_data => $post_data,
+			response_host => $response_host,
 			explanation => 'edit config.ini to turn on history and replay all blocks',
 			see1 => 'http://t.me/eosfullnodes',
 			%options
@@ -2814,6 +2852,7 @@ sub test_history_key_accounts {
 			kind => 'err',
 			detail => 'invalid JSON response (array)',
 			post_data => $post_data,
+			response_host => $response_host,
 			%options
 		);
 		return undef;
@@ -2821,8 +2860,9 @@ sub test_history_key_accounts {
 	if (! scalar (@{$$json{account_names}})) {
 		$self->add_message(
 			kind => 'err',
-			post_data => $post_data,
 			detail => 'invalid JSON response',
+			post_data => $post_data,
+			response_host => $response_host,
 			%options
 		);
 		return undef;
@@ -2832,6 +2872,7 @@ sub test_history_key_accounts {
 		kind => 'ok',
 		detail => 'get_key_accounts history test passed',
 		post_data => $post_data,
+		response_host => $response_host,
 		%options
 	);
 
@@ -2852,7 +2893,10 @@ sub test_system_symbol {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
 	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
 
 	if (! $res->is_success) {
 		$self->add_message(
@@ -2860,6 +2904,7 @@ sub test_system_symbol {
 			detail => 'error retriving symbol',
 			value => $status_message,
 			post_data => $post_data,
+			response_host => $response_host,
 			%options
 		);
 		return undef;
@@ -2871,6 +2916,7 @@ sub test_system_symbol {
 			kind => 'err',
 			detail => 'code compiled with incorrect symbol',
 			post_data => $post_data,
+			response_host => $response_host,
 			%options
 		);
 		return undef;
@@ -2879,6 +2925,7 @@ sub test_system_symbol {
 		kind => 'ok',
 		detail => 'basic symbol test passed',
 		post_data => $post_data,
+		response_host => $response_host,
 		%options
 	);
 
@@ -2895,8 +2942,11 @@ sub test_net_api {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
 	my $content = $res->content;
         my $response_content_type = $res->content_type;
+
+	$self->check_response_errors (response => $res, %options);
 
 	if (($res->is_success) && ($response_url eq $options{api_url}))  {
 		$self->add_message(
@@ -2927,8 +2977,11 @@ sub test_producer_api {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
 	my $content = $res->content;
         my $response_content_type = $res->content_type;
+
+	$self->check_response_errors (response => $res, %options);
 
 	if (($res->is_success) && ($response_url eq $options{api_url}))  {
 		$self->add_message(
@@ -3099,6 +3152,48 @@ sub check_duplicates {
 		return undef if ($dupe eq 'err');
 	}
 	$self->{urls}{$class}{$url} = 1;
+
+	return 1;
+}
+
+sub check_response_errors {
+	my ($self, %options) = @_;
+
+	my $res = $options{response} || confess "response object not provided";
+	delete $options{response};
+
+	my @response_host = $res->header('host');
+	return undef if (! @response_host);
+
+#	print Dumper $res->headers;
+
+	# ---------- duplicate response hosts
+
+	if (@response_host > 1) {
+		$self->add_message(
+			kind => 'warn',
+			detail => 'response host header has multiple values',
+			value => join (', ', @response_host),
+			%options
+		);
+		return undef;
+	}
+
+	# --------- response_host == api?
+
+	my $response_host = join (', ', @response_host);
+	my $check = "//$response_host";
+	my $api_url = $options{api_url};
+
+	if ($api_url =~ /$check/) {
+		# ok
+	} else {
+		$self->add_message(
+			kind => 'warn',
+			detail => 'response host does not match queried host',
+			%options
+		);
+	}
 
 	return 1;
 }
