@@ -160,7 +160,12 @@ sub validate {
 
 	my $update_time = time2str("%C", time);
 
-	$self->prefix_message(kind => 'info', detail => 'bp.json is re-validated approximately every 30 minutes', last_update_time => $update_time, class => 'general');
+	$self->prefix_message(
+		kind => 'info',
+		detail => 'bp.json is re-validated approximately every 30 minutes',
+		last_update_time => $update_time,
+		class => 'general'
+	);
 
 	$self->{results}{meta}{generated_at} = $update_time;
 	$self->{results}{meta}{elapsed_time} = $end_time - $start_time;
@@ -207,17 +212,31 @@ sub run_validate {
 	my $location_check = $self->{chain_properties}{location_check} || die "$0: location_check is undefined in chains.csv";
 	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.csv";
 
-	$self->add_message(kind => 'info', detail => 'voting rank', value => $self->{rank}, class => 'general');
+	$self->add_message(
+		kind => 'info',
+		detail => 'voting rank',
+		value => $self->{rank},
+		class => 'general'
+	);
 	$self->{results}{info}{rank} = $self->{rank};
 	$self->{results}{info}{vote_percent} = $self->{vote_percent};
 
 	if (! $is_active) {
-		$self->add_message(kind => 'skip', detail => 'producer is not active', class => 'regproducer');
+		$self->add_message(
+			kind => 'skip',
+			detail => 'producer is not active',
+			class => 'regproducer'
+		);
 		return undef;
 	}
 
 	if ($url !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_]*$#) {
-		$self->add_message(kind => 'crit', detail => 'invalid configured URL', url => $url, class => 'regproducer');
+		$self->add_message(
+			kind => 'crit',
+			detail => 'invalid configured URL',
+			url => $url,
+			class => 'regproducer'
+		);
 		return undef;
 	}
 
@@ -236,9 +255,19 @@ sub run_validate {
 		}
 	} elsif ($location_check eq 'timezone') {
 		if ($location !~ /^\d+/) {
-			$self->add_message(kind => 'crit', detail => 'location is not a number (UTC offset)', value => $location, class => 'regproducer');
+			$self->add_message(
+				kind => 'crit',
+				detail => 'location is not a number (UTC offset)',
+				value => $location,
+				class => 'regproducer'
+			);
 		} elsif ($location < 0 || $location > 23) {
-			$self->add_message(kind => 'crit', detail => 'location is not a number between 0 and 23 (UTC offset)', value => $location, class => 'regproducer');
+			$self->add_message(
+				kind => 'crit',
+				detail => 'location is not a number between 0 and 23 (UTC offset)',
+				value => $location,
+				class => 'regproducer'
+			);
 		} else {
 			my $time_zone = '';
 			if ($location == 0) {
@@ -248,37 +277,83 @@ sub run_validate {
 			} else {
 				$time_zone = 'UTC+' . $location;
 			}
-			$self->add_message(kind => 'ok', detail => 'location time zone', value => $time_zone, class => 'regproducer');
+			$self->add_message(
+				kind => 'ok',
+				detail => 'location time zone',
+				value => $time_zone,
+				class => 'regproducer'
+			);
 			$self->{results}{info}{timezone} = $time_zone;
-			print ">>> TIME ZONE: $time_zone for location=<$location> url=<$url>\n";
+			#print ">>> TIME ZONE: $time_zone for location=<$location> url=<$url>\n";
 		}	
 	} else {
-		$self->add_message(kind => 'skip', detail => 'location check function needs to be fixed', class => 'regproducer');
+		$self->add_message(
+			kind => 'skip',
+			detail => 'location check function needs to be fixed',
+			class => 'regproducer'
+		);
 	}
 
-	$self->validate_url(url => "$url", field => 'main web site', class => 'regproducer', content_type => 'html', cors => 'either', dupe => 'skip', add_to_list => 'resources/regproducer_url');
+	$self->validate_url(
+		url => "$url",
+		field => 'main web site',
+		class => 'regproducer',
+		content_type => 'html',
+		cors => 'either',
+		dupe => 'skip',
+		add_to_list => 'resources/regproducer_url'
+	);
 
 	my $xurl = $url;
 	$xurl =~ s#/$##;
 
 	# ----------- chains
 
-	my $chains_json = $self->validate_url(url => "$xurl/chains.json", field => "CHAINS JSON", failure_code => 'info', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/chainjson', see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json');
+	my $chains_json = $self->validate_url(
+		url => "$xurl/chains.json",
+		field => "CHAINS JSON",
+		failure_code => 'info',
+		class => 'org',
+		content_type => 'json',
+		cors => 'should',
+		dupe => 'err',
+		add_to_list => 'resources/chainjson',
+		see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json'
+	);
 	if ($chains_json) {
 		my $count = scalar (keys %{$$chains_json{chains}});
 		if ($count) {
-			$self->add_message(kind => 'ok', detail => 'chains found in chains.json', value => $count, class => 'org');
+			$self->add_message(
+				kind => 'ok',
+				detail => 'chains found in chains.json',
+				value => $count,
+				class => 'org'
+			);
 		} else {
-			$self->add_message(kind => 'err', detail => 'no chains found in chains.json', class => 'org');
+			$self->add_message(
+				kind => 'err',
+				detail => 'no chains found in chains.json',
+				class => 'org'
+			);
 		}
 		my $new_filename = $$chains_json{chains}{$chain_id};
 		if ($new_filename) {
-			$self->add_message(kind => 'ok', detail => 'using chain-specific bp.json', value => $new_filename, class => 'org');
+			$self->add_message(
+				kind => 'ok',
+				detail => 'using chain-specific bp.json',
+				value => $new_filename,
+				class => 'org'
+			);
 			$new_filename =~ s#^/##;
 			$bpjson_filename = $new_filename;
 			print ">>> CHAINS JSON: count=<$count> url=<$xurl/$new_filename>\n";
 		} else {
-			$self->add_message(kind => 'err', detail => 'could not find found chain specific bp.json', class => 'org', see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json');
+			$self->add_message(
+				kind => 'err',
+				detail => 'could not find found chain specific bp.json',
+				class => 'org',
+				see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json'
+			);
 		}
 	} else {
 		#print ">>> NO CHAINS JSON\n";
@@ -286,13 +361,26 @@ sub run_validate {
 
 	# ----------- bp.json
 
-	my $json = $self->validate_url(url => "$xurl/$bpjson_filename", field => 'BP info JSON URL', class => 'org', content_type => 'json', cors => 'should', dupe => 'err', add_to_list => 'resources/bpjson');
+	my $json = $self->validate_url(
+		url => "$xurl/$bpjson_filename",
+		field => 'BP info JSON URL',
+		class => 'org',
+		content_type => 'json',
+		cors => 'should',
+		dupe => 'err',
+		add_to_list => 'resources/bpjson'
+	);
 	return undef if (! $json);
 
 	$self->{results}{input} = $json;
 
 	if (! ref $$json{org}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field => 'org', class => 'org');
+		$self->add_message(
+			kind => 'err',
+			detail => 'not a object',
+			field => 'org',
+			class => 'org'
+		);
 	} else {
 		$self->check_org_misc;
 		$self->check_org_location;
@@ -319,7 +407,12 @@ sub check_onchainbpjson {
 		return;
 	}
 	if (! $onchainbpjson_data) {
-		$self->add_message(kind => 'crit', detail => 'bp.json has not been provided on-chain', see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information', %message_options);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'bp.json has not been provided on-chain',
+			see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information',
+			%message_options
+		);
 		return;
 	}
 
@@ -336,7 +429,9 @@ sub check_onchainbpjson {
 	my $file_text = to_json($file_json, {canonical => 1, pretty => 1});
 
 	if ($chain_text ne $file_text) {
-		$self->add_message(kind => 'err', detail => 'bp.json on-chain does not match the one provided in regproducer URL',
+		$self->add_message(
+			kind => 'err',
+			detail => 'bp.json on-chain does not match the one provided in regproducer URL',
 			see2 => 'https://github.com/EOS-Nation/bpvalidate/blob/master/util/',
 			see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information',
 			diff => diff(\$chain_text, \$file_text),
@@ -345,7 +440,11 @@ sub check_onchainbpjson {
 		return;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'bp.json has been provided on-chain and matches what is in the regproducer URL', %message_options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'bp.json has been provided on-chain and matches what is in the regproducer URL',
+		%message_options
+	);
 }
 
 sub check_onchainblacklist {
@@ -360,7 +459,12 @@ sub check_onchainblacklist {
 		return;
 	}
 	if (! $onchainblacklist_data) {
-		$self->add_message(kind => 'crit', detail => 'blacklist has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'blacklist has not been provided on-chain',
+			see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin',
+			%message_options
+		);
 		return;
 	}
 
@@ -368,7 +472,12 @@ sub check_onchainblacklist {
 
 	$self->{results}{output}{chain}{blacklist} = $onchainblacklist_data;
 
-	$self->add_message(kind => 'ok', detail => 'blacklist has been provided on-chain', value => $onchainblacklist_data,  %message_options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'blacklist has been provided on-chain',
+		value => $onchainblacklist_data,
+		%message_options
+	);
 }
 
 sub check_onchainheartbeat {
@@ -384,7 +493,11 @@ sub check_onchainheartbeat {
 		return;
 	}
 	if (! $onchainheartbeat_data) {
-		$self->add_message(kind => 'crit', detail => 'heartbeat has not been provided on-chain', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'heartbeat has not been provided on-chain',
+			see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin',
+			%message_options);
 		return;
 	}
 
@@ -396,7 +509,12 @@ sub check_onchainheartbeat {
 	}
 
 	if (($self->{onchainheartbeat_timestamp} || 0) + 3600 * 48 < time) {
-		$self->add_message(kind => 'crit', detail => 'heartbeat on-chain is older than 48 hours: ignored', see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin', %message_options);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'heartbeat on-chain is older than 48 hours: ignored',
+			see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin',
+			%message_options
+		);
 		#print "heartbeat $onchainheartbeat_data too old\n";
 		return;
 	}
@@ -411,18 +529,36 @@ sub check_onchainheartbeat {
 	my $hbversionx = sprintf ("%02d.%02d.%02d", $a || 0, $b || 0, $c || 0);
 	#print ">>[$hbversionx]\n";
 	if ($hbversion && $hbversionx ge $hbversion_threshold) {
-		$self->add_message(kind => 'ok', detail => 'heartbeat version', value => $hbversion, %message_options);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'heartbeat version',
+			value => $hbversion,
+			%message_options
+		);
 	} elsif ($hbversion) {
-		$self->add_message(kind => 'warn', detail => 'heartbeat version is less than ' . $hbversion_threshold . '; upgrade required', value => $hbversion, %message_options);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'heartbeat version is less than ' . $hbversion_threshold . '; upgrade required',
+			value => $hbversion, %message_options
+		);
 	} else {
-		$self->add_message(kind => 'err', detail => 'heartbeat version not provided; upgrade required', %message_options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'heartbeat version not provided; upgrade required',
+			%message_options
+		);
 	}
 
 	# ---------- cpu
 
 	my $cpu = $$chain_json{cpu};
 	if ($cpu) {
-		$self->add_message(kind => 'ok', detail => 'CPU', value => $cpu, %message_options);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'CPU',
+			value => $cpu,
+			%message_options
+		);
 		my $cpu_name = 'cpu_zzother';
 		if ($cpu =~ /Xeon.*Silver/) {
 			$cpu_name = 'cpu_xeon_silver';
@@ -435,7 +571,11 @@ sub check_onchainheartbeat {
 		}
 		$self->{results}{output}{chain}{result_cpu} = $cpu_name;
 	} else {
-		$self->add_message(kind => 'err', detail => 'CPU not provided', %message_options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'CPU not provided',
+			%message_options
+		);
 	}
 
 	# ---------- memory
@@ -443,11 +583,25 @@ sub check_onchainheartbeat {
 	my $memory_threshold = $current_memory_mb * 1024;
 	my $memory = $$chain_json{memory};
 	if ($memory && $memory >= $memory_threshold) {
-		$self->add_message(kind => 'ok', detail => 'memory', value => $memory, %message_options);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'memory',
+			value => $memory,
+			%message_options
+		);
 	} elsif ($memory) {
-		$self->add_message(kind => 'warn', detail => 'memory is less than ' . $memory_threshold, value => $memory, %message_options);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'memory is less than ' . $memory_threshold,
+			value => $memory,
+			%message_options
+		);
 	} else {
-		$self->add_message(kind => 'err', detail => 'memory not provided', %message_options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'memory not provided',
+			%message_options
+		);
 	}
 
 	# ---------- database size
@@ -455,11 +609,25 @@ sub check_onchainheartbeat {
 	my $database_threshold = $current_memory_mb;
 	my $database = $$chain_json{db_size};
 	if ($database && $database >= $database_threshold) {
-		$self->add_message(kind => 'ok', detail => 'database size', value => $database, %message_options);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'database size',
+			value => $database,
+			%message_options
+		);
 	} elsif ($database) {
-		$self->add_message(kind => 'warn', detail => 'database size is less than ' . $database_threshold, value => $database, %message_options);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'database size is less than ' . $database_threshold,
+			value => $database,
+			%message_options
+		);
 	} else {
-		$self->add_message(kind => 'err', detail => 'database size not provided', %message_options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'database size not provided',
+			%message_options
+		);
 	}
 
 	# ---------- interval
@@ -468,23 +636,50 @@ sub check_onchainheartbeat {
 	my $interval_threshold2 = 14400;
 	my $interval = $$chain_json{interval};
 	if ($interval && $interval >= $interval_threshold1 && $interval <= $interval_threshold2) {
-		$self->add_message(kind => 'ok', detail => 'interval size', value => $interval, %message_options);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'interval size',
+			value => $interval,
+			%message_options
+		);
 	} elsif ($interval < $interval_threshold1) {
-		$self->add_message(kind => 'warn', detail => 'interval size is less than ' . $interval_threshold1 . '; updates can be less frequent', value => $interval, %message_options);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'interval size is less than ' . $interval_threshold1 . '; updates can be less frequent',
+			value => $interval,
+			%message_options
+		);
 	} elsif ($interval > $interval_threshold2) {
-		$self->add_message(kind => 'warn', detail => 'interval size is greater than ' . $interval_threshold2 . '; updates should be more frequent', value => $interval, %message_options);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'interval size is greater than ' . $interval_threshold2 . '; updates should be more frequent',
+			value => $interval,
+			%message_options
+		);
 	} else {
-		$self->add_message(kind => 'err', detail => 'interval size not provided', %message_options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'interval size not provided',
+			%message_options
+		);
 	}
 
 	# ---------- on call
 
 	my $oncall = $$chain_json{oncall};
 	if ($oncall && ($oncall ne 'telegram:nobody')) {
-		$self->add_message(kind => 'ok', detail => 'on call', value => $oncall, %message_options);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'on call',
+			value => $oncall,
+			%message_options
+		);
 	} else {
-# optional for now. change on 2018-10-10
-#		$self->add_message(kind => 'err', detail => 'on call not provided', %message_options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'on call not provided',
+			%message_options
+		);
 	}
 
 	# ---------- virtualization type
@@ -492,9 +687,18 @@ sub check_onchainheartbeat {
 	my $vtype = $$chain_json{vtype};
 	if ($vtype) {
 		$self->{results}{output}{chain}{result_vtype} = 'vtype_' . lc ($vtype);
-		$self->add_message(kind => 'ok', detail => 'virtualization type', value => $vtype, %message_options);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'virtualization type',
+			value => $vtype,
+			%message_options
+		);
 	} else {
-		$self->add_message(kind => 'err', detail => 'virtualization type not provided', %message_options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'virtualization type not provided',
+			%message_options
+		);
 	}
 
 	# ---------- version
@@ -506,19 +710,35 @@ sub check_onchainheartbeat {
 		$version =~ s/-dirty//;
 		$version =~ s/-\d\d-[a-z0-9]*$//;
 	} else {
-		$self->add_message(kind => 'crit', detail => 'version not provided', %message_options);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'version not provided',
+			%message_options
+		);
 	}
 
 	my $versions = $self->versions;
 
 	if (! $$versions{$version}) {
-		$self->add_message(kind => 'warn', detail => 'unknown version', value => $version, %message_options, see1 => 'https://validate.eosnation.io/faq/#versions');
+		$self->add_message(
+			kind => 'warn',
+			detail => 'unknown version',
+			value => $version,
+			see1 => 'https://validate.eosnation.io/faq/#versions',
+			%message_options
+		);
 	} else {
 		my $name = $$versions{$version}{name};
 		my $current = $$versions{$version}{producer_current};
 		$self->{results}{output}{chain}{result_version} = $name;
 		if (! $current) {
-			$self->add_message(kind => 'warn', detail => 'version is out of date', value => $name, %message_options, see1 => 'https://validate.eosnation.io/faq/#versions');
+			$self->add_message(
+				kind => 'warn',
+				detail => 'version is out of date',
+				value => $name,
+				see1 => 'https://validate.eosnation.io/faq/#versions',
+				%message_options	
+			);
 		}
 	}
 
@@ -526,11 +746,20 @@ sub check_onchainheartbeat {
 
 	my $timestamp = $self->{onchainheartbeat_timestamp} || 0;
 	if ($timestamp + 14400 < time) {
-		$self->add_message(kind => 'crit', detail => 'heartbeat is more than 4 hours behind', last_update_time => time2str("%C", $timestamp), %message_options);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'heartbeat is more than 4 hours behind',
+			last_update_time => time2str("%C", $timestamp),
+			%message_options
+		);
 		return;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'heartbeat has been provided on-chain and is up-to-date', %message_options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'heartbeat has been provided on-chain and is up-to-date',
+		%message_options
+	);
 }
 
 sub check_org_location {
@@ -538,12 +767,25 @@ sub check_org_location {
 	my $json = $self->{results}{input};
 
 	if (! ref $$json{org}{location}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field =>'org.location', class => 'org');
+		$self->add_message(
+			kind => 'err',
+			detail => 'not a object',
+			field =>'org.location',
+			class => 'org'
+		);
 		return undef;
 	}
 
-	$self->validate_string(string => $$json{org}{location}{name}, field => 'org.location.name', class => 'org');
-	$self->validate_location(location => $$json{org}{location}, field => 'org.location', class => 'org');
+	$self->validate_string(
+		string => $$json{org}{location}{name},
+		field => 'org.location.name',
+		class => 'org'
+	);
+	$self->validate_location(
+		location => $$json{org}{location},
+		field => 'org.location',
+		class => 'org'
+	);
 }
 
 sub check_org_misc {
@@ -552,13 +794,34 @@ sub check_org_misc {
 	my $name = $self->{properties}{owner};
 	my $key = $self->{properties}{producer_key};
 
-	$self->validate_string(string => $$json{org}{candidate_name}, field => 'org.candidate_name', class => 'org');
-	$self->validate_email(string => $$json{org}{email}, field => 'org.email', class => 'org');
-#	$self->validate_string(string => $$json{producer_public_key}, field => 'producer_public_key', class => 'org');
-	$self->validate_string(string => $$json{producer_account_name}, field => 'producer_account_name', class => 'org');
+	$self->validate_string(
+		string => $$json{org}{candidate_name},
+		field => 'org.candidate_name',
+		class => 'org'
+	);
+	$self->validate_email(
+		string => $$json{org}{email},
+		field => 'org.email',
+		class => 'org'
+	);
+#	$self->validate_string(
+#		string => $$json{producer_public_key},
+#		field => 'producer_public_key',
+#		class => 'org'
+#	);
+	$self->validate_string(
+		string => $$json{producer_account_name},
+		field => 'producer_account_name',
+		class => 'org'
+	);
 
 	if ($$json{producer_account_name} && $$json{producer_account_name} ne $name) {
-		$self->add_message(kind => 'crit', detail => 'no match between bp.json and regproducer', field => 'producer_account_name', class => 'org');
+		$self->add_message(
+			kind => 'crit',
+			detail => 'no match between bp.json and regproducer',
+			field => 'producer_account_name',
+			class => 'org'
+		);
 	} else {
 		if ($$json{org}{candidate_name}) {
 			$self->{results}{info}{name} = $$json{org}{candidate_name};
@@ -566,17 +829,49 @@ sub check_org_misc {
 	}
 
 	if ($$json{producer_public_key}) {
-		$self->add_message(kind => 'info', detail => 'producer_public_key is not useful', see1 => 'https://github.com/eosrio/bp-info-standard/issues/7', field => 'producer_public_key', class => 'org');
+		$self->add_message(
+			kind => 'info',
+			detail => 'producer_public_key is not useful',
+			see1 => 'https://github.com/eosrio/bp-info-standard/issues/7',
+			field => 'producer_public_key',
+			class => 'org'
+		);
 	}
 
 # removed July, 2018: https://github.com/EOS-Nation/bpvalidate/issues/27
 #	if ($$json{producer_public_key} && $$json{producer_public_key} ne $key) {
-#		$self->add_message(kind => 'err', detail => 'no match between bp.json and regproducer', field => 'producer_public_key', class => 'org');
+#		$self->add_message(
+#			kind => 'err',
+#			detail => 'no match between bp.json and regproducer',
+#			field => 'producer_public_key',
+#			class => 'org'
+#		);
 #	}
 
-	$self->validate_url(url => $$json{org}{website}, field => 'org.website', class => 'org', content_type => 'html', add_to_list => 'resources/website', dupe => 'warn');
-	$self->validate_url(url => $$json{org}{code_of_conduct}, field => 'org.code_of_conduct', class => 'org', content_type => 'html', add_to_list => 'resources/conduct', dupe => 'warn');
-	$self->validate_url(url => $$json{org}{ownership_disclosure}, field => 'org.ownership_disclosure', class => 'org', content_type => 'html', add_to_list => 'resources/ownership', dupe => 'warn');
+	$self->validate_url(
+		url => $$json{org}{website},
+		field => 'org.website',
+		class => 'org',
+		content_type => 'html',
+		add_to_list => 'resources/website',
+		dupe => 'warn'
+	);
+	$self->validate_url(
+		url => $$json{org}{code_of_conduct},
+		field => 'org.code_of_conduct',
+		class => 'org',
+		content_type => 'html',
+		add_to_list => 'resources/conduct',
+		dupe => 'warn'
+	);
+	$self->validate_url(
+		url => $$json{org}{ownership_disclosure},
+		field => 'org.ownership_disclosure',
+		class => 'org',
+		content_type => 'html',
+		add_to_list => 'resources/ownership',
+		dupe => 'warn'
+	);
 
 	return 1;
 }
@@ -586,13 +881,39 @@ sub check_org_branding {
 	my $json = $self->{results}{input};
 
 	if (! ref $$json{org}{branding}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field =>'org.branding', class => 'org');
+		$self->add_message(
+			kind => 'err',
+			detail => 'not a object',
+			field =>'org.branding',
+			class => 'org'
+		);
 		return;
 	}
 
-	$self->validate_url(url => $$json{org}{branding}{logo_256}, field => 'org.branding.logo_256', class => 'org', content_type => 'png_jpg', add_to_list => 'resources/social_logo_256', dupe => 'warn');
-	$self->validate_url(url => $$json{org}{branding}{logo_1024}, field => 'org.branding.logo_1024', class => 'org', content_type => 'png_jpg', add_to_list => 'resources/social_logo_1024', dupe => 'warn');
-	$self->validate_url(url => $$json{org}{branding}{logo_svg}, field => 'org.branding.logo_svg', class => 'org', content_type => 'svg', add_to_list => 'resources/social_logo_svg', dupe => 'warn');
+	$self->validate_url(
+		url => $$json{org}{branding}{logo_256},
+		field => 'org.branding.logo_256',
+		class => 'org',
+		content_type => 'png_jpg',
+		add_to_list => 'resources/social_logo_256',
+		dupe => 'warn'
+	);
+	$self->validate_url(
+		url => $$json{org}{branding}{logo_1024},
+		field => 'org.branding.logo_1024',
+		class => 'org',
+		content_type => 'png_jpg',
+		add_to_list => 'resources/social_logo_1024',
+		dupe => 'warn'
+	);
+	$self->validate_url(
+		url => $$json{org}{branding}{logo_svg},
+		field => 'org.branding.logo_svg',
+		class => 'org',
+		content_type => 'svg',
+		add_to_list => 'resources/social_logo_svg',
+		dupe => 'warn'
+	);
 }
 
 sub check_org_social {
@@ -600,7 +921,12 @@ sub check_org_social {
 	my $json = $self->{results}{input};
 
 	if (! ref $$json{org}{social}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field => 'org.social', class => 'org');
+		$self->add_message(
+			kind => 'err',
+			detail => 'not a object',
+			field => 'org.social',
+			class => 'org'
+		);
 		return undef;
 	}
 
@@ -611,7 +937,12 @@ sub check_org_social {
 		my $url_prefix = $social{$key};
 
 		if ($value =~ m#https?://#) {
-			$self->add_message(kind => 'err', detail => 'social references must be relative', field => "org.social.$key", class => 'org');
+			$self->add_message(
+				kind => 'err',
+				detail => 'social references must be relative',
+				field => "org.social.$key",
+				class => 'org'
+			);
 			next;
 		}
 
@@ -619,22 +950,45 @@ sub check_org_social {
 			my $url = $url_prefix . $value;
 			$url .= '/' if ($key eq 'keybase');
 # disable until caching is implemented
-#			if (! $self->validate_url(url => $url, field => "org.social.$key", class => 'org', content_type => 'html', add_to_list => "social/$key", dupe => 'warn')) {
+#			if (! $self->validate_url(
+#				url => $url,
+#				field => "org.social.$key",
+#				class => 'org',
+#				content_type => 'html',
+#				add_to_list => "social/$key",
+#				dupe => 'warn'
+#			)) {
 #				next;
 #			}
 		}
 
-		$self->add_message(kind => 'ok', detail => 'valid social reference', value => $value, field => "org.social.$key", class => 'org');
+		$self->add_message(
+			kind => 'ok',
+			detail => 'valid social reference',
+			value => $value,
+			field => "org.social.$key",
+			class => 'org'
+		);
 		$valid++;
 	}
 
 	foreach my $key (keys %{$$json{org}{social}}) {
 		next if (exists $social{$key});
-		$self->add_message(kind => 'err', detail => 'unknown social reference', field => "org.social.$key", class => 'org');
+		$self->add_message(
+			kind => 'err',
+			detail => 'unknown social reference',
+			field => "org.social.$key",
+			class => 'org'
+		);
 	}
 
 	if ($valid < 4) {
-		$self->add_message(kind => 'err', detail => 'should have at least 4 social references', field => "org.social", class => 'org');
+		$self->add_message(
+			kind => 'err',
+			detail => 'should have at least 4 social references',
+			field => "org.social",
+			class => 'org'
+		);
 	}
 }
 
@@ -643,7 +997,12 @@ sub check_nodes {
 	my $json = $self->{results}{input};
 
 	if (! ref $$json{nodes}) {
-		$self->add_message(kind => 'err', detail => 'not a object', field => 'nodes', class => 'org');
+		$self->add_message(
+			kind => 'err',
+			detail => 'not a object',
+			field => 'nodes',
+			class => 'org'
+		);
 		return undef;
 	}	
 
@@ -663,7 +1022,11 @@ sub check_nodes {
 	my $count_node_type_seed = 0;
 	my $count_node_type_producer = 0;
 	foreach my $node (@nodes) {
-		my $location = $self->validate_location(location => $$node{location}, field => "node[$node_number].location", class => 'org');
+		my $location = $self->validate_location(
+			location => $$node{location},
+			field => "node[$node_number].location",
+			class => 'org'
+		);
 		my $node_type = $$node{node_type};
 		my $valid_basic_api_endpoint = 0;
 		my $valid_basic_ssl_endpoint = 0;
@@ -678,10 +1041,24 @@ sub check_nodes {
 
 		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
 			$found_api_ssl_endpoint++;
-			my $result = $self->validate_basic_api(api_url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/api_http', node_type => $node_type, location => $location);
+			my $result = $self->validate_basic_api(
+				api_url => $$node{api_endpoint},
+				field => "node[$node_number].api_endpoint",
+				ssl => 'off',
+				add_to_list => 'nodes/api_http',
+				node_type => $node_type,
+				location => $location
+			);
 			if ($result) {
 				$valid_basic_api_endpoint++;
-				my $result2 = $self->validate_history_api(api_url => $$node{api_endpoint}, field => "node[$node_number].api_endpoint", ssl => 'off', add_to_list => 'nodes/history_http', node_type => $node_type, location => $location);
+				my $result2 = $self->validate_history_api(
+					api_url => $$node{api_endpoint},
+					field => "node[$node_number].api_endpoint",
+					ssl => 'off',
+					add_to_list => 'nodes/history_http',
+					node_type => $node_type,
+					location => $location
+				);
 				if ($result2) {
 					$valid_history_api_endpoint++;
 				}
@@ -690,10 +1067,24 @@ sub check_nodes {
 
 		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
 			$found_api_ssl_endpoint++;
-			my $result = $self->validate_basic_api(api_url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/api_https', node_type => $node_type, location => $location);
+			my $result = $self->validate_basic_api(
+				api_url => $$node{ssl_endpoint},
+				field => "node[$node_number].ssl_endpoint",
+				ssl => 'on',
+				add_to_list => 'nodes/api_https',
+				node_type => $node_type,
+				location => $location
+			);
 			if ($result) {
 				$valid_basic_ssl_endpoint++;
-				my $result2 = $self->validate_history_api(api_url => $$node{ssl_endpoint}, field => "node[$node_number].ssl_endpoint", ssl => 'on', add_to_list => 'nodes/history_https', node_type => $node_type, location => $location);
+				my $result2 = $self->validate_history_api(
+					api_url => $$node{ssl_endpoint},
+					field => "node[$node_number].ssl_endpoint",
+					ssl => 'on',
+					add_to_list => 'nodes/history_https',
+					node_type => $node_type,
+					location => $location
+				);
 				if ($result2) {
 					$valid_history_ssl_endpoint++;
 				}
@@ -702,14 +1093,30 @@ sub check_nodes {
 
 		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
 			$found_peer_bnet_endpoint++;
-			if ($self->validate_connection(peer => $$node{p2p_endpoint}, field => "node[$node_number].p2p_endpoint", connection_field => 'p2p', add_to_list => 'nodes/p2p', node_type => $node_type, location => $location, dupe => 'info')) {
+			if ($self->validate_connection(
+					peer => $$node{p2p_endpoint},
+					field => "node[$node_number].p2p_endpoint",
+					connection_field => 'p2p',
+					add_to_list => 'nodes/p2p',
+					node_type => $node_type,
+					location => $location,
+					dupe => 'info'
+			)) {
 				$valid_peer_endpoint++;
 			}
 		}
 
 		if ((defined $$node{bnet_endpoint}) && ($$node{bnet_endpoint} ne '')) {
 			$found_peer_bnet_endpoint++;
-			if ($self->validate_connection(peer => $$node{bnet_endpoint}, field => "node[$node_number].bnet_endpoint", connection_field => 'bnet', add_to_list => 'nodes/bnet', node_type => $node_type, location => $location, dupe => 'info')) {
+			if ($self->validate_connection(
+					peer => $$node{bnet_endpoint},
+					field => "node[$node_number].bnet_endpoint",
+					connection_field => 'bnet',
+					add_to_list => 'nodes/bnet',
+					node_type => $node_type,
+					location => $location,
+					dupe => 'info'
+			)) {
 				$valid_bnet_endpoint++;
 			}
 		}
@@ -718,10 +1125,20 @@ sub check_nodes {
 
 		if (exists $$node{is_producer}) {
 			if ($$node{is_producer} && (! exists $$node{node_type})) {
-				$self->add_message(kind => 'warn', detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].is_producer", class => 'endpoint');
+				$self->add_message(
+					kind => 'warn',
+					detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']",
+					field => "node[$node_number].is_producer",
+					class => 'endpoint'
+				);
 				$node_type = 'producer';
 			} else {
-				$self->add_message(kind => 'info', detail => "is_producer is deprecated and can be removed", field => "node[$node_number].is_producer", class => 'endpoint');
+				$self->add_message(
+					kind => 'info',
+					detail => "is_producer is deprecated and can be removed",
+					field => "node[$node_number].is_producer",
+					class => 'endpoint'
+				);
 			}
 		}
 
@@ -730,34 +1147,84 @@ sub check_nodes {
 		# https://github.com/EOS-Nation/bpvalidate/issues/29
 
 		if (! $node_type) {
-			$self->add_message(kind => 'warn', detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number]", class => 'endpoint');
+			$self->add_message(
+				kind => 'warn',
+				detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query', 'seed']",
+				field => "node[$node_number]",
+				class => 'endpoint'
+			);
 		} elsif ($node_type eq 'producer') {
 			$count_node_type_producer++;
 			if ($found_api_ssl_endpoint || $found_peer_bnet_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'endpoints provided (producer should be private)', field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(
+					kind => 'warn',
+					detail => 'endpoints provided (producer should be private)',
+					field => "node[$node_number]",
+					class => 'endpoint'
+				);
 			}
 		} elsif ($node_type eq 'seed') {
 			$count_node_type_seed++;
 			if (! $valid_peer_endpoint && ! $valid_bnet_endpoint && $count_node_type_seed == 1) {
-				$self->add_message(kind => 'warn', detail => 'no valid peer endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(
+					kind => 'warn',
+					detail => 'no valid peer endpoints provided',
+					node_type => $node_type,
+					field => "node[$node_number]",
+					class => 'endpoint'
+				);
 			}
 			if ($valid_basic_api_endpoint || $valid_basic_ssl_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'extranious API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(
+					kind => 'warn',
+					detail => 'extranious API endpoints provided',
+					node_type => $node_type,
+					field => "node[$node_number]",
+					class => 'endpoint'
+				);
 			}
 		} elsif ($node_type eq 'query') {
-			$self->add_message(kind => 'err', detail => 'use node_type=query is deprecated; use node_type=full instead', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint')
+			$self->add_message(
+				kind => 'err',
+				detail => 'use node_type=query is deprecated; use node_type=full instead',
+				see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
+				class => 'endpoint'
+			);
 		} elsif ($node_type eq 'full') {
 			$count_node_type_full++;
 			if ($valid_peer_endpoint || $valid_bnet_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'extranious peer endpoints provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(
+					kind => 'warn',
+					detail => 'extranious peer endpoints provided',
+					see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
+					node_type => $node_type,
+					field => "node[$node_number]",
+					class => 'endpoint'
+				);
 			}
 			if (! $valid_basic_api_endpoint && ! $valid_basic_ssl_endpoint && $count_node_type_full == 1) {
-				$self->add_message(kind => 'warn', detail => 'no valid API endpoints provided', node_type => $node_type, field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(
+					kind => 'warn',
+					detail => 'no valid API endpoints provided',
+					node_type => $node_type,
+					field => "node[$node_number]",
+					class => 'endpoint'
+				);
 			}
 		} else {
-			$self->add_message(kind => 'err', detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query', 'seed']", field => "node[$node_number].node_type", class => 'endpoint');
+			$self->add_message(
+				kind => 'err',
+				detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query', 'seed']",
+				field => "node[$node_number].node_type",
+				class => 'endpoint'
+			);
 			if (! $found_api_ssl_endpoint && ! $found_peer_bnet_endpoint) {
-				$self->add_message(kind => 'warn', detail => 'no valid endpoints provided (useless section)', field => "node[$node_number]", class => 'endpoint');
+				$self->add_message(
+					kind => 'warn',
+					detail => 'no valid endpoints provided (useless section)',
+					field => "node[$node_number]",
+					class => 'endpoint'
+				);
 			}
 		}
 
@@ -771,43 +1238,105 @@ sub check_nodes {
 	}
 
 	if (! $count_node_type_full) {
-		$self->add_message(kind => 'err', detail => 'no full nodes provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint');
+		$self->add_message(
+			kind => 'err',
+			detail => 'no full nodes provided',
+			see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
+			class => 'endpoint'
+		);
 	} else {
-		$self->add_message(kind => 'ok', detail => 'full node(s) provided', count => $count_node_type_full, class => 'endpoint');
+		$self->add_message(
+			kind => 'ok',
+			detail => 'full node(s) provided',
+			count => $count_node_type_full,
+			class => 'endpoint'
+		);
 	}
 	if (! $count_node_type_seed) {
-		$self->add_message(kind => 'err', detail => 'no seed nodes provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint');
+		$self->add_message(
+			kind => 'err',
+			detail => 'no seed nodes provided',
+			see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
+			class => 'endpoint'
+		);
 	} else {
-		$self->add_message(kind => 'ok', detail => 'seed node(s) provided', count => $count_node_type_seed, class => 'endpoint');
+		$self->add_message(
+			kind => 'ok',
+			detail => 'seed node(s) provided',
+			count => $count_node_type_seed,
+			class => 'endpoint'
+		);
 	}
 	if (! $count_node_type_producer) {
-		$self->add_message(kind => 'err', detail => 'no producer nodes provided', see1 => 'https://github.com/eosrio/bp-info-standard/issues/21', class => 'endpoint');
+		$self->add_message(
+			kind => 'err',
+			detail => 'no producer nodes provided',
+			see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
+			class => 'endpoint'
+		);
 	} else {
-		$self->add_message(kind => 'ok', detail => 'producer node(s) provided', count => $count_node_type_producer, class => 'endpoint');
+		$self->add_message(
+			kind => 'ok',
+			detail => 'producer node(s) provided',
+			count => $count_node_type_producer,
+			class => 'endpoint'
+		);
 	}
 
 	if (! $total_found_api_ssl_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no HTTP or HTTPS API endpoints provided in any node', class => 'endpoint');
+		$self->add_message(
+			kind => 'crit',
+			detail => 'no HTTP or HTTPS API endpoints provided in any node',
+			class => 'endpoint'
+		);
 	} elsif (! $total_valid_basic_api_endpoint && ! $total_valid_basic_ssl_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no valid HTTP or HTTPS API endpoints provided in any node; see above messages', class => 'endpoint');
+		$self->add_message(
+			kind => 'crit',
+			detail => 'no valid HTTP or HTTPS API endpoints provided in any node; see above messages',
+			class => 'endpoint'
+		);
 	} elsif (! $total_valid_basic_ssl_endpoint) {
-		$self->add_message(kind => 'warn', detail => 'no valid HTTPS API endpoints provided in any node', class => 'endpoint');
+		$self->add_message(
+			kind => 'warn',
+			detail => 'no valid HTTPS API endpoints provided in any node',
+			class => 'endpoint'
+		);
 	} elsif (! $total_valid_basic_api_endpoint) {
 		# similar check is implemented on https://eosreport.franceos.fr/
-		# $self->add_message(kind => 'warn', detail => 'no valid HTTP API endpoints provided in any node', class => 'endpoint');
+		# $self->add_message(
+		#	kind => 'warn',
+		#	detail => 'no valid HTTP API endpoints provided in any node',
+		#	class => 'endpoint'
+		#);
 	}
 
 	if ($total_valid_bnet_endpoint) {
-		$self->add_message(kind => 'warn', detail => 'it is not recommended to run BNET endpoints', class => 'endpoint');
+		$self->add_message(
+			kind => 'warn',
+			detail => 'it is not recommended to run BNET endpoints',
+			class => 'endpoint'
+		);
 	}
 
 	if (! $total_found_peer_bnet_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no P2P or BNET endpoints provided in any node', class => 'endpoint');
+		$self->add_message(
+			kind => 'crit',
+			detail => 'no P2P or BNET endpoints provided in any node',
+			class => 'endpoint'
+		);
 	} elsif (! $total_valid_peer_endpoint && ! $total_valid_bnet_endpoint) {
-		$self->add_message(kind => 'crit', detail => 'no valid P2P or BNET endpoints provided in any node; see above messages', class => 'endpoint');
+		$self->add_message(
+			kind => 'crit',
+			detail => 'no valid P2P or BNET endpoints provided in any node; see above messages',
+			class => 'endpoint'
+		);
 	} elsif (! $total_valid_bnet_endpoint) {
 		# 2018-07-23 apparently some bnet endpoints are crashing?
-		#$self->add_message(kind => 'warn', detail => 'no valid BNET endpoints provided in any node', class => 'endpoint');
+		#$self->add_message(
+		#	kind => 'warn',
+		#	detail => 'no valid BNET endpoints provided in any node',
+		#	class => 'endpoint'
+		#);
 	}
 }
 
@@ -830,7 +1359,12 @@ sub validate_string {
 	my $class = $options{class};
 
 	if ((! defined $string) || (length $string == 0)) {
-		$self->add_message(kind => 'err', detail => 'no value given', field => $field, class => $class);
+		$self->add_message(
+			kind => 'err',
+			detail => 'no value given',
+			field => $field,
+			class => $class
+		);
 		return undef;
 	}
 
@@ -855,14 +1389,23 @@ sub validate_url {
 	#print ">> check url=[GET $xurl$url_ext]\n";
 
 	if (! $xurl) {
-		$self->add_message(kind => 'err', detail => 'no URL given', %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'no URL given',
+			%options
+		);
 		return undef;
 	}
 
 	foreach my $test_url (keys %bad_urls) {
 		my $details = $bad_urls{$test_url};
 		if ($xurl =~ m#^$test_url#) {
-			$self->add_message(kind => 'crit', detail => 'URL not allowed', %options, %$details);
+			$self->add_message(
+				kind => 'crit',
+				detail => 'URL not allowed',
+				%options,
+				%$details
+			);
 			return undef;
 		}
 	}
@@ -874,19 +1417,35 @@ sub validate_url {
 	$xurl =~ s/#.*$//;
 
 	if ($xurl !~ m#^https?://[a-z-0-9A-Z.-/]+[a-z-0-9A-Z.-_%]*$#) {
-		$self->add_message(kind => 'err', detail => 'invalid URL', %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'invalid URL',
+			%options
+		);
 		return undef;
 	}
 	if ($xurl =~ m#^https?://.*//#) {
-		$self->add_message(kind => 'warn', detail => 'double slashes in URL', %options);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'double slashes in URL',
+			%options
+		);
 		$xurl =~ s#(^https?://.*)//#$1/#;
 	}
 	if ($xurl =~ m#^https?://localhost#) {
-		$self->add_message(kind => 'err', detail => 'localhost URL is invalid', %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'localhost URL is invalid',
+			%options
+		);
 		return undef;
 	}
 	if ($xurl =~ m#^https?://127\.#) {
-		$self->add_message(kind => 'err', detail => 'localhost URL is invalid', %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'localhost URL is invalid',
+			%options
+		);
 		return undef;
 	}
 
@@ -914,19 +1473,43 @@ sub validate_url {
 	}
 
 	if ($protocol eq 'http' && $port && $port == 80) {
-		$self->add_message(kind => 'warn', detail => 'port is not required', port => 80, %options);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'port is not required',
+			port => 80,
+			%options
+		);
 	} elsif ($protocol eq 'https' && $port && $port == 443) {
-		$self->add_message(kind => 'warn', detail => 'port is not required', port => 443, %options);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'port is not required',
+			port => 443,
+			%options
+		);
 	}
 	if ($non_standard_port) {
 		if ($protocol eq 'http' && $port && $port != 80) {
-			$self->add_message(kind => 'info', detail => 'port is non-standard (not using 80) and may be unusable by some applications', port => $port, %options);
+			$self->add_message(
+				kind => 'info',
+				detail => 'port is non-standard (not using 80) and may be unusable by some applications',
+				port => $port,
+				%options
+			);
 		} elsif ($protocol eq 'https' && $port && $port != 443) {
-			$self->add_message(kind => 'info', detail => 'port is non-standard (not using 443) and may be unusable by some applications', port => $port, %options);
+			$self->add_message(
+				kind => 'info',
+				detail => 'port is non-standard (not using 443) and may be unusable by some applications',
+				port => $port,
+				%options
+			);
 		}
 	}
 	if ($location && $location eq '/') {
-		$self->add_message(kind => 'warn', detail => 'trailing slash is not required', %options);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'trailing slash is not required',
+			%options
+		);
 	}
 
 	if (! $self->validate_ip_dns($host, $field, $class)) {
@@ -935,16 +1518,29 @@ sub validate_url {
 
 	if ($ssl eq 'either') {
 		if ($xurl !~ m#^https://#) {
-			$self->add_message(kind => 'warn', detail => 'HTTPS is recommended instead of HTTP', %options, see1 => 'https://security.googleblog.com/2018/02/a-secure-web-is-here-to-stay.html');
+			$self->add_message(
+				kind => 'warn',
+				detail => 'HTTPS is recommended instead of HTTP',
+				see1 => 'https://security.googleblog.com/2018/02/a-secure-web-is-here-to-stay.html',
+				%options
+			);
 		}
 	} elsif ($ssl eq 'on') {
 		if ($xurl !~ m#^https://#) {
-			$self->add_message(kind => 'err', detail => 'need to specify HTTPS instead of HTTP', %options);
+			$self->add_message(
+				kind => 'err',
+				detail => 'need to specify HTTPS instead of HTTP',
+				%options
+			);
 			return undef;
 		}
 	} elsif ($ssl eq 'off') {
 		if ($xurl =~ m#^https://#) {
-			$self->add_message(kind => 'err', detail => 'need to specify HTTP instead of HTTPS', %options);
+			$self->add_message(
+				kind => 'err',
+				detail => 'need to specify HTTP instead of HTTPS',
+				%options
+			);
 			return undef;
 		}
 	} else {
@@ -966,12 +1562,23 @@ sub validate_url {
 	my $time = time - $clock;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => $failure_code, detail => 'invalid URL', value => $status_message, %options);
+		$self->add_message(
+			kind => $failure_code,
+			detail => 'invalid URL',
+			value => $status_message,
+			%options
+		);
 		return undef;
 	}
 
 	if ($time > $timeout) {
-		$self->add_message(kind => 'err', detail => 'response took longer than expected', value => "$time s", target => "$timeout s", %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'response took longer than expected',
+			value => "$time s",
+			target => "$timeout s",
+			%options
+		);
 	}
 
 	my @cors_headers = $res->header('Access-Control-Allow-Origin');
@@ -980,29 +1587,63 @@ sub validate_url {
 	} elsif ($cors eq 'should') {
 		# error, but not fatal, but not ok either
 		if (! @cors_headers) {
-			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(
+				kind => 'err',
+				detail => 'missing Access-Control-Allow-Origin header',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
 			delete $options{add_to_list};
 		} elsif (@cors_headers > 1) {
-			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(
+				kind => 'err',
+				detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
 			delete $options{add_to_list};
 		} elsif ($cors_headers[0] ne '*') {
-			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(
+				kind => 'err',
+				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
 			delete $options{add_to_list};
 		}	
 	} elsif ($cors eq 'on') {
 		if (! @cors_headers) {
-			$self->add_message(kind => 'err', detail => 'missing Access-Control-Allow-Origin header', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(
+				kind => 'err',
+				detail => 'missing Access-Control-Allow-Origin header',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
 			return undef;
 		} elsif (@cors_headers > 1) {
-			$self->add_message(kind => 'err', detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(
+				kind => 'err',
+				detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
 			return undef;
 		} elsif ($cors_headers[0] ne '*') {
-			$self->add_message(kind => 'err', detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>', %options, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS');
+			$self->add_message(
+				kind => 'err',
+				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
 			return undef;
 		}	
 	} elsif ($cors eq 'off') {
 		if (@cors_headers) {
-			$self->add_message(kind => 'err', detail => 'Access-Control-Allow-Origin header returned when should not be', %options);
+			$self->add_message(
+				kind => 'err',
+				detail => 'Access-Control-Allow-Origin header returned when should not be',
+				%options
+			);
 			return undef;
 		}	
 	} else {
@@ -1010,7 +1651,11 @@ sub validate_url {
 	}
 
 	if (! $response_content_type) {
-		$self->add_message(kind => 'err', detail => 'did not receive content_type header', %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'did not receive content_type header',
+			%options
+		);
 		return undef;
 	} elsif ($content_type && $content_types{$content_type}) {
 		my $found = 0;
@@ -1018,7 +1663,12 @@ sub validate_url {
 			$found = 1 if ($x eq $response_content_type);
 		}
 		if (! $found) {
-			$self->add_message(kind => 'err', detail => 'received unexpected content_type', value => $response_content_type, %options);
+			$self->add_message(
+				kind => 'err',
+				detail => 'received unexpected content_type',
+				value => $response_content_type,
+				%options
+			);
 			return undef;
 		}
 	}
@@ -1026,15 +1676,30 @@ sub validate_url {
 	my $content = $res->content;
 
 	if ($response_url ne ($xurl . $url_ext)) {
-		$self->add_message(kind => 'info', detail => 'URL redirected', %options, response_url => '' .$response_url);
+		$self->add_message(
+			kind => 'info',
+			detail => 'URL redirected',
+			response_url => '' . $response_url,
+			%options
+		);
 		if ($ssl eq 'on') {
 			if ($response_url !~ m#^https://#) {
-				$self->add_message(kind => 'err', detail => 'need to specify HTTPS instead of HTTP', %options, response_url => '' . $response_url);
+				$self->add_message(
+					kind => 'err',
+					detail => 'need to specify HTTPS instead of HTTP',
+					response_url => '' . $response_url,
+					%options
+				);
 				return undef;
 			}
 		} elsif ($ssl eq 'off') {
 			if ($response_url =~ m#^https://#) {
-				$self->add_message(kind => 'err', detail => 'need to specify HTTP instead of HTTPS', %options, response_url => '' . $response_url);
+				$self->add_message(
+					kind => 'err',
+					detail => 'need to specify HTTP instead of HTTPS',
+					response_url => '' . $response_url,
+					%options
+				);
 				return undef;
 			}
 		}
@@ -1044,7 +1709,11 @@ sub validate_url {
 	if ($content_type eq 'json') {
 		#printf ("%v02X", $content);
 		if ($content =~ /^\xEF\xBB\xBF/) {
-			$self->add_message(kind => 'err', detail => 'remove BOM (byte order mark) from start of JSON', %options);
+			$self->add_message(
+				kind => 'err',
+				detail => 'remove BOM (byte order mark) from start of JSON',
+				%options
+			);
 			$content =~ s/^\xEF\xBB\xBF//;
 		}
 
@@ -1091,7 +1760,13 @@ sub validate_connection {
 	return undef if (! $self->check_duplicates ($peer, 'duplicate peer', field => $field, class => $class, host => $peer, dupe => $dupe));
 
 	if ($peer =~ m#^https?://#) {
-		$self->add_message(kind => 'err', detail => 'peer cannot begin with http(s)://', field => $field, class => $class, host => $peer);
+		$self->add_message(
+			kind => 'err',
+			detail => 'peer cannot begin with http(s)://',
+			field => $field,
+			class => $class,
+			host => $peer
+		);
 		return undef;
 	}		
 
@@ -1128,7 +1803,14 @@ sub validate_connection {
 			$success++;
 			close ($sh);
 		} else {
-			$self->add_message(kind => 'err', detail => 'cannot connect to peer', field => $field, class => $class, host => $host, port => $port);
+			$self->add_message(
+				kind => 'err',
+				detail => 'cannot connect to peer',
+				field => $field,
+				class => $class,
+				host => $host,
+				port => $port
+			);
 		}
 	}
 
@@ -1203,13 +1885,28 @@ sub validate_basic_api_extra_check {
 # cookies should not be used for session routing, so this check is not required
 #	my $server_header = $res->header('Server');
 #	if ($server_header && $server_header =~ /cloudflare/) {
-#		$self->add_message(kind => 'info', detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases', url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#cloudflare');
+#		$self->add_message(
+#			kind => 'info',
+#			detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases',
+#			url => $url,
+#			field => $field,
+#			class => $class,
+#			node_type => $node_type,
+#			see1 => 'https://validate.eosnation.io/faq/#cloudflare'
+#		);
 #		$errors++;
 #	}
 #
 #	my $cookie_header = $res->header('Set-Cookie');
 #	if ($cookie_header) {
-#		$self->add_message(kind => 'err', detail => 'API nodes must not set cookies', url => $url, field => $field, class => $class, node_type => $node_type);
+#		$self->add_message(
+#			kind => 'err',
+#			detail => 'API nodes must not set cookies',
+#			url => $url,
+#			field => $field,
+#			class => $class,
+#			node_type => $node_type
+#		);
 #		$errors++;
 #	}
 
@@ -1219,25 +1916,55 @@ sub validate_basic_api_extra_check {
 		if ($check_http2 =~ m#HTTP/2 200#) {
 			$$options{add_to_list} .= '2';
 		} else {
-			$self->add_message(kind => 'warn', detail => 'HTTPS API nodes would have better performance by using HTTP/2', url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages');
+			$self->add_message(
+				kind => 'warn',
+				detail => 'HTTPS API nodes would have better performance by using HTTP/2',
+				url => $url,
+				field => $field,
+				class => $class,
+				node_type => $node_type,
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages'
+			);
 		}
 	}
 
 	if (! $$result{chain_id}) {
-		$self->add_message(kind => 'crit', detail => 'cannot find chain_id in response', url => $url, field => $field, class => $class, node_type => $node_type);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'cannot find chain_id in response',
+			url => $url,
+			field => $field,
+			class => $class,
+			node_type => $node_type
+		);
 		$errors++;
 	}
 
 	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.csv";
 
 	if ($$result{chain_id} ne $chain_id) {
-		$self->add_message(kind => 'crit', detail => 'invalid chain_id', value => $$result{chain_id}, url => $url, field => $field, class => $class, node_type => $node_type);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'invalid chain_id',
+			value => $$result{chain_id},
+			url => $url,
+			field => $field,
+			class => $class,
+			node_type => $node_type
+		);
 		$errors++;
 	}
 
 
 	if (! $$result{head_block_time}) {
-		$self->add_message(kind => 'crit', detail => 'cannot find head_block_time in response', url => $url, field => $field, class => $class, node_type => $node_type);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'cannot find head_block_time in response',
+			url => $url,
+			field => $field,
+			class => $class,
+			node_type => $node_type
+		);
 		$errors++;
 	}
 
@@ -1247,15 +1974,37 @@ sub validate_basic_api_extra_check {
 	if ($delta > 10) {
 		my $val = Time::Seconds->new($delta);
 		my $deltas = $val->pretty;
-		#$self->add_message(kind => 'crit', detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}> delta=<$deltas>", url => $url, field => $field, class => $class, node_type => $node_type);
-		$self->add_message(kind => 'crit', detail => 'last block is not up-to-date', value => $$result{head_block_time}, url => $url, field => $field, class => $class, node_type => $node_type);
+		#$self->add_message(
+		#	kind => 'crit',
+		#	detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}> delta=<$deltas>",
+		#	url => $url,
+		#	field => $field,
+		#	class => $class,
+		#	node_type => $node_type
+		#);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'last block is not up-to-date',
+			value => $$result{head_block_time},
+			url => $url,
+			field => $field,
+			class => $class,
+			node_type => $node_type
+		);
 		$errors++;
 	}
 
 	my $server_version = $$result{server_version_string};
 
 	if (! $server_version) {
-		$self->add_message(kind => 'crit', detail => 'cannot find server_version_string in response', url => $url, field => $field, class => $class, node_type => $node_type);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'cannot find server_version_string in response',
+			url => $url,
+			field => $field,
+			class => $class,
+			node_type => $node_type
+		);
 		$errors++;
 	} else {
 		# remove any local suffixes
@@ -1263,13 +2012,31 @@ sub validate_basic_api_extra_check {
 		$server_version =~ s/-\d\d-[a-z0-9]*$//;
 
 		if (! $$versions{$server_version}) {
-			$self->add_message(kind => 'warn', detail => 'unknown server_version in response', value => $$result{server_version_string}, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
+			$self->add_message(
+				kind => 'warn',
+				detail => 'unknown server_version in response',
+				value => $$result{server_version_string},
+				url => $url,
+				field => $field,
+				class => $class,
+				node_type => $node_type,
+				see1 => 'https://validate.eosnation.io/faq/#versions'
+			);
 		} else {
 			my $name = $$versions{$server_version}{name};
 			my $current = $$versions{$server_version}{api_current};
 			$info{server_version} = $name;
 			if (! $current) {
-				$self->add_message(kind => 'warn', detail => 'server_version is out of date in response', value => $name, url => $url, field => $field, class => $class, node_type => $node_type, see1 => 'https://validate.eosnation.io/faq/#versions');
+				$self->add_message(
+					kind => 'warn',
+					detail => 'server_version is out of date in response',
+					value => $name,
+					url => $url,
+					field => $field,
+					class => $class,
+					node_type => $node_type,
+					see1 => 'https://validate.eosnation.io/faq/#versions'
+				);
 			}
 		}
 	}
@@ -1343,15 +2110,32 @@ sub validate_port {
 	my ($self, $port, $field, $class) = @_;
 
 	if (! defined $port) {
-		$self->add_message(kind => 'crit', detail => 'port is not provided', field => $field, class => $class);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'port is not provided',
+			field => $field,
+			class => $class
+		);
 		return undef;
 	}
 	if (! defined is_integer ($port)) {
-		$self->add_message(kind => 'crit', detail => 'port is not a valid integer', field => $field, class => $class, port => $port);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'port is not a valid integer',
+			field => $field,
+			class => $class,
+			port => $port
+		);
 		return undef;
 	}
 	if (! is_between ($port, 1, 65535)) {
-		$self->add_message(kind => 'crit', detail => 'port is not a valid integer in range 1 to 65535', field => $field, class => $class, port => $port);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'port is not a valid integer in range 1 to 65535',
+			field => $field,
+			class => $class,
+			port => $port
+		);
 		return undef;
 	}
 
@@ -1362,7 +2146,13 @@ sub validate_ip_dns {
 	my ($self, $host, $field, $class) = @_;
 
 	if (($host =~ /^[\d\.]+$/) || ($host =~ /^[\d\:]+$/)) {
-		$self->add_message(kind => 'warn', detail => 'better to use DNS names instead of IP address', field => $field, class => $class, host => $host);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'better to use DNS names instead of IP address',
+			field => $field,
+			class => $class,
+			host => $host
+		);
 		return $self->validate_ip($host, $field, $class);
 	} else {
 		return $self->validate_dns([$host], $field, $class);
@@ -1373,7 +2163,13 @@ sub validate_ip {
 	my ($self, $ip, $field, $class) = @_;
 
 	if (! is_public_ip($ip)) {
-		$self->add_message(kind => 'crit', detail => 'not a valid ip address', field => $field, class => $class, ip => $ip);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'not a valid ip address',
+			field => $field,
+			class => $class,
+			ip => $ip
+		);
 		return ();
 	}
 
@@ -1398,7 +2194,13 @@ sub validate_dns {
 #IPV6				push (@results, $rr->address);
 			}
 		} else {
-#IPV6			$self->add_message(kind => 'warn', detail => 'cannot resolve IPv6 DNS name', field => $field, class => 'ipv6', dns => $address);
+#IPV6			$self->add_message(
+#				kind => 'warn',
+#				detail => 'cannot resolve IPv6 DNS name',
+#				field => $field,
+#				class => 'ipv6',
+#				dns => $address
+#			);
 		}
 
 		my $reply4 = $res->query($address, "A");
@@ -1407,12 +2209,24 @@ sub validate_dns {
 				push (@results, $rr->address);
 			}
 		} else {
-#IPV6			$self->add_message(kind => 'warn', detail => 'cannot resolve IPv4 DNS name', field => $field, class => $class, dns => $address);
+#IPV6			$self->add_message(
+#				kind => 'warn',
+#				detail => 'cannot resolve IPv4 DNS name',
+#				field => $field,
+#				class => $class,
+#				dns => $address
+#			);
 		}
 	}
 
 	if (! @results) {
-		$self->add_message(kind => 'crit', detail => 'cannot resolve DNS name', field => $field, class => $class, dns => join (',', @$addresses));
+		$self->add_message(
+			kind => 'crit',
+			detail => 'cannot resolve DNS name',
+			field => $field,
+			class => $class,
+			dns => join (',', @$addresses)
+		);
 	}
 
 	return @results;
@@ -1431,7 +2245,13 @@ sub validate_mx {
 			push (@query, $rr->exchange);
 		}
 	} else {
-		$self->add_message(kind => 'crit', detail => 'cannot resolve MX name', field => $field, class => $class, dns => $address);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'cannot resolve MX name',
+			field => $field,
+			class => $class,
+			dns => $address
+		);
 		return undef;
 	}
 
@@ -1451,35 +2271,73 @@ sub validate_location {
 	my $longitude = is_numeric ($$location{longitude});
 
 	if (! defined $name) {
-		$self->add_message(kind => 'err', detail => 'no name', field => $field, class => $class);
+		$self->add_message(
+			kind => 'err',
+			detail => 'no name',
+			field => $field,
+			class => $class
+		);
 		$name = undef;
 	} elsif ($name eq $self->name) {
-		$self->add_message(kind => 'err', detail => 'same name as producer, should be name of location', value => $name, field => $field, class => $class);
+		$self->add_message(
+			kind => 'err',
+			detail => 'same name as producer, should be name of location',
+			value => $name,
+			field => $field,
+			class => $class
+		);
 		$name = undef;
 	}
 
 	if (! defined $latitude) {
-		$self->add_message(kind => 'err', detail => 'no latitude', field => $field, class => $class);
+		$self->add_message(
+			kind => 'err',
+			detail => 'no latitude',
+			field => $field,
+			class => $class
+		);
 	}
 	if (! defined $longitude) {
-		$self->add_message(kind => 'err', detail => 'no longitude', field => $field, class => $class);
+		$self->add_message(
+			kind => 'err',
+			detail => 'no longitude',
+			field => $field,
+			class => $class
+		);
 	}
 	if ((! defined $latitude) || (! defined $longitude)) {
 		$latitude = undef;
 		$longitude = undef;
 	}
 	if ((defined $latitude) && ($latitude > 90 || $latitude < -90)) {
-		$self->add_message(kind => 'err', detail => 'latitude out of range', value => $latitude, field => $field, class => $class);
+		$self->add_message(
+			kind => 'err',
+			detail => 'latitude out of range',
+			value => $latitude,
+			field => $field,
+			class => $class
+		);
 		$latitude = undef;
 		$longitude = undef;
 	}
 	if ((defined $longitude) && ($longitude > 180 || $longitude < -180)) {
-		$self->add_message(kind => 'err', detail => 'longitude out of range', value => $longitude, field => $field, class => $class);
+		$self->add_message(
+			kind => 'err',
+			detail => 'longitude out of range',
+			value => $longitude,
+			field => $field,
+			class => $class
+		);
 		$latitude = undef;
 		$longitude = undef;
 	}
 	if (defined $latitude && defined $longitude && $latitude == 0 && $longitude == 0) {
-		$self->add_message(kind => 'err', detail => 'latitude,longitude is 0,0', field => $field, class => $class);
+		$self->add_message(
+			kind => 'err',
+			detail => 'latitude,longitude is 0,0',
+			field => $field,
+			class => $class
+		);
 		$latitude = undef;
 		$longitude = undef;
 	}
@@ -1491,7 +2349,13 @@ sub validate_location {
 	$return{longitude} = $longitude if (defined $longitude);
 
 	if ($country && $name && $latitude && $longitude) {
-		$self->add_message(kind => 'ok', detail => 'basic checks passed for location', value => "$country, $name", field => $field, class => $class);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'basic checks passed for location',
+			value => "$country, $name",
+			field => $field,
+			class => $class
+		);
 	}
 
 	return \%return;
@@ -1507,29 +2371,77 @@ sub validate_country_a2 {
 	$self->validate_string (string => $country, %options) || return;
 
 	if ($country =~ /^[a-z]{2}$/) {
-		$self->add_message(kind => 'warn', detail => 'country code should be uppercase', value => $country, suggested_value => uc($country), field => $field, class => $class);
+		$self->add_message(
+			kind => 'warn',
+			detail => 'country code should be uppercase',
+			value => $country,
+			suggested_value => uc($country),
+			field => $field,
+			class => $class
+		);
 		$country = uc ($country);
 		my $country_validated = code2country($country);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(
+				kind => 'err',
+				detail => 'not a valid 2 letter country code',
+				value => $country,
+				field => $field,
+				class => $class,
+				see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm'
+			);
 			return undef;
 		} else {
-			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
+			$self->add_message(
+				kind => 'ok',
+				detail => 'valid country code',
+				value => $country_validated,
+				field => $field,
+				class => $class
+			);
 		}
 	} elsif ($country =~ /^[A-Z]{2}$/) {
 		my $country_validated = code2country($country);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code', value => $country, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(
+				kind => 'err',
+				detail => 'not a valid 2 letter country code',
+				value => $country,
+				field => $field,
+				class => $class,
+				see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm'
+			);
 			return undef;
 		} else {
-			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
+			$self->add_message(
+				kind => 'ok',
+				detail => 'valid country code',
+				value => $country_validated,
+				field => $field,
+				class => $class
+			);
 		}
 	} else {
 		my $code = country2code($country);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, suggested_value => uc($code), field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(
+				kind => 'err',
+				detail => 'not a valid 2 letter country code using only uppercase letters',
+				value => $country,
+				suggested_value => uc($code),
+				field => $field,
+				class => $class,
+				see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm'
+			);
 		} else {
-			$self->add_message(kind => 'err', detail => 'not a valid 2 letter country code using only uppercase letters', value => $country, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(
+				kind => 'err',
+				detail => 'not a valid 2 letter country code using only uppercase letters',
+				value => $country,
+				field => $field,
+				class => $class,
+				see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm'
+			);
 		}
 		return undef;
 	}
@@ -1552,17 +2464,45 @@ sub validate_country_n {
 	if ($country =~ /^\d\d\d$/) {
 		my $country_validated = code2country($country, LOCALE_CODE_NUMERIC);
 		if (! $country_validated) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(
+				kind => 'err',
+				detail => 'not a valid 3 digit country code',
+				value => $options{country},
+				field => $field,
+				class => $class,
+				see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm'
+			);
 			return undef;
 		} else {
-			$self->add_message(kind => 'ok', detail => 'valid country code', value => $country_validated, field => $field, class => $class);
+			$self->add_message(
+				kind => 'ok',
+				detail => 'valid country code',
+				value => $country_validated,
+				field => $field,
+				class => $class
+			);
 		}
 	} else {
 		my $code = country2code($country, LOCALE_CODE_NUMERIC);
 		if ($code) {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, suggested_value => uc($code), field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(
+				kind => 'err',
+				detail => 'not a valid 3 digit country code',
+				value => $options{country},
+				suggested_value => uc($code),
+				field => $field,
+				class => $class,
+				see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm'
+			);
 		} else {
-			$self->add_message(kind => 'err', detail => 'not a valid 3 digit country code', value => $options{country}, field => $field, class => $class, see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm');
+			$self->add_message(
+				kind => 'err',
+				detail => 'not a valid 3 digit country code',
+				value => $options{country},
+				field => $field,
+				class => $class,
+				see1 => 'http://www.nationsonline.org/oneworld/country_code_list.htm'
+			);
 		}
 		return undef;
 	}
@@ -1577,7 +2517,8 @@ sub test_block_one {
 	my ($self, %options) = @_;
 	$options{api_url} .= "/v1/chain/get_block";
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"block_num_or_id": "1", "json": true}');
+	my $post_data = '{"block_num_or_id": "1", "json": true}';
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1585,11 +2526,21 @@ sub test_block_one {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => 'invalid block one', value => $status_message, %options);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'invalid block one',
+			value => $status_message,
+			post_data => $post_data,
+			%options
+		);
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'block one test passed', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'block one test passed',
+		%options
+		);
 
 	return 1;
 }
@@ -1598,7 +2549,8 @@ sub test_patreonous {
 	my ($self, %options) = @_;
 	$options{api_url} .= "/v1/chain/get_table_rows";
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}');
+	my $post_data = '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}';
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1606,11 +2558,22 @@ sub test_patreonous {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit', detail => 'invalid patreonous filter message', value => $status_message, see1 => 'https://github.com/EOSIO/patroneos/issues/36', %options);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'invalid patreonous filter message',
+			value => $status_message,
+			post_data => $post_data,
+			see1 => 'https://github.com/EOSIO/patroneos/issues/36',
+			%options
+		);
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'patreonous filter test passed', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'patreonous filter test passed',
+		%options
+	);
 
 	return 1;
 }
@@ -1619,7 +2582,8 @@ sub test_error_message {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/chain/validate_error_message';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true}');
+	my $post_data = '{"json": true}';
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1630,11 +2594,21 @@ sub test_error_message {
 	my $json = $self->get_json ($content, %options) || return undef;
 
 	if ((ref $$json{error}{details} ne 'ARRAY') || (scalar (@{$$json{error}{details}}) == 0)) {
-		$self->add_message(kind => 'err', detail => 'detailed error messages not returned', explanation => 'edit config.ini to set verbose-http-errors = true', %options);
+		$self->add_message(
+			kind => 'err',
+			post_data => $post_data,
+			detail => 'detailed error messages not returned',
+			explanation => 'edit config.ini to set verbose-http-errors = true',
+			%options
+		);
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'verbose errors test passed', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'verbose errors test passed',
+		%options
+	);
 
 	return 1;
 }
@@ -1645,7 +2619,8 @@ sub test_abi_serializer {
 
 	my $test_big_block = $self->{chain_properties}{test_big_block} || die "$0: test_big_block is undefined in chains.csv";
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "block_num_or_id": ' . $test_big_block . '}');
+	my $post_data = '{"json": true, "block_num_or_id": ' . $test_big_block . '}';
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1653,11 +2628,22 @@ sub test_abi_serializer {
 	my $response_url = $res->request->uri;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'err', detail => 'error retriving large block', value => $status_message, explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)', %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'error retriving large block',
+			value => $status_message,
+			post_data => $post_data,
+			explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)',
+			%options
+		);
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'abi serializer test passed', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'abi serializer test passed',
+		%options
+	);
 
 	return 1;
 }
@@ -1668,7 +2654,8 @@ sub test_history_transaction {
 
 	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "id": "' . $transaction . '"}');
+	my $post_data = '{"json": true, "id": "' . $transaction . '"}';
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1677,17 +2664,23 @@ sub test_history_transaction {
 	my $content = $res->content;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit',
+		$self->add_message(
+			kind => 'crit',
 			detail => 'error retriving transaction history',
 			value => $status_message,
 			explanation => 'edit config.ini to turn on history and replay all blocks',
+			post_data => $post_data,
 			see1 => 'http://t.me/eosfullnodes',
 			%options
 		);
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'get_transaction history test passed', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'get_transaction history test passed',
+		%options
+	);
 
 	return 1;
 }
@@ -1696,7 +2689,8 @@ sub test_history_actions {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/history/get_actions';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}');
+	my $post_data = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1705,9 +2699,11 @@ sub test_history_actions {
 	my $content = $res->content;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit',
+		$self->add_message(
+			kind => 'crit',
 			detail => 'error retriving actions history',
 			value => $status_message,
+			post_data => $post_data,
 			explanation => 'edit config.ini to turn on history and replay all blocks',
 			see1 => 'http://t.me/eosfullnodes',
 			%options
@@ -1717,17 +2713,29 @@ sub test_history_actions {
 
 	my $json = $self->get_json ($content, %options) || return undef;
 	if (! scalar (@{$$json{actions}})) {
-		$self->add_message(kind => 'err', detail => 'invalid JSON response', %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'invalid JSON response',
+			%options
+		);
 		return undef;
 	}
 
 	my $last_irreversible_block = $$json{last_irreversible_block};
 	my $history_type = undef;
 	if ($last_irreversible_block) {
-		$self->add_message(kind => 'ok', detail => 'detect traditional history node', %options);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'detect traditional history node',
+			%options
+		);
 		$history_type = 'traditional';
 	} else {
-		$self->add_message(kind => 'ok', detail => 'detect mongo history node', %options);
+		$self->add_message(
+			kind => 'ok',
+			detail => 'detect mongo history node',
+			%options
+		);
 		$history_type = 'mongo';
 	}
 	$options{info}{history_type} = $history_type;
@@ -1741,11 +2749,20 @@ sub test_history_actions {
 	my $time = str2time($block_time . ' UTC');
 	my $delta = abs(time - $time);
 	if ($delta > 3600 * 2) {
-		$self->add_message(kind => 'err', detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past', value => $block_time, %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past',
+			value => $block_time,
+			%options
+		);
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'get_actions history test passed', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'get_actions history test passed',
+		%options
+		);
 
 	return 1;
 }
@@ -1756,7 +2773,8 @@ sub test_history_key_accounts {
 
 	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "public_key": "' . $public_key . '"}');
+	my $post_data = '{"json": true, "public_key": "' . $public_key . '"}';
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1765,9 +2783,11 @@ sub test_history_key_accounts {
 	my $content = $res->content;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'crit',
+		$self->add_message(
+			kind => 'crit',
 			detail => 'error retriving key_accounts history',
 			value => $status_message,
+			post_data => $post_data,
 			explanation => 'edit config.ini to turn on history and replay all blocks',
 			see1 => 'http://t.me/eosfullnodes',
 			%options
@@ -1777,15 +2797,29 @@ sub test_history_key_accounts {
 
 	my $json = $self->get_json ($content, %options) || return undef;
 	if (ref $json eq 'ARRAY') {
-		$self->add_message(kind => 'err', detail => 'invalid JSON response (array)', %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'invalid JSON response (array)',
+			post_data => $post_data,
+			%options
+		);
 		return undef;
 	}
 	if (! scalar (@{$$json{account_names}})) {
-		$self->add_message(kind => 'err', detail => 'invalid JSON response', %options);
+		$self->add_message(
+			kind => 'err',
+			post_data => $post_data,
+			detail => 'invalid JSON response',
+			%options
+		);
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'get_key_accounts history test passed', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'get_key_accounts history test passed',
+		%options
+	);
 
 	return 1;
 }
@@ -1797,7 +2831,8 @@ sub test_system_symbol {
 	my $core_symbol = $self->{chain_properties}{core_symbol} || die "$0: core_symbol is undefined in chains.csv";
 	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.csv";
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, '{"json": true, "account": "' . $test_account . '", "code":"eosio.token", "symbol": "' . $core_symbol . '"}');
+	my $post_data = '{"json": true, "account": "' . $test_account . '", "code":"eosio.token", "symbol": "' . $core_symbol . '"}';
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1806,16 +2841,30 @@ sub test_system_symbol {
 	my $content = $res->content;
 
 	if (! $res->is_success) {
-		$self->add_message(kind => 'err', detail => 'error retriving symbol', value => $status_message, %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'error retriving symbol',
+			value => $status_message,
+			post_data => $post_data,
+			%options
+		);
 		return undef;
 	}
 
 	my $json = $self->get_json ($content, %options) || return undef;
 	if (! scalar (@$json)) {
-		$self->add_message(kind => 'err', detail => 'code compiled with incorrect symbol', %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'code compiled with incorrect symbol',
+			%options
+		);
 		return undef;
 	}
-	$self->add_message(kind => 'ok', detail => 'basic symbol test passed', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'basic symbol test passed',
+		%options
+	);
 
 	return 1;
 }
@@ -1834,11 +2883,20 @@ sub test_net_api {
         my $response_content_type = $res->content_type;
 
 	if (($res->is_success) && ($response_url eq $options{api_url}))  {
-		$self->add_message(kind => 'err', detail => 'net api is enabled', value => $status_message, %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'net api is enabled',
+			value => $status_message,
+			%options
+		);
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'net api disabled', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'net api disabled',
+		%options
+	);
 
 	return 1;
 }
@@ -1857,11 +2915,20 @@ sub test_producer_api {
         my $response_content_type = $res->content_type;
 
 	if (($res->is_success) && ($response_url eq $options{api_url}))  {
-		$self->add_message(kind => 'err', detail => 'producer api is enabled', value => $status_message, %options);
+		$self->add_message(
+			kind => 'err',
+			detail => 'producer api is enabled',
+			value => $status_message,
+			%options
+		);
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'producer api disabled', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'producer api disabled',
+		%options
+	);
 
 	return 1;
 }
@@ -1873,7 +2940,8 @@ sub test_regproducer_key {
 #	my $url = 'https://api.eosn.io/v1/history/get_key_accounts';
 	my $url = 'http://eos.greymass.com/v1/history/get_key_accounts';
 
-	my $req = HTTP::Request->new('POST', $url, undef, '{"json": true, "public_key": "' . $key . '"}');
+	my $post_data = '{"json": true, "public_key": "' . $key . '"}';
+	my $req = HTTP::Request->new('POST', $url, undef, $post_data);
 	$self->ua->timeout(10);
 	my $res = $self->ua->request($req);
 	my $status_code = $res->code;
@@ -1884,7 +2952,9 @@ sub test_regproducer_key {
 	my $json = $self->get_json ($content, %options) || return 1;  #skip if down
 
 	if ((ref $$json{account_names} ne 'ARRAY') || (scalar @{$$json{account_names}} != 0)) {
-		$self->add_message(kind => 'err',
+		$self->add_message(
+			kind => 'err',
+			post_data => $post_data,
 			detail => 'regproducer key is assigned to an account; better to use a dedicated signing key',
 			see1 => 'https://steemit.com/eos/@eostribe/eos-bp-guide-on-how-to-setup-a-block-signing-key',
 			%options
@@ -1892,7 +2962,11 @@ sub test_regproducer_key {
 		return undef;
 	}
 
-	$self->add_message(kind => 'ok', detail => 'regproducer signing key test passed', %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'regproducer signing key test passed',
+		%options
+	);
 
 	return 1;
 }
@@ -1959,7 +3033,12 @@ sub add_to_list {
 
 	push (@{$self->{results}{output}{$section}{$list}}, \%data);
 
-	$self->add_message(kind => 'ok', detail => 'basic checks passed', resource => $options{add_to_list}, %options);
+	$self->add_message(
+		kind => 'ok',
+		detail => 'basic checks passed',
+		resource => $options{add_to_list},
+		%options
+	);
 }
 
 sub get_json {
@@ -1975,7 +3054,12 @@ sub get_json {
 		my $message = $@;
 		chomp ($message);
 		$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
-		$self->add_message(kind => 'crit', detail => 'invalid JSON error', value => $message, %options);
+		$self->add_message(
+			kind => 'crit',
+			detail => 'invalid JSON error',
+			value => $message,
+			%options
+		);
 		#print $content;
 		return undef;
 	}
@@ -1990,7 +3074,11 @@ sub check_duplicates {
 	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
 
 	if ($self->{urls}{$class}{$url}) {
-		$self->add_message(kind => $dupe, detail => 'duplicate URL', %options);
+		$self->add_message(
+			kind => $dupe,
+			detail => 'duplicate URL',
+			%options
+		);
 		return undef if ($dupe eq 'err');
 	}
 	$self->{urls}{$class}{$url} = 1;
