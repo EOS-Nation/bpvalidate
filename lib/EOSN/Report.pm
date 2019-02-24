@@ -301,6 +301,7 @@ sub generate_message {
 	my $target = $$options{target};
 	my $kind = $$options{kind} || confess "missing kind";
 	my $detail = $$options{detail} || confess "missing detail";
+	my $threshold = $$options{threshold};
 	my $field = $$options{field};
 	my $contract = $$options{contract};
 	my $node_type = $$options{node_type};
@@ -327,6 +328,7 @@ sub generate_message {
 		$response_url = undef if ($url eq $response_url);
 	}
 
+	$detail .= format_message_entry ('threshold', $threshold, 0, $content_type);
 	$detail .= format_message_entry ('count', $count, 0, $content_type);
 	$detail .= format_message_entry ('value', $value, 0, $content_type);
 	$detail .= format_message_entry ('suggested to use value', $suggested_value, 0, $content_type);
@@ -337,7 +339,7 @@ sub generate_message {
 	$detail .= format_message_entry ('resource', $resource, 0, $content_type);
 	$detail .= format_message_entry ('api_url', $api_url, 0, $content_type);
 	$detail .= format_message_entry ('url', $url, 1, $content_type);
-	$detail .= format_message_entry ('post_data', $post_data, 1, $content_type);
+	$detail .= format_message_entry ('post_data', $post_data, 0, $content_type);
 	$detail .= format_message_entry ('redirected to response_url', $response_url, 0, $content_type);
 	$detail .= format_message_entry ('host', $host, 0, $content_type);
 	$detail .= format_message_entry ('ip', $ip, 0, $content_type);
