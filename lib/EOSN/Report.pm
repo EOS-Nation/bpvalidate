@@ -307,6 +307,7 @@ sub generate_message {
 	my $resource = $$options{resource};
 	my $api_url = $$options{api_url};
 	my $url = $$options{url};
+	my $post_data = $$options{post_data};
 	my $response_url = $$options{response_url};
 	my $host = $$options{host};
 	my $ip = $$options{ip};
@@ -336,6 +337,7 @@ sub generate_message {
 	$detail .= format_message_entry ('resource', $resource, 0, $content_type);
 	$detail .= format_message_entry ('api_url', $api_url, 0, $content_type);
 	$detail .= format_message_entry ('url', $url, 1, $content_type);
+	$detail .= format_message_entry ('post_data', $post_data, 1, $content_type);
 	$detail .= format_message_entry ('redirected to response_url', $response_url, 0, $content_type);
 	$detail .= format_message_entry ('host', $host, 0, $content_type);
 	$detail .= format_message_entry ('ip', $ip, 0, $content_type);
