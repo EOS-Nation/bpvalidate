@@ -538,7 +538,8 @@ sub check_onchainheartbeat {
 	} elsif ($hbversion) {
 		$self->add_message(
 			kind => 'warn',
-			detail => 'heartbeat version is less than ' . $hbversion_threshold . '; upgrade required',
+			detail => 'heartbeat version is less than threshold; upgrade required',
+			threshold => $hbversion_threshold,
 			value => $hbversion, %message_options
 		);
 	} else {
@@ -592,7 +593,8 @@ sub check_onchainheartbeat {
 	} elsif ($memory) {
 		$self->add_message(
 			kind => 'warn',
-			detail => 'memory is less than ' . $memory_threshold,
+			detail => 'memory is less than threshold',
+			threshold => $memory_threshold,
 			value => $memory,
 			%message_options
 		);
@@ -618,7 +620,8 @@ sub check_onchainheartbeat {
 	} elsif ($database) {
 		$self->add_message(
 			kind => 'warn',
-			detail => 'database size is less than ' . $database_threshold,
+			detail => 'database size is less than threshold',
+			threshold => $database_threshold,
 			value => $database,
 			%message_options
 		);
@@ -645,14 +648,16 @@ sub check_onchainheartbeat {
 	} elsif ($interval < $interval_threshold1) {
 		$self->add_message(
 			kind => 'warn',
-			detail => 'interval size is less than ' . $interval_threshold1 . '; updates can be less frequent',
+			detail => 'interval size is less than threshold; updates can be less frequent',
+			threshold => $interval_threshold1,
 			value => $interval,
 			%message_options
 		);
 	} elsif ($interval > $interval_threshold2) {
 		$self->add_message(
 			kind => 'warn',
-			detail => 'interval size is greater than ' . $interval_threshold2 . '; updates should be more frequent',
+			detail => 'interval size is greater than threshold; updates should be more frequent',
+			threshold => $interval_threshold2,
 			value => $interval,
 			%message_options
 		);
