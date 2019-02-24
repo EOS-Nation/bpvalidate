@@ -1187,7 +1187,7 @@ sub validate_history_api {
 		extra_check => 'validate_history_api_extra_check',
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
-		dupe => 'skip',
+		dupe => 'info',
 		timeout => 2,
 		%options
 	);
