@@ -3167,6 +3167,8 @@ sub check_response_errors {
 
 #	print Dumper $res->headers;
 
+	my $errors = 0;
+
 	# ---------- duplicate response hosts
 
 	if (@response_host > 1) {
@@ -3176,23 +3178,32 @@ sub check_response_errors {
 			value => join (', ', @response_host),
 			%options
 		);
-		return undef;
+		$errors++;
 	}
 
 	# --------- response_host == api?
 
-	my $response_host = join (', ', @response_host);
-	my $check = "//$response_host";
-	my $api_url = $options{api_url};
+	if (@response_host == 1) {
+		my $response_host = join (', ', @response_host);
+		my $check = "//$response_host";
+		my $api_url = $options{api_url};
 
-	if ($api_url =~ /$check/) {
-		# ok
-	} else {
-		$self->add_message(
-			kind => 'warn',
-			detail => 'response host does not match queried host',
-			%options
-		);
+		if ($api_url =~ /$check/) {
+			# ok
+		} else {
+			$self->add_message(
+				kind => 'warn',
+				detail => 'response host does not match queried host',
+				%options
+			);
+			$errors++;
+		}
+	}
+
+	# ---------- done
+
+	if ($errors) {
+		return undef;
 	}
 
 	return 1;
