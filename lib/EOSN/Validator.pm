@@ -2544,6 +2544,7 @@ sub test_block_one {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'block one test passed',
+		post_data => $post_data,
 		%options
 		);
 
@@ -2577,6 +2578,7 @@ sub test_patreonous {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'patreonous filter test passed',
+		post_data => $post_data,
 		%options
 	);
 
@@ -2612,6 +2614,7 @@ sub test_error_message {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'verbose errors test passed',
+		post_data => $post_data,
 		%options
 	);
 
@@ -2647,6 +2650,7 @@ sub test_abi_serializer {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'abi serializer test passed',
+		post_data => $post_data,
 		%options
 	);
 
@@ -2684,6 +2688,7 @@ sub test_history_transaction {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'get_transaction history test passed',
+		post_data => $post_data,
 		%options
 	);
 
@@ -2721,6 +2726,7 @@ sub test_history_actions {
 		$self->add_message(
 			kind => 'err',
 			detail => 'invalid JSON response',
+			post_data => $post_data,
 			%options
 		);
 		return undef;
@@ -2758,6 +2764,7 @@ sub test_history_actions {
 			kind => 'err',
 			detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past',
 			value => $block_time,
+			post_data => $post_data,
 			%options
 		);
 		return undef;
@@ -2766,6 +2773,7 @@ sub test_history_actions {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'get_actions history test passed',
+		post_data => $post_data,
 		%options
 		);
 
@@ -2823,6 +2831,7 @@ sub test_history_key_accounts {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'get_key_accounts history test passed',
+		post_data => $post_data,
 		%options
 	);
 
@@ -2861,6 +2870,7 @@ sub test_system_symbol {
 		$self->add_message(
 			kind => 'err',
 			detail => 'code compiled with incorrect symbol',
+			post_data => $post_data,
 			%options
 		);
 		return undef;
@@ -2868,6 +2878,7 @@ sub test_system_symbol {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'basic symbol test passed',
+		post_data => $post_data,
 		%options
 	);
 
@@ -2970,6 +2981,7 @@ sub test_regproducer_key {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'regproducer signing key test passed',
+		post_data => $post_data,
 		%options
 	);
 
