@@ -711,9 +711,7 @@ sub check_onchainheartbeat {
 	my $version = $$chain_json{version_string};
 
 	if ($version) {
-		# remove any local suffixes
-		$version =~ s/-dirty//;
-		$version =~ s/-\d\d-[a-z0-9]*$//;
+		$version = $self->version_cleanup ($version);
 	} else {
 		$self->add_message(
 			kind => 'crit',
@@ -2012,9 +2010,7 @@ sub validate_basic_api_extra_check {
 		);
 		$errors++;
 	} else {
-		# remove any local suffixes
-		$server_version =~ s/-dirty//;
-		$server_version =~ s/-\d\d-[a-z0-9]*$//;
+		$server_version = $self->version_cleanup ($server_version);
 
 		if (! $$versions{$server_version}) {
 			$self->add_message(
@@ -3207,6 +3203,18 @@ sub check_response_errors {
 	}
 
 	return 1;
+}
+
+sub version_cleanup {
+	my ($self, $version) = @_;
+
+	return undef if (! defined $version);
+
+	$version =~ s/-dirty//;
+	$version =~ s/-\d\d-[a-z0-9]*$//;
+	$version =~ s/-[a-z]*$//;
+
+	return $version;
 }
 
 1;
