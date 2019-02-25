@@ -24,6 +24,9 @@ check_ok,OK,OK
 check_warn,Warning,警告
 check_err,Error,错误
 check_crit,Critical,批评
+check_bonus_history,OK,OK
+check_bonus_heartbeat,OK,OK
+check_bonus_chains,OK,OK
 bp_top21,Top 21 BP,前21名BP
 bp_standby,Paid Standby BP,有报酬的备选节点
 bp_other,Not-Paid Standby BP,无报酬的备选节点
