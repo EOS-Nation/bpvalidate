@@ -244,15 +244,16 @@ sub run_validate {
 
 	if ($location_check eq 'country') {
 		my $country = $self->validate_country_n (country => $location, class => 'regproducer');
-		if ($country) {
-			$self->{results}{info}{country_number} = $country;
-			my $countryx = code2country($country, LOCALE_CODE_NUMERIC);
-			if ($countryx) {
-				$self->{results}{info}{country_name} = $countryx;
-				my $alpha = country_code2code($country, LOCALE_CODE_NUMERIC, LOCALE_CODE_ALPHA_2);
-				$self->{results}{info}{country_alpha2} = $alpha;
-			}
-		}
+		# country is not used for anything... see the one in the bpjson
+		#if ($country) {
+		#	$self->{results}{info}{country_number} = $country;
+		#	my $countryx = code2country($country, LOCALE_CODE_NUMERIC);
+		#	if ($countryx) {
+		#		$self->{results}{info}{country_name} = $countryx;
+		#		my $alpha = country_code2code($country, LOCALE_CODE_NUMERIC, LOCALE_CODE_ALPHA_2);
+		#		$self->{results}{info}{country_alpha2} = $alpha;
+		#	}
+		#}
 	} elsif ($location_check eq 'timezone') {
 		if ($location !~ /^\d+/) {
 			$self->add_message(
@@ -346,7 +347,7 @@ sub run_validate {
 			);
 			$new_filename =~ s#^/##;
 			$bpjson_filename = $new_filename;
-			print ">>> CHAINS JSON: count=<$count> url=<$xurl/$new_filename>\n";
+			#print ">>> CHAINS JSON: count=<$count> url=<$xurl/$new_filename>\n";
 		} else {
 			$self->add_message(
 				kind => 'err',
@@ -784,11 +785,21 @@ sub check_org_location {
 		field => 'org.location.name',
 		class => 'org'
 	);
-	$self->validate_location(
+	my $results = $self->validate_location(
 		location => $$json{org}{location},
 		field => 'org.location',
 		class => 'org'
 	);
+
+	if ($$results{country}) {
+		my $country = $$results{country};
+		my $country_name = code2country($country, LOCALE_CODE_ALPHA_2);
+		if ($country_name) {
+			print ">>> country_name=<$country_name> country_abbreviation=<$country>\n";
+			$self->{results}{info}{country_name} = $country_name;
+			$self->{results}{info}{country_alpha2} = lc($country);
+		}
+	}
 }
 
 sub check_org_misc {
