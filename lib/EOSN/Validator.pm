@@ -3192,6 +3192,7 @@ sub check_response_errors {
 			$self->add_message(
 				kind => 'warn',
 				detail => 'response host does not match queried host',
+				response_host => $response_host,
 				%options
 			);
 			$errors++;
