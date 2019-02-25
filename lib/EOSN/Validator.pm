@@ -2545,8 +2545,6 @@ sub test_block_one {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'block one test passed',
-		post_data => $post_data,
-		response_host => $response_host,
 		%options
 		);
 
@@ -2584,8 +2582,6 @@ sub test_patreonous {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'patreonous filter test passed',
-		post_data => $post_data,
-		response_host => $response_host,
 		%options
 	);
 
@@ -2625,8 +2621,6 @@ sub test_error_message {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'verbose errors test passed',
-		post_data => $post_data,
-		response_host => $response_host,
 		%options
 	);
 
@@ -2637,37 +2631,37 @@ sub test_abi_serializer {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/chain/get_block';
 
-	my $test_big_block = $self->{chain_properties}{test_big_block} || die "$0: test_big_block is undefined in chains.csv";
+	my $big_blocks = $self->{chain_properties}{test_big_block} || die "$0: test_big_block is undefined in chains.csv";
 
-	my $post_data = '{"json": true, "block_num_or_id": ' . $test_big_block . '}';
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
-	my $status_code = $res->code;
-	my $status_message = $res->status_line;
-	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	foreach my $big_block (split (/,/, $big_blocks)) {
+		my $post_data = '{"json": true, "block_num_or_id": ' . $big_block . '}';
+		my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
+		$self->ua->timeout(10);
+		my $res = $self->ua->request($req);
+		my $status_code = $res->code;
+		my $status_message = $res->status_line;
+		my $response_url = $res->request->uri;
+		my $response_host = $res->header('host');
 
-	$self->check_response_errors (response => $res, %options);
+		$self->check_response_errors (response => $res, %options);
 
-	if (! $res->is_success) {
-		$self->add_message(
-			kind => 'err',
-			detail => 'error retriving large block',
-			value => $status_message,
-			post_data => $post_data,
-			response_host => $response_host,
-			explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)',
-			%options
-		);
-		return undef;
+		if (! $res->is_success) {
+			$self->add_message(
+				kind => 'err',
+				detail => 'error retriving large block',
+				value => $status_message,
+				post_data => $post_data,
+				response_host => $response_host,
+				explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)',
+				%options
+			);
+			return undef;
+		}
 	}
 
 	$self->add_message(
 		kind => 'ok',
 		detail => 'abi serializer test passed',
-		post_data => $post_data,
-		response_host => $response_host,
 		%options
 	);
 
@@ -2678,39 +2672,39 @@ sub test_history_transaction {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/history/get_transaction';
 
-	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
+	my $transactions = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
 
-	my $post_data = '{"json": true, "id": "' . $transaction . '"}';
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
-	my $status_code = $res->code;
-	my $status_message = $res->status_line;
-	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
-	my $content = $res->content;
+	foreach my $transaction (split (/,/, $transactions)) {
+		my $post_data = '{"json": true, "id": "' . $transaction . '"}';
+		my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
+		$self->ua->timeout(10);
+		my $res = $self->ua->request($req);
+		my $status_code = $res->code;
+		my $status_message = $res->status_line;
+		my $response_url = $res->request->uri;
+		my $response_host = $res->header('host');
+		my $content = $res->content;
 
-	$self->check_response_errors (response => $res, %options);
+		$self->check_response_errors (response => $res, %options);
 
-	if (! $res->is_success) {
-		$self->add_message(
-			kind => 'crit',
-			detail => 'error retriving transaction history',
-			value => $status_message,
-			explanation => 'edit config.ini to turn on history and replay all blocks',
-			post_data => $post_data,
-			response_host => $response_host,
-			see1 => 'http://t.me/eosfullnodes',
-			%options
-		);
-		return undef;
+		if (! $res->is_success) {
+			$self->add_message(
+				kind => 'crit',
+				detail => 'error retriving transaction history',
+				value => $status_message,
+				explanation => 'edit config.ini to turn on history and replay all blocks',
+				post_data => $post_data,
+				response_host => $response_host,
+				see1 => 'http://t.me/eosfullnodes',
+				%options
+			);
+			return undef;
+		}
 	}
 
 	$self->add_message(
 		kind => 'ok',
 		detail => 'get_transaction history test passed',
-		post_data => $post_data,
-		response_host => $response_host,
 		%options
 	);
 
@@ -2803,8 +2797,6 @@ sub test_history_actions {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'get_actions history test passed',
-		post_data => $post_data,
-		response_host => $response_host,
 		%options
 	);
 
@@ -2868,8 +2860,6 @@ sub test_history_key_accounts {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'get_key_accounts history test passed',
-		post_data => $post_data,
-		response_host => $response_host,
 		%options
 	);
 
@@ -2921,8 +2911,6 @@ sub test_system_symbol {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'basic symbol test passed',
-		post_data => $post_data,
-		response_host => $response_host,
 		%options
 	);
 
