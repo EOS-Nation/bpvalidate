@@ -1822,6 +1822,7 @@ sub validate_connection {
 	}
 
 	$self->add_to_list(host => $peer, %options) if ($options{add_to_list});
+
 	return 1;
 }
 
@@ -3145,7 +3146,8 @@ sub check_duplicates {
 			detail => 'duplicate URL',
 			%options
 		);
-		return undef if ($dupe eq 'err');
+		#return undef if ($dupe eq 'err');
+		return undef;
 	}
 	$self->{urls}{$class}{$url} = 1;
 
