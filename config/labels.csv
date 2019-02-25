@@ -5,6 +5,8 @@ class_regproducer,Regproducer,注册出块节点
 class_org,Organization,机构
 class_endpoint,Endpoints,终端
 class_history,History,历史
+class_heartbeat,Heartbeat,
+class_chains,Chains.json,
 class_ipv6,IPv6,IPv6协议
 class_chain,On-Chain,链上
 class_general_l,General Info Check,基本信息 验证
@@ -12,11 +14,10 @@ class_regproducer_l,Regproducer Check,注册出块节点 验证
 class_org_l,Organization Check,机构 验证
 class_endpoint_l,Endpoints Check,终端 验证
 class_history_l,History Check,历史查询
+class_heartbeat_l,Heartbeat Check,
+class_chains_l,Chains.json Check,
 class_ipv6_l,IPv6 Check,IPv6协议 验证
 class_chain_l,On-Chain Check,链上 验证
-bonus,Bonus Check,奖励查询
-check,Regular Check,常规检查
-check_bonus,Bonus,奖励
 check_skip,Skipped,跳过
 check_info,Information,信息
 check_ok,OK,OK

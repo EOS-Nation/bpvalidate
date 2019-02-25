@@ -311,9 +311,9 @@ sub run_validate {
 
 	my $chains_json = $self->validate_url(
 		url => "$xurl/chains.json",
-		field => "CHAINS JSON",
-		failure_code => 'info',
-		class => 'org',
+		field => 'chains json',
+		failure_code => 'err',
+		class => 'chains',
 		content_type => 'json',
 		cors => 'should',
 		dupe => 'err',
@@ -327,13 +327,13 @@ sub run_validate {
 				kind => 'ok',
 				detail => 'chains found in chains.json',
 				value => $count,
-				class => 'org'
+				class => 'chains'
 			);
 		} else {
 			$self->add_message(
 				kind => 'err',
 				detail => 'no chains found in chains.json',
-				class => 'org'
+				class => 'chains'
 			);
 		}
 		my $new_filename = $$chains_json{chains}{$chain_id};
@@ -342,7 +342,7 @@ sub run_validate {
 				kind => 'ok',
 				detail => 'using chain-specific bp.json',
 				value => $new_filename,
-				class => 'org'
+				class => 'chains'
 			);
 			$new_filename =~ s#^/##;
 			$bpjson_filename = $new_filename;
@@ -351,7 +351,7 @@ sub run_validate {
 			$self->add_message(
 				kind => 'err',
 				detail => 'could not find found chain specific bp.json',
-				class => 'org',
+				class => 'chains',
 				see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json'
 			);
 		}
@@ -483,7 +483,7 @@ sub check_onchainblacklist {
 sub check_onchainheartbeat {
 	my ($self) = @_;
 
-	my %message_options = (contract => 'eosheartbeat', class => 'chain');
+	my %message_options = (contract => 'eosheartbeat', class => 'heartbeat');
 	my $current_memory_mb = (int ($self->{globals}{total_ram_stake} / 1024 / 1024 / 1024) + 2) * 1024;
 
 	my $onchainheartbeat_enabled = $self->{onchainheartbeat_enabled};
