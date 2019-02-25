@@ -795,7 +795,7 @@ sub check_org_location {
 		my $country = $$results{country};
 		my $country_name = code2country($country, LOCALE_CODE_ALPHA_2);
 		if ($country_name) {
-			print ">>> country_name=<$country_name> country_abbreviation=<$country>\n";
+			#print ">>> country_name=<$country_name> country_abbreviation=<$country>\n";
 			$self->{results}{info}{country_name} = $country_name;
 			$self->{results}{info}{country_alpha2} = lc($country);
 		}
