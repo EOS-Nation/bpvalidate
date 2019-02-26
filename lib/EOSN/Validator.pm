@@ -1067,6 +1067,7 @@ sub check_nodes {
 				$valid_basic_api_endpoint++;
 				my $result2 = $self->validate_history_api(
 					api_url => $$node{api_endpoint},
+					history_type => $$node{history_type},
 					field => "node[$node_number].api_endpoint",
 					ssl => 'off',
 					add_to_list => 'nodes/history_http',
@@ -1093,6 +1094,7 @@ sub check_nodes {
 				$valid_basic_ssl_endpoint++;
 				my $result2 = $self->validate_history_api(
 					api_url => $$node{ssl_endpoint},
+					history_type => $$node{history_type},
 					field => "node[$node_number].ssl_endpoint",
 					ssl => 'on',
 					add_to_list => 'nodes/history_https',
@@ -1864,7 +1866,12 @@ sub validate_history_api {
 	my ($self, %options) = @_;
 
 	my $api_url = $options{api_url};
+	my $history_type = $options{history_type};
 	my $field = $options{field};
+
+	if ($history_type && $history_type eq 'none') {
+		return;
+	}
 
 	return $self->validate_url(
 		api_url => $api_url,
