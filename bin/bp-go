@@ -1,44 +1,44 @@
 #!/bin/sh
 
 /etc/init.d/apache2 start
-cp -pra /var/www/html_template/* /var/www/html
+cp -pra /var/www/bpvalidate/html_template/* /var/www/bpvalidate
 
 for chain in mainnet bos
 do
 	echo "setup chain: $chain"
 
-	#rm -r /var/www/html/$chain
+	#rm -r /var/www/bpvalidate/$chain
 	bp-schema --chain=$chain
-	bp-website-chain --chain=$chain --out=/var/www/html/ --config=/etc/bpvalidate/
+	bp-website-chain --chain=$chain --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
 done
 
 echo "generate website"
-bp-website-builder --out=/var/www/html/ --config=/etc/bpvalidate/
+bp-website-builder --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
 
 while [ 1 ]
 do
 	for chain in mainnet bos
 	do
 		echo "running chain: $chain"
-		bp-validate --chain=$chain --versions=/etc/bpvalidate/versions_${chain}.csv --chains=/etc/bpvalidate/chains.csv --output=/var/www/html/$chain/bps.json --limit=1000
-		bp-report-errors --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-producers --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-endpoints --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-node_types --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-resources --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-api-versions --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-country --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-timezone --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-config --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-blacklist --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-producer-version --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-producer-cpu --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-producer-virtualization --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
-		bp-report-producer-hbversion --chain=$chain --input=/var/www/html/$chain/bps.json --out=/var/www/html/ --config=/etc/bpvalidate/
+		bp-validate --chain=$chain --versions=/etc/bpvalidate/versions_${chain}.csv --chains=/etc/bpvalidate/chains.csv --output=/var/www/bpvalidate/$chain/bps.json --limit=1000
+		bp-report-errors --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-producers --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-endpoints --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-node_types --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-resources --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-api-versions --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-country --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-timezone --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-config --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-blacklist --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-producer-version --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-producer-cpu --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-producer-virtualization --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+		bp-report-producer-hbversion --chain=$chain --input=/var/www/bpvalidate/$chain/bps.json --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
 	done
 
 	echo "generate website"
-	bp-website-builder --out=/var/www/html/ --config=/etc/bpvalidate/
+	bp-website-builder --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
 	echo "done"
 
 	sleep 240
