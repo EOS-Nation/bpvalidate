@@ -30,7 +30,7 @@ sub do_copy {
 	my ($from, $to) = @_;
 
 	my $dh;
-	opendir ($dh, $from);
+	opendir ($dh, $from) || die "$0: cannot open dir=<$from>: $!";
 	my @files = grep /\.thtml\./, readdir ($dh);
 	closedir ($dh);
 
