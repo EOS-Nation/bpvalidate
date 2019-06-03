@@ -17,7 +17,7 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $chain = undef;
-my $max_processes = 8;
+my $max_processes = 16;
 my $filter_producer = undef;
 my $outfile = undef;
 my $versionsfile = undef;
