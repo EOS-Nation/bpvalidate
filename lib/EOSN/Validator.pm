@@ -16,6 +16,7 @@ use Date::Parse qw(str2time);
 use Carp qw(confess);
 use Time::Seconds;
 use Text::Diff;
+use Time::HiRes qw(time);
 
 our %content_types;
 $content_types{json} = ['application/json'];
@@ -240,7 +241,7 @@ sub run_validate {
 		return undef;
 	}
 
-	$self->test_regproducer_key (key => $key, class => 'regproducer');
+	$self->test_regproducer_key (key => $key, class => 'regproducer', timeout => 10);
 
 	if ($location_check eq 'country') {
 		my $country = $self->validate_country_n (country => $location, class => 'regproducer');
@@ -302,7 +303,8 @@ sub run_validate {
 		content_type => 'html',
 		cors => 'either',
 		dupe => 'skip',
-		add_to_list => 'resources/regproducer_url'
+		add_to_list => 'resources/regproducer_url',
+		timeout => 10
 	);
 
 	my $xurl = $url;
@@ -319,7 +321,8 @@ sub run_validate {
 		cors => 'should',
 		dupe => 'err',
 		add_to_list => 'resources/chainjson',
-		see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json'
+		see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json',
+		timeout => 10
 	);
 	if ($chains_json) {
 		my $count = scalar (keys %{$$chains_json{chains}});
@@ -369,7 +372,8 @@ sub run_validate {
 		content_type => 'json',
 		cors => 'should',
 		dupe => 'err',
-		add_to_list => 'resources/bpjson'
+		add_to_list => 'resources/bpjson',
+		timeout => 10
 	);
 	return undef if (! $json);
 
@@ -868,7 +872,8 @@ sub check_org_misc {
 		class => 'org',
 		content_type => 'html',
 		add_to_list => 'resources/website',
-		dupe => 'warn'
+		dupe => 'warn',
+		timeout => 10
 	);
 	$self->validate_url(
 		url => $$json{org}{code_of_conduct},
@@ -876,7 +881,8 @@ sub check_org_misc {
 		class => 'org',
 		content_type => 'html',
 		add_to_list => 'resources/conduct',
-		dupe => 'warn'
+		dupe => 'warn',
+		timeout => 10
 	);
 	$self->validate_url(
 		url => $$json{org}{ownership_disclosure},
@@ -884,7 +890,8 @@ sub check_org_misc {
 		class => 'org',
 		content_type => 'html',
 		add_to_list => 'resources/ownership',
-		dupe => 'warn'
+		dupe => 'warn',
+		timeout => 10
 	);
 
 	return 1;
@@ -910,7 +917,8 @@ sub check_org_branding {
 		class => 'org',
 		content_type => 'png_jpg',
 		add_to_list => 'resources/social_logo_256',
-		dupe => 'warn'
+		dupe => 'warn',
+		timeout => 10
 	);
 	$self->validate_url(
 		url => $$json{org}{branding}{logo_1024},
@@ -918,7 +926,8 @@ sub check_org_branding {
 		class => 'org',
 		content_type => 'png_jpg',
 		add_to_list => 'resources/social_logo_1024',
-		dupe => 'warn'
+		dupe => 'warn',
+		timeout => 10
 	);
 	$self->validate_url(
 		url => $$json{org}{branding}{logo_svg},
@@ -926,7 +935,8 @@ sub check_org_branding {
 		class => 'org',
 		content_type => 'svg',
 		add_to_list => 'resources/social_logo_svg',
-		dupe => 'warn'
+		dupe => 'warn',
+		timeout => 10
 	);
 }
 
@@ -970,7 +980,8 @@ sub check_org_social {
 #				class => 'org',
 #				content_type => 'html',
 #				add_to_list => "social/$key",
-#				dupe => 'warn'
+#				dupe => 'warn',
+#				timeout => 10
 #			)) {
 #				next;
 #			}
@@ -1400,7 +1411,6 @@ sub validate_url {
 	my $non_standard_port = $options{non_standard_port}; # true/false
 	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
 	my $failure_code = $options{failure_code} || 'crit'; # any valid options for 'kind'
-	my $timeout = $options{timeout} || 10;
 
 	#print ">> check url=[GET $xurl$url_ext]\n";
 
@@ -1563,19 +1573,15 @@ sub validate_url {
 		confess "unknown ssl option";
 	}
 
-	my $clock = time;
 
 	my $req = HTTP::Request->new('GET', $xurl . $url_ext);
 	$req->header('Origin', 'https://example.com');
 	$req->header("Referer", 'https://validate.eosnation.io');
-	$self->ua->timeout($timeout * 2);
-	my $res = $self->ua->request($req);
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
 	my $response_content_type = $res->content_type;
-
-	my $time = time - $clock;
 
 	if (! $res->is_success) {
 		$self->add_message(
@@ -1585,16 +1591,6 @@ sub validate_url {
 			%options
 		);
 		return undef;
-	}
-
-	if ($time > $timeout) {
-		$self->add_message(
-			kind => 'err',
-			detail => 'response took longer than expected',
-			value => "$time s",
-			target => "$timeout s",
-			%options
-		);
 	}
 
 	my @cors_headers = $res->header('Access-Control-Allow-Origin');
@@ -2061,25 +2057,25 @@ sub validate_basic_api_extra_check {
 		}
 	}
 
-	if (! $self->test_block_one (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_block_one (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_patreonous (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_patreonous (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_error_message (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_error_message (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_abi_serializer (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_abi_serializer (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_system_symbol (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_system_symbol (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_producer_api (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_producer_api (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_net_api (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_net_api (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2104,13 +2100,13 @@ sub validate_history_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	if (! $self->test_history_transaction (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_transaction (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_actions (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_key_accounts (api_url => $url, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_key_accounts (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2536,11 +2532,10 @@ sub validate_country_n {
 sub test_block_one {
 	my ($self, %options) = @_;
 	$options{api_url} .= "/v1/chain/get_block";
+	$options{post_data} = '{"block_num_or_id": "1", "json": true}';
 
-	my $post_data = '{"block_num_or_id": "1", "json": true}';
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
@@ -2553,7 +2548,6 @@ sub test_block_one {
 			kind => 'crit',
 			detail => 'invalid block one',
 			value => $status_message,
-			post_data => $post_data,
 			response_host => $response_host,
 			%options
 		);
@@ -2572,11 +2566,10 @@ sub test_block_one {
 sub test_patreonous {
 	my ($self, %options) = @_;
 	$options{api_url} .= "/v1/chain/get_table_rows";
+	$options{post_data} = '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}';
 
-	my $post_data = '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}';
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
@@ -2589,7 +2582,6 @@ sub test_patreonous {
 			kind => 'crit',
 			detail => 'invalid patreonous filter message',
 			value => $status_message,
-			post_data => $post_data,
 			response_host => $response_host,
 			see1 => 'https://github.com/EOSIO/patroneos/issues/36',
 			%options
@@ -2609,11 +2601,10 @@ sub test_patreonous {
 sub test_error_message {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/chain/validate_error_message';
+	$options{post_data} = '{"json": true}';
 
-	my $post_data = '{"json": true}';
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
@@ -2627,7 +2618,6 @@ sub test_error_message {
 	if ((ref $$json{error}{details} ne 'ARRAY') || (scalar (@{$$json{error}{details}}) == 0)) {
 		$self->add_message(
 			kind => 'err',
-			post_data => $post_data,
 			response_host => $response_host,
 			detail => 'detailed error messages not returned',
 			explanation => 'edit config.ini to set verbose-http-errors = true',
@@ -2652,10 +2642,10 @@ sub test_abi_serializer {
 	my $big_blocks = $self->{chain_properties}{test_big_block} || die "$0: test_big_block is undefined in chains.csv";
 
 	foreach my $big_block (split (/,/, $big_blocks)) {
-		my $post_data = '{"json": true, "block_num_or_id": ' . $big_block . '}';
-		my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-		$self->ua->timeout(10);
-		my $res = $self->ua->request($req);
+		$options{post_data} = '{"json": true, "block_num_or_id": ' . $big_block . '}';
+
+		my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+		my $res = $self->run_request ($req, \%options);
 		my $status_code = $res->code;
 		my $status_message = $res->status_line;
 		my $response_url = $res->request->uri;
@@ -2668,7 +2658,6 @@ sub test_abi_serializer {
 				kind => 'err',
 				detail => 'error retriving large block',
 				value => $status_message,
-				post_data => $post_data,
 				response_host => $response_host,
 				explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)',
 				%options
@@ -2693,10 +2682,9 @@ sub test_history_transaction {
 	my $transactions = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
 
 	foreach my $transaction (split (/,/, $transactions)) {
-		my $post_data = '{"json": true, "id": "' . $transaction . '"}';
-		my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-		$self->ua->timeout(10);
-		my $res = $self->ua->request($req);
+		$options{post_data} = '{"json": true, "id": "' . $transaction . '"}';
+		my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+		my $res = $self->run_request ($req, \%options);
 		my $status_code = $res->code;
 		my $status_message = $res->status_line;
 		my $response_url = $res->request->uri;
@@ -2711,7 +2699,6 @@ sub test_history_transaction {
 				detail => 'error retriving transaction history',
 				value => $status_message,
 				explanation => 'edit config.ini to turn on history and replay all blocks',
-				post_data => $post_data,
 				response_host => $response_host,
 				see1 => 'http://t.me/eosfullnodes',
 				%options
@@ -2732,11 +2719,10 @@ sub test_history_transaction {
 sub test_history_actions {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/history/get_actions';
+	$options{post_data} = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
 
-	my $post_data = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
@@ -2750,7 +2736,6 @@ sub test_history_actions {
 			kind => 'crit',
 			detail => 'error retriving actions history',
 			value => $status_message,
-			post_data => $post_data,
 			response_host => $response_host,
 			explanation => 'edit config.ini to turn on history and replay all blocks',
 			see1 => 'http://t.me/eosfullnodes',
@@ -2764,7 +2749,6 @@ sub test_history_actions {
 		$self->add_message(
 			kind => 'err',
 			detail => 'invalid JSON response',
-			post_data => $post_data,
 			response_host => $response_host,
 			%options
 		);
@@ -2805,7 +2789,6 @@ sub test_history_actions {
 			kind => 'err',
 			detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past',
 			value => $block_time,
-			post_data => $post_data,
 			response_host => $response_host,
 			%options
 		);
@@ -2823,14 +2806,13 @@ sub test_history_actions {
 
 sub test_history_key_accounts {
 	my ($self, %options) = @_;
-	$options{api_url} .= '/v1/history/get_key_accounts';
 
 	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
+	$options{api_url} .= '/v1/history/get_key_accounts';
+	$options{post_data} = '{"json": true, "public_key": "' . $public_key . '"}';
 
-	my $post_data = '{"json": true, "public_key": "' . $public_key . '"}';
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
@@ -2844,7 +2826,6 @@ sub test_history_key_accounts {
 			kind => 'crit',
 			detail => 'error retriving key_accounts history',
 			value => $status_message,
-			post_data => $post_data,
 			response_host => $response_host,
 			explanation => 'edit config.ini to turn on history and replay all blocks',
 			see1 => 'http://t.me/eosfullnodes',
@@ -2858,7 +2839,6 @@ sub test_history_key_accounts {
 		$self->add_message(
 			kind => 'err',
 			detail => 'invalid JSON response (array)',
-			post_data => $post_data,
 			response_host => $response_host,
 			%options
 		);
@@ -2868,7 +2848,6 @@ sub test_history_key_accounts {
 		$self->add_message(
 			kind => 'err',
 			detail => 'invalid JSON response',
-			post_data => $post_data,
 			response_host => $response_host,
 			%options
 		);
@@ -2886,15 +2865,14 @@ sub test_history_key_accounts {
 
 sub test_system_symbol {
 	my ($self, %options) = @_;
-	$options{api_url} .= '/v1/chain/get_currency_balance';
 
 	my $core_symbol = $self->{chain_properties}{core_symbol} || die "$0: core_symbol is undefined in chains.csv";
 	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.csv";
+	$options{api_url} .= '/v1/chain/get_currency_balance';
+	$options{post_data} = '{"json": true, "account": "' . $test_account . '", "code":"eosio.token", "symbol": "' . $core_symbol . '"}';
 
-	my $post_data = '{"json": true, "account": "' . $test_account . '", "code":"eosio.token", "symbol": "' . $core_symbol . '"}';
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $post_data);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
+	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
@@ -2908,7 +2886,6 @@ sub test_system_symbol {
 			kind => 'err',
 			detail => 'error retriving symbol',
 			value => $status_message,
-			post_data => $post_data,
 			response_host => $response_host,
 			%options
 		);
@@ -2920,7 +2897,6 @@ sub test_system_symbol {
 		$self->add_message(
 			kind => 'err',
 			detail => 'code compiled with incorrect symbol',
-			post_data => $post_data,
 			response_host => $response_host,
 			%options
 		);
@@ -2940,8 +2916,7 @@ sub test_net_api {
 	$options{api_url} .= '/v1/net/connections';
 
 	my $req = HTTP::Request->new('GET', $options{api_url}, undef);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
@@ -2975,8 +2950,7 @@ sub test_producer_api {
 	$options{api_url} .= '/v1/producer/get_integrity_hash';
 
 	my $req = HTTP::Request->new('GET', $options{api_url}, undef);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
@@ -3009,13 +2983,11 @@ sub test_regproducer_key {
 	my ($self, %options) = @_;
 
 	my $key = $options{key};
-#	my $url = 'https://api.eosn.io/v1/history/get_key_accounts';
 	my $url = 'http://eos.greymass.com/v1/history/get_key_accounts';
-
 	my $post_data = '{"json": true, "public_key": "' . $key . '"}';
+
 	my $req = HTTP::Request->new('POST', $url, undef, $post_data);
-	$self->ua->timeout(10);
-	my $res = $self->ua->request($req);
+	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
@@ -3224,6 +3196,31 @@ sub version_cleanup {
 	$version =~ s/-[a-z]*$//;
 
 	return $version;
+}
+
+sub run_request {
+	my ($self, $req, $options) = @_;
+
+	my $clock = time;
+
+	my $timeout = $$options{timeout} || confess "$0: timeout not provided";
+	$self->ua->timeout($timeout * 2);
+	my $res = $self->ua->request($req);
+
+	my $time = time - $clock;
+	$$options{elapsed_time} = sprintf ("%.1f", $time);
+
+	print $req->method . ' ' . $req->uri . ': ' . sprintf ("%.2f", $time) . "\n";
+
+	if ($time > $timeout) {
+		$self->add_message(
+			kind => 'err',
+			detail => 'response took longer than expected',
+			%$options
+		);
+	}
+
+	return $res;
 }
 
 1;

@@ -300,7 +300,8 @@ sub generate_message {
 	my $count = $$options{count};
 	my $value = $$options{value};
 	my $suggested_value = $$options{suggested_value};
-	my $target = $$options{target};
+	my $timeout = $$options{timeout};
+	my $elapsed_time = $$options{elapsed_time};
 	my $kind = $$options{kind} || confess "missing kind";
 	my $detail = $$options{detail} || confess "missing detail";
 	my $threshold = $$options{threshold};
@@ -331,11 +332,13 @@ sub generate_message {
 		$response_url = undef if ($url eq $response_url);
 	}
 
+	$timeout .= ' s' if ($timeout);
+	$elapsed_time .= ' s' if ($elapsed_time);
+
 	$detail .= format_message_entry ('threshold', $threshold, 0, $content_type);
 	$detail .= format_message_entry ('count', $count, 0, $content_type);
 	$detail .= format_message_entry ('value', $value, 0, $content_type);
 	$detail .= format_message_entry ('suggested to use value', $suggested_value, 0, $content_type);
-	$detail .= format_message_entry ('target', $target, 0, $content_type);
 	$detail .= format_message_entry ('field', $field, 0, $content_type);
 	$detail .= format_message_entry ('contract', $contract, 0, $content_type);
 	$detail .= format_message_entry ('having node_type', $node_type, 0, $content_type);
@@ -349,6 +352,8 @@ sub generate_message {
 	$detail .= format_message_entry ('ip', $ip, 0, $content_type);
 	$detail .= format_message_entry ('dns', $dns, 0, $content_type);
 	$detail .= format_message_entry ('port', $port, 0, $content_type);
+	$detail .= format_message_entry ('elapsed time', $elapsed_time, 0, $content_type);
+	$detail .= format_message_entry ('timeout', $timeout, 0, $content_type);
 	$detail .= format_message_entry ('explanation', $explanation, 0, $content_type);
 	$detail .= format_message_entry ('see', $see1, 1, $content_type);
 	$detail .= format_message_entry ('see', $see2, 1, $content_type);
