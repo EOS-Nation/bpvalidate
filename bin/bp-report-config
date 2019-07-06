@@ -15,6 +15,7 @@ $map{bnet} = 'bnet-connect';
 
 my $data = get_report_options ();
 my $chain = chain ();
+my $properties = chain_properties ($chain);
 my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {

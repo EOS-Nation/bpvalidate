@@ -11,6 +11,7 @@ binmode(STDOUT, ":utf8");
 
 my $data = get_report_options ();
 my $chain = chain ();
+my $properties = chain_properties ($chain);
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
