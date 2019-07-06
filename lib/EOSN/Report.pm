@@ -13,6 +13,7 @@ our $chain = undef;
 our $infile = undef;
 our $outdir = undef;
 our $confdir = undef;
+
 our %icons;
 $icons{none} = '<!-- none -->';
 $icons{bonus_history} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
@@ -31,6 +32,7 @@ $icons{bp_other} = '<span class="icon is-medium has-text-grey"><i class="fas fa-
 
 our $labels;
 our $languages;
+our $chains;
 our $producers;
 
 # --------------------------------------------------------------------------
@@ -40,12 +42,16 @@ sub content_types {
 	return ('txt', 'html');
 }
 
+sub labels {
+	return $labels;
+}
+
 sub languages {
 	return keys %$languages;
 }
 
-sub labels {
-	return $labels;
+sub chains {
+	return keys %$chains;
 }
 
 sub outdir {
@@ -54,6 +60,12 @@ sub outdir {
 
 sub chain {
 	return $chain;
+}
+
+sub chain_properties {
+	my ($chain) = @_;
+
+	return $$chains{$chain};
 }
 
 # --------------------------------------------------------------------------
@@ -69,6 +81,7 @@ sub get_report_options {
 
 	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
 	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
+	$chains = read_csv_hash ("$confdir/chains.csv", 'name');
 	return from_json(read_file($infile) || confess "$0: no data read");
 }
 
@@ -80,6 +93,7 @@ sub get_report_options_website {
 
 	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
 	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
+	$chains = read_csv_hash ("$confdir/chains.csv", 'name');
 	return undef;
 }
 
@@ -92,6 +106,7 @@ sub get_report_options_chain {
 
 	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
 	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
+	$chains = read_csv_hash ("$confdir/chains.csv", 'name');
 	return undef;
 }
 
