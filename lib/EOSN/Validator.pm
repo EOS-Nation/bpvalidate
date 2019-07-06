@@ -2639,7 +2639,7 @@ sub test_abi_serializer {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/chain/get_block';
 
-	my $big_blocks = $self->{chain_properties}{test_big_block} || die "$0: test_big_block is undefined in chains.csv";
+	my $big_blocks = $self->{chain_properties}{test_big_block} || return; # test_big_block is undefined in chains.csv
 
 	foreach my $big_block (split (/,/, $big_blocks)) {
 		$options{post_data} = '{"json": true, "block_num_or_id": ' . $big_block . '}';
