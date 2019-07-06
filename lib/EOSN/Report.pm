@@ -16,9 +16,12 @@ our $confdir = undef;
 
 our %icons;
 $icons{none} = '<!-- none -->';
+$icons{bonus_blacklist} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-mask"></i></span>';
+$icons{bonus_bpjson} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cog"></i></span>';
 $icons{bonus_history} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
 $icons{bonus_heartbeat} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-heartbeat"></i></span>';
 $icons{bonus_chains} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-link"></i></span>';
+$icons{bonus_ipv6} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cloud"></i></span>';
 $icons{skip} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-ban"></i></span>';
 $icons{info} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-info-circle"></i></span>';
 $icons{ok} = '<span class="icon is-medium has-text-success"><i class="fas fa-lg fa-check-square"></i></span>';
@@ -66,6 +69,19 @@ sub chain_properties {
 	my ($chain) = @_;
 
 	return $$chains{$chain};
+}
+
+sub classes {
+	my @classes_available = (qw (regproducer org endpoint blacklist bpjson history heartbeat chains ipv6));
+	my @classes_configured = ();
+
+	foreach my $class (@classes_available) {
+		next if (! exists $$chains{$chain}{"class_$class"});
+		next if (! $$chains{$chain}{"class_$class"});
+		push (@classes_configured, $class);
+	}
+
+	return @classes_configured;
 }
 
 # --------------------------------------------------------------------------

@@ -403,7 +403,7 @@ sub run_validate {
 sub check_onchainbpjson {
 	my ($self) = @_;
 
-	my %message_options = (contract => 'producerjson', class => 'chain');
+	my %message_options = (contract => 'producerjson', class => 'bpjson');
 
 	my $onchainbpjson_enabled = $self->{onchainbpjson_enabled};
 	my $onchainbpjson_data = $self->{onchainbpjson_data};
@@ -455,7 +455,7 @@ sub check_onchainbpjson {
 sub check_onchainblacklist {
 	my ($self) = @_;
 
-	my %message_options = (contract => 'theblacklist', class => 'chain');
+	my %message_options = (contract => 'theblacklist', class => 'blacklist');
 
 	my $onchainblacklist_enabled = $self->{onchainblacklist_enabled};
 	my $onchainblacklist_data = $self->{onchainblacklist_data};

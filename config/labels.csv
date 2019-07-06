@@ -1,32 +1,38 @@
 key,label_en,label_zh
 format_datetime,%Y-%m-%d %R %Z,%Y年%m月%d日 %R %Z
+
 class_general,General Info,基本信息
 class_regproducer,Regproducer,注册出块节点
 class_org,Organization,机构
 class_endpoint,Endpoints,终端
+class_blacklist,Blacklist,
+class_bpjson,bp.json On-Chain,
 class_history,History,历史
 class_heartbeat,Heartbeat,心跳
 class_chains,Chains.json,Chains.json
 class_ipv6,IPv6,IPv6协议
-class_chain,On-Chain,链上
 class_general_l,General Info Check,基本信息 验证
 class_regproducer_l,Regproducer Check,注册出块节点 验证
 class_org_l,Organization Check,机构 验证
 class_endpoint_l,Endpoints Check,终端 验证
 class_history_l,History Check,历史 验证
+class_blacklist_l,Blacklist Check,
+class_bpjson_l,bp.json On-Chain Check,
 class_heartbeat_l,Heartbeat Check,心跳 验证
 class_chains_l,Chains.json Check,Chains.json 验证
 class_ipv6_l,IPv6 Check,IPv6协议 验证
-class_chain_l,On-Chain Check,链上 验证
 check_skip,Skipped,跳过
 check_info,Information,信息
 check_ok,OK,OK
 check_warn,Warning,警告
 check_err,Error,错误
 check_crit,Critical,批评
+check_bonus_blacklist,OK,OK
+check_bonus_bpjson,OK,OK
 check_bonus_history,OK,OK
 check_bonus_heartbeat,OK,OK
 check_bonus_chains,OK,OK
+check_bonus_ipv6,OK,OK
 bp_top21,Top 21 BP,前21名BP
 bp_standby,Paid Standby BP,有报酬的备选节点
 bp_other,Not-Paid Standby BP,无报酬的备选节点

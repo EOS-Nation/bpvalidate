@@ -12,10 +12,12 @@ my %handler;
 $handler{regproducer} = 'regular';
 $handler{org} = 'regular';
 $handler{endpoint} = 'regular';
-$handler{chain} = 'regular';
+$handler{blacklist} = 'bonus';
+$handler{bpjson} = 'bonus';
 $handler{history} = 'bonus';
 $handler{heartbeat} = 'bonus';
 $handler{chains} = 'bonus';
+$handler{ipv6} = 'bonus';
 
 # --------------------------------------------------------------------------
 # Main
@@ -24,6 +26,7 @@ my $data = get_report_options ();
 my $chain = chain ();
 my $labels = labels ();
 my $properties = chain_properties ($chain);
+my @classes = classes ();
 
 foreach my $lang (languages()) {
 	foreach my $content_type (content_types()) {
@@ -58,7 +61,7 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 
 	my $check = 0;
 	my $msgsummary = $$entry{message_summary};
-	foreach my $key (qw (regproducer org endpoint chain history heartbeat chains)) {
+	foreach my $key (@classes) {
 		if (exists $$msgsummary{$key} && $$msgsummary{$key} eq 'ok') {
 			$check++;
 		}
@@ -87,7 +90,7 @@ foreach my $lang (languages) {
 		my %results;
 
 		my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
-		foreach my $key (qw (regproducer org endpoint chain history heartbeat chains)) {
+		foreach my $key (@classes) {
 			if ($handler{$key} eq 'regular') {
 				$msgsummary{$key} = sev_html($msgsummary{$key} || 'skip', $key, $lang);
 			} elsif ($handler{$key} eq 'bonus') {
@@ -125,12 +128,14 @@ foreach my $lang (languages) {
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{regproducer}</div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{org}</div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{endpoint}</div>\n");
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{chain}</div>\n");
 		push (@report, "</div>\n");
 		push (@report, "<div>\n");
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{history}</div>\n");
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{heartbeat}</div>\n");
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{chains}</div>\n");
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{blacklist}</div>\n") if ($$properties{class_blacklist});
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{bpjson}</div>\n") if ($$properties{class_bpjson});
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{history}</div>\n") if ($$properties{class_history});
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{heartbeat}</div>\n") if ($$properties{class_heartbeat});
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{chains}</div>\n") if ($$properties{class_chains});
+		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{ipv6}</div>\n") if ($$properties{class_ipv6});
 		push (@report, "</div>\n");
 		push (@report, "<div>$producer_name_html</div>\n");
 		push (@report, "</div>\n");
@@ -160,7 +165,7 @@ foreach my $lang (languages) {
 			push (@{$results{tags}}, 'other_y');
 		}
 
-		foreach my $key (qw (regproducer org endpoint chain history heartbeat chains)) {
+		foreach my $key (@classes) {
 			if (exists $$entry{message_summary}{$key} && (($$entry{message_summary}{$key} eq 'ok') || ($$entry{message_summary}{$key} eq 'info'))) {
 					push (@{$results{tags}}, $key . '_y');
 				} else {
@@ -187,10 +192,12 @@ foreach my $lang (languages) {
 	push (@form, checkbox('regproducer', sev_html('check', undef, $lang) . ' ' . label('class_regproducer_l', $lang), $lang));
 	push (@form, checkbox('org', sev_html('check', undef, $lang) . ' ' . label('class_org_l', $lang), $lang));
 	push (@form, checkbox('endpoint', sev_html('check', undef, $lang) . ' ' . label('class_endpoint_l', $lang), $lang));
-	push (@form, checkbox('chain', sev_html('check', undef, $lang) . ' ' . label('class_chain_l', $lang), $lang));
-	push (@form, checkbox('history', sev_html('bonus_history', undef, $lang) . ' ' . label('class_history_l', $lang), $lang));
-	push (@form, checkbox('heartbeat', sev_html('bonus_heartbeat', undef, $lang) . ' ' . label('class_heartbeat_l', $lang), $lang));
-	push (@form, checkbox('chains', sev_html('bonus_chains', undef, $lang) . ' ' . label('class_chains_l', $lang), $lang));
+	push (@form, checkbox('blacklist', sev_html('bonus_blacklist', undef, $lang) . ' ' . label('class_blacklist_l', $lang), $lang)) if ($$properties{class_blacklist});
+	push (@form, checkbox('bpjson', sev_html('bonus_bpjson', undef, $lang) . ' ' . label('class_bpjson_l', $lang), $lang)) if ($$properties{class_bpjson});
+	push (@form, checkbox('history', sev_html('bonus_history', undef, $lang) . ' ' . label('class_history_l', $lang), $lang)) if ($$properties{class_history});
+	push (@form, checkbox('heartbeat', sev_html('bonus_heartbeat', undef, $lang) . ' ' . label('class_heartbeat_l', $lang), $lang)) if ($$properties{class_heartbeat});
+	push (@form, checkbox('chains', sev_html('bonus_chains', undef, $lang) . ' ' . label('class_chains_l', $lang), $lang)) if ($$properties{class_chains});
+	push (@form, checkbox('ipv6', sev_html('bonus_ipv6', undef, $lang) . ' ' . label('class_ipv6_l', $lang), $lang)) if ($$properties{class_ipv6});
 	push (@form, "</div>\n");
 
 	unshift (@report, @form);
