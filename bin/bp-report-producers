@@ -119,6 +119,7 @@ foreach my $lang (languages) {
 		}
 
 		push (@report, "<div id=\"bp_$producer\" class=\"scorecard\" onclick=\"window.location.href='$producer.html'\">\n");
+		push (@report, "<div><span class=bp_name>$producer_name_html</span></div>\n");
 		push (@report, "<div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$logo</div>\n");
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 28px\">$flag</div>\n");
@@ -137,7 +138,6 @@ foreach my $lang (languages) {
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{chains}</div>\n") if ($$properties{class_chains});
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{ipv6}</div>\n") if ($$properties{class_ipv6});
 		push (@report, "</div>\n");
-		push (@report, "<div>$producer_name_html</div>\n");
 		push (@report, "</div>\n");
 	}
 	push (@report, "</div>\n");

@@ -17,3 +17,7 @@
   color: #ffffff;
   background-image: linear-gradient(180deg,#d66c44 0%,#d18237 100%)
 }
+.bp_name {
+  color: #324856;
+  font-weight: bold;
+}
