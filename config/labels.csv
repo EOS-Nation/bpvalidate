@@ -5,8 +5,8 @@ class_general,General Info,基本信息
 class_regproducer,Regproducer,注册出块节点
 class_org,Organization,机构
 class_endpoint,Endpoints,终端
-class_blacklist,Blacklist,
-class_bpjson,bp.json On-Chain,
+class_blacklist,Blacklist,黑名单
+class_bpjson,bp.json On-Chain,链上bp.json
 class_history,History,历史
 class_heartbeat,Heartbeat,心跳
 class_chains,Chains.json,Chains.json
@@ -16,8 +16,8 @@ class_regproducer_l,Regproducer Check,注册出块节点 验证
 class_org_l,Organization Check,机构 验证
 class_endpoint_l,Endpoints Check,终端 验证
 class_history_l,History Check,历史 验证
-class_blacklist_l,Blacklist Check,
-class_bpjson_l,bp.json On-Chain Check,
+class_blacklist_l,Blacklist Check,黑名单 验证
+class_bpjson_l,bp.json On-Chain Check,链上bp.json 验证
 class_heartbeat_l,Heartbeat Check,心跳 验证
 class_chains_l,Chains.json Check,Chains.json 验证
 class_ipv6_l,IPv6 Check,IPv6协议 验证
