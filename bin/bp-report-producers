@@ -92,12 +92,12 @@ foreach my $lang (languages) {
 		my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
 		foreach my $key (@classes) {
 			if ($handler{$key} eq 'regular') {
-				$msgsummary{$key} = sev_html($msgsummary{$key} || 'skip', $key, $lang);
+				$msgsummary{$key} = sev_html(kind => $msgsummary{$key} || 'skip', class => $key, lang => $lang);
 			} elsif ($handler{$key} eq 'bonus') {
 				if (defined $msgsummary{$key} && ($msgsummary{$key} eq 'ok' || $msgsummary{$key} eq 'info')) {
-					$msgsummary{$key} = sev_html("bonus_$key", $key, $lang);
+					$msgsummary{$key} = sev_html(kind => "bonus_$key", class => $key, lang => $lang);
 				} else {
-					$msgsummary{$key} = sev_html('none', $key, $lang);
+					$msgsummary{$key} = sev_html(kind => 'none', class => $key, lang => $lang);
 				}
 			} else {
 				die "$0: unknown hanndler=<$key>";
@@ -106,11 +106,11 @@ foreach my $lang (languages) {
 
 		my $selected = '';
 		if ($rank <= 21) {
-			$selected = sev_html('bp_top21', undef, $lang);
+			$selected = sev_html(kind => 'bp_top21', class => undef, lang => $lang);
 		} elsif ($votep > 0.5) {
-			$selected = sev_html('bp_standby', undef, $lang);
+			$selected = sev_html(kind => 'bp_standby', class => undef, lang => $lang);
 		} else {
-			$selected = sev_html('bp_other', undef, $lang);
+			$selected = sev_html(kind => 'bp_other', class => undef, lang => $lang);
 		}
 
 		my $flag = '';
@@ -186,18 +186,18 @@ foreach my $lang (languages) {
 
 	my @form;
 	push (@form, "<div>\n");
-	push (@form, checkbox('top21', sev_html('bp_top21', undef, $lang) . ' ' . label('bp_top21', $lang), $lang));
-	push (@form, checkbox('paid', sev_html('bp_standby', undef, $lang) . ' ' . label('bp_standby', $lang), $lang));
-	push (@form, checkbox('other', sev_html('bp_other', undef, $lang) . ' ' . label('bp_other', $lang), $lang));
-	push (@form, checkbox('regproducer', sev_html('check', undef, $lang) . ' ' . label('class_regproducer_l', $lang), $lang));
-	push (@form, checkbox('org', sev_html('check', undef, $lang) . ' ' . label('class_org_l', $lang), $lang));
-	push (@form, checkbox('endpoint', sev_html('check', undef, $lang) . ' ' . label('class_endpoint_l', $lang), $lang));
-	push (@form, checkbox('blacklist', sev_html('bonus_blacklist', undef, $lang) . ' ' . label('class_blacklist_l', $lang), $lang)) if ($$properties{class_blacklist});
-	push (@form, checkbox('bpjson', sev_html('bonus_bpjson', undef, $lang) . ' ' . label('class_bpjson_l', $lang), $lang)) if ($$properties{class_bpjson});
-	push (@form, checkbox('history', sev_html('bonus_history', undef, $lang) . ' ' . label('class_history_l', $lang), $lang)) if ($$properties{class_history});
-	push (@form, checkbox('heartbeat', sev_html('bonus_heartbeat', undef, $lang) . ' ' . label('class_heartbeat_l', $lang), $lang)) if ($$properties{class_heartbeat});
-	push (@form, checkbox('chains', sev_html('bonus_chains', undef, $lang) . ' ' . label('class_chains_l', $lang), $lang)) if ($$properties{class_chains});
-	push (@form, checkbox('ipv6', sev_html('bonus_ipv6', undef, $lang) . ' ' . label('class_ipv6_l', $lang), $lang)) if ($$properties{class_ipv6});
+	push (@form, checkbox('top21', sev_html(kind => 'bp_top21', class => undef, lang => $lang, color => 'bw') . ' ' . label('bp_top21', $lang), $lang));
+	push (@form, checkbox('paid', sev_html(kind => 'bp_standby', class => undef, lang => $lang, color => 'bw') . ' ' . label('bp_standby', $lang), $lang));
+	push (@form, checkbox('other', sev_html(kind => 'bp_other', class => undef, lang => $lang, color => 'bw') . ' ' . label('bp_other', $lang), $lang));
+	push (@form, checkbox('regproducer', sev_html(kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_regproducer_l', $lang), $lang));
+	push (@form, checkbox('org', sev_html(kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_org_l', $lang), $lang));
+	push (@form, checkbox('endpoint', sev_html(kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_endpoint_l', $lang), $lang));
+	push (@form, checkbox('blacklist', sev_html(kind => 'bonus_blacklist', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_blacklist_l', $lang), $lang)) if ($$properties{class_blacklist});
+	push (@form, checkbox('bpjson', sev_html(kind => 'bonus_bpjson', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_bpjson_l', $lang), $lang)) if ($$properties{class_bpjson});
+	push (@form, checkbox('history', sev_html(kind => 'bonus_history', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_history_l', $lang), $lang)) if ($$properties{class_history});
+	push (@form, checkbox('heartbeat', sev_html(kind => 'bonus_heartbeat', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_heartbeat_l', $lang), $lang)) if ($$properties{class_heartbeat});
+	push (@form, checkbox('chains', sev_html(kind => 'bonus_chains', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_chains_l', $lang), $lang)) if ($$properties{class_chains});
+	push (@form, checkbox('ipv6', sev_html(kind => 'bonus_ipv6', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_ipv6_l', $lang), $lang)) if ($$properties{class_ipv6});
 	push (@form, "</div>\n");
 
 	unshift (@report, @form);

@@ -4,16 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>%title%</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.css">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 <link rel="stylesheet" href="/res/flags/flag-icon.css">
+<link rel="stylesheet" href="/res/eosn.css">
 <link rel="stylesheet" href="/res/main3.css">
 <script type="text/javascript" src="/res/main.js"></script>
 </head>
 <body>
-<nav class="navbar is-light" role="navigation" aria-label="main navigation">
+<nav class="navbar" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
-    <a class="navbar-item" href="/">
+    <span class="navbar-item">
+      <a class="navbar-item" href="https://eosnation.io">
+        <img src="/res/logo.png" alt="EOS Nation">
+      </a>
+    </span>
+    <a class="navbar-item has-text-weight-bold" href="/">
       %nav_title%
     </a>
     <a role="button" class="navbar-burger" data-target="navMenu" aria-label="menu" aria-expanded="false">
@@ -24,21 +30,21 @@
   </div>
   <div class="navbar-menu" id="navMenu">
    <div class="navbar-item has-dropdown is-hoverable">
-    <a class="navbar-item">%nav_producers%</a>
+    <a class="navbar-link">%nav_producers%</a>
       <div class="navbar-dropdown">
         <a class="navbar-item" href="/mainnet/producers/">%chain_mainnet%</a>
         <a class="navbar-item" href="/bos/producers/">%chain_bos%</a>
       </div>
     </div>
     <div class="navbar-item has-dropdown is-hoverable">
-      <a class="navbar-item">%nav_reports%</a>
+      <a class="navbar-link">%nav_reports%</a>
       <div class="navbar-dropdown">
         <a class="navbar-item" href="/mainnet/reports/">%chain_mainnet%</a>
         <a class="navbar-item" href="/bos/reports/">%chain_bos%</a>
       </div>
     </div>
     <div class="navbar-item has-dropdown is-hoverable">
-      <a class="navbar-item">%nav_data%</a>
+      <a class="navbar-link">%nav_data%</a>
       <div class="navbar-dropdown">
         <a class="navbar-item" href="/mainnet/data/">%chain_mainnet%</a>
         <a class="navbar-item" href="/bos/data/">%chain_bos%</a>
@@ -55,7 +61,7 @@
 <section class="section">
 <h1 class="title is-1">%h1%</h1>
 %content%</section>
-<footer class="footer is-light">
+<footer class="footer">
 %nav_update%<br>
 %nav_lang%<br>
 %nav_chain%<br>

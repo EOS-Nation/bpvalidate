@@ -33,6 +33,24 @@ $icons{bp_top21} = '<span class="icon is-medium has-text-info"><i class="fas fa-
 $icons{bp_standby} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-battery-half"></i></span>';
 $icons{bp_other} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-battery-empty"></i></span>';
 
+$icons{none_bw} = '<!-- none -->';
+$icons{bonus_blacklist_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-mask"></i></span>';
+$icons{bonus_bpjson_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cog"></i></span>';
+$icons{bonus_history_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+$icons{bonus_heartbeat_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-heartbeat"></i></span>';
+$icons{bonus_chains_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-link"></i></span>';
+$icons{bonus_ipv6_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cloud"></i></span>';
+$icons{skip_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-ban"></i></span>';
+$icons{info_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-info-circle"></i></span>';
+$icons{ok_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-check-square"></i></span>';
+$icons{warn_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
+$icons{err_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
+$icons{crit_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-stop"></i></span>';
+$icons{check_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-check-square"></i></span>';
+$icons{bp_top21_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-full"></i></span>';
+$icons{bp_standby_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-half"></i></span>';
+$icons{bp_other_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-empty"></i></span>';
+
 our $labels;
 our $languages;
 our $chains;
@@ -249,7 +267,7 @@ sub generate_report_thtml {
 					my $value = $$data[$i-1];
 					if ($icons && $i == $icons) {
 						my $classx = $$data[$class - 1];
-						$value = sev_html($value, $classx, $lang);
+						$value = sev_html(kind => $value, class => $classx, lang => $lang);
 					} elsif ($class && $i == $class) {
 						$value = label("class_$value", $lang);
 					} elsif ($href && $i == $href) {
@@ -300,9 +318,17 @@ sub write_report_thtml {
 }
 
 sub sev_html {
-	my ($kind, $class, $lang) = @_;
+	my (%options) = @_;
+
+	my $kind = $options{kind};
+	my $class = $options{class};
+	my $lang = $options{lang};
+	my $color = $options{color};
 
 	my $html = $icons{$kind} || encode_entities ($kind);
+	if ($color) {
+		$html = $icons{"${kind}_${color}"} || encode_entities ($kind);
+	}
 
 	if ($class) {
 		my $title_class = label("class_$class", $lang);

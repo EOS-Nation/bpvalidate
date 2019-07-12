@@ -1,44 +1,19 @@
-ul.bullet, li.bullet {
-  margin-left: 5px;
-  padding-left: 10px;
-}
-li.bullet {
-  list-style: initial;
-}
-section.section {
-  padding: 1rem 1.5rem;
-}
-h1.title.is-1 {
-  font-size: 2rem;
-}
-h2.title.is-2 {
-  font-size: 1.5rem;
-}
-footer.footer {
-  background: #eeeeee;
-}
-.has-text-warning2 {
-  color: orange !important;
-}
 .scorecard {
   display: inline-block;
   margin: 5px;
   padding: 5px;
-  border: solid 1px;
-  border-color: grey;
   width: 250px;
   height: 130px;
   overflow: hidden;
-  background-color: #EEEEEE;
+  background-image: linear-gradient(180deg,#ffffff 0%,#a8a8a8 100%);
 }
 .filtergroup {
   display: inline-block;
   margin: 5px;
   padding: 5px;
-  border: solid 1px;
-  border-color: grey;
   width: 250px;
   height: 70px;
   overflow: hidden;
-  background-color: #EEEEFF;
+  color: #ffffff;
+  background-image: linear-gradient(180deg,#d66c44 0%,#d18237 100%)
 }
