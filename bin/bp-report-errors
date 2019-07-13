@@ -36,6 +36,6 @@ foreach my $lang (languages()) {
 			}
 		}
 
-		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/errors", text => 1, html => 1);
+		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/errors", text => 1, json => 1, html => 1);
 	}
 }

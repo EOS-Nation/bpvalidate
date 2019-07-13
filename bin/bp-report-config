@@ -56,6 +56,6 @@ foreach my $lang (languages()) {
 			push (@report, {name => $kind, rows => \@section, name_prefix => '# ', section_divider => 2});
 		}
 
-		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 0, outfile => "reports/config", text => 1, html => 1);
+		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 0, outfile => "reports/config", text => 1, json => 1, html => 1);
 	}
 }

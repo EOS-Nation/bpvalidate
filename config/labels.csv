@@ -54,6 +54,7 @@ title_reports/producer_virtualization,Producer Virtualization Report,出块节�
 title_reports/producer_hbversion,Producer Heartbeat Version Report,出块节点Heartbeat版本报告
 title_producers,Report for %producer_name_html%,%producer_name_html%报告
 label_text_version,text version,文字内容版本
+label_json_version,json version,
 filter_yes,Yes,是
 filter_na,n/a,无内容
 filter_no,No,不是

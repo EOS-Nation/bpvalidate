@@ -60,7 +60,7 @@ our $producers;
 # Getter Subroutines
 
 sub content_types {
-	return ('txt', 'html');
+	return ('txt', 'json', 'html');
 }
 
 sub labels {
@@ -162,6 +162,8 @@ sub generate_report {
 
 	if ($content_type eq 'txt') {
 		generate_report_txt (%options);
+	} elsif ($content_type eq 'json') {
+		generate_report_json (%options);
 	} elsif ($content_type eq 'html') {
 		generate_report_thtml (%options);
 	} else {
@@ -216,6 +218,58 @@ sub generate_report_txt {
 	report_write_file ("$outfile.txt.$lang", @out);
 }
 
+sub generate_report_json {
+	my %options = @_;
+
+	my $lang = $options{lang};
+	my $data = $options{data};
+	my $report = $options{report};
+	my $outfile = $options{outfile};
+	my $chain = $options{chain} || confess "missing chain";
+	my $title = $options{title} || label("title_$outfile", $lang);
+	my %out;
+
+	$out{meta}{title}{value} = $title;
+	$out{meta}{network}{label} = label('txt_chain', $lang);
+	$out{meta}{network}{value} = label('chain_' . $chain, $lang);
+	$out{meta}{update}{label} = label('txt_update', $lang);
+	$out{meta}{update}{value} = datetime($$data{meta}{generated_at}, $lang);
+	$out{meta}{details}{value} = label('txt_about', $lang);
+
+	foreach my $section (@$report) {
+		my $name = $$section{name};
+		$name = label ('unknown', $lang) if (defined $name && $name eq 'zzunknown');
+		my $rows = $$section{rows};
+		my $prefix = $$section{name_prefix} || '';
+		my $divider = $$section{section_divider} || 1;
+
+		my @out;
+		foreach my $line (@$rows) {
+			my $sprintf = $$line{sprintf};
+			my $data = $$line{data};
+			my $producer = $$line{producer};
+			if ($producer) {
+				push (@out, [{
+						name => $producer,
+						html_name => encode_entities($$producers{$producer}{info}{name} || $producer),
+						rank => $$producers{$producer}{info}{rank}
+					},
+					@$data
+				]);
+			} else {
+				push (@out, [@$data]);
+			}
+		}
+		if ($name) {
+			$out{report}{$name} = \@out;
+		} else {
+			$out{report} = \@out;
+		}
+	}
+
+	report_write_file ("$outfile.json.$lang", to_json (\%out, {canonical => 1}));
+}
+
 sub generate_report_thtml {
 	my %options = @_;
 
@@ -225,10 +279,16 @@ sub generate_report_thtml {
 	my $columns = $options{columns};
 	my $outfile = $options{outfile};
 	my $text = $options{text};
+	my $json = $options{json};
 	my @out;
 
 	if ($text) {
 		push (@out, "<p><a href=\"../$outfile.txt\">" . label('label_text_version', $lang) . "</a></p>");
+	}
+	if ($json) {
+		push (@out, "<p><a href=\"../$outfile.json\">" . label('label_json_version', $lang) . "</a></p>");
+	}
+	if ($text || $json) {
 		push (@out, "<br>\n");
 	}
 

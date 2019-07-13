@@ -47,7 +47,7 @@ foreach my $lang (languages()) {
 
 			my $title = $$labels{title_producers}{"label_$lang"} || $$labels{title_producers}{"label_en"};
 			$title =~ s/%producer_name_html%/$producer_name_html/;
-			generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => $title, columns => 1, outfile => "producers/$producer", text => 1, html => 1);
+			generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => $title, columns => 1, outfile => "producers/$producer", text => 1, json => 1, html => 1);
 		}
 	}
 }
