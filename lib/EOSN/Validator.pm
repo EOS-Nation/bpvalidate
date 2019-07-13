@@ -3210,7 +3210,7 @@ sub run_request {
 	my $time = time - $clock;
 	$$options{elapsed_time} = sprintf ("%.1f", $time);
 
-	print $req->method . ' ' . $req->uri . ': ' . sprintf ("%.2f", $time) . "\n";
+	print sprintf ("% 2.2f %4s %s %s\n", $time, $req->method, $req->uri, $req->content);
 
 	if ($time > $timeout) {
 		$self->add_message(
