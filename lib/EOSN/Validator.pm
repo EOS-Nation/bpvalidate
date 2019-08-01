@@ -1614,7 +1614,7 @@ sub validate_url {
 				%options
 			);
 			delete $options{add_to_list};
-		} elsif ($cors_headers[0] ne '*') {
+		} elsif ($cors_origin[0] ne '*') {
 			$self->add_message(
 				kind => 'err',
 				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_origin>',
@@ -1640,7 +1640,7 @@ sub validate_url {
 				%options
 			);
 			return undef;
-		} elsif ($cors_headers[0] ne '*') {
+		} elsif ($cors_origin[0] ne '*') {
 			$self->add_message(
 				kind => 'err',
 				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_origin>',
