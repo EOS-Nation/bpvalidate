@@ -1593,7 +1593,76 @@ sub validate_url {
 		return undef;
 	}
 
-	my @cors_headers = $res->header('Access-Control-Allow-Origin');
+	my @cors_origin = $res->header('Access-Control-Allow-Origin');
+	if ($cors eq 'either') {
+		# do nothing
+	} elsif ($cors eq 'should') {
+		# error, but not fatal, but not ok either
+		if (! @cors_origin) {
+			$self->add_message(
+				kind => 'err',
+				detail => 'missing Access-Control-Allow-Origin header',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
+			delete $options{add_to_list};
+		} elsif (@cors_origin > 1) {
+			$self->add_message(
+				kind => 'err',
+				detail => 'multiple Access-Control-Allow-Origin headers=<@cors_origin>',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
+			delete $options{add_to_list};
+		} elsif ($cors_headers[0] ne '*') {
+			$self->add_message(
+				kind => 'err',
+				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_origin>',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
+			delete $options{add_to_list};
+		}
+	} elsif ($cors eq 'on') {
+		if (! @cors_origin) {
+			$self->add_message(
+				kind => 'err',
+				detail => 'missing Access-Control-Allow-Origin header',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
+			return undef;
+		} elsif (@cors_origin > 1) {
+			$self->add_message(
+				kind => 'err',
+				detail => 'multiple Access-Control-Allow-Origin headers=<@cors_origin>',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
+			return undef;
+		} elsif ($cors_headers[0] ne '*') {
+			$self->add_message(
+				kind => 'err',
+				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_origin>',
+				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				%options
+			);
+			return undef;
+		}
+	} elsif ($cors eq 'off') {
+		if (@cors_origin) {
+			$self->add_message(
+				kind => 'err',
+				detail => 'Access-Control-Allow-Origin header returned when should not be',
+				%options
+			);
+			return undef;
+		}
+	} else {
+		confess "unknown cors option";
+	}
+
+	my @cors_headers = $res->header('Access-Control-Allow-Headers');
 	if ($cors eq 'either') {
 		# do nothing
 	} elsif ($cors eq 'should') {
@@ -1601,7 +1670,7 @@ sub validate_url {
 		if (! @cors_headers) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'missing Access-Control-Allow-Origin header',
+				detail => 'missing Access-Control-Allow-Headers header',
 				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
@@ -1609,25 +1678,25 @@ sub validate_url {
 		} elsif (@cors_headers > 1) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>',
+				detail => 'multiple Access-Control-Allow-Headers headers=<@cors_headers>',
 				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			delete $options{add_to_list};
-		} elsif ($cors_headers[0] ne '*') {
+		} elsif (($cors_headers[0] !~ /Content-Type/) || ($cors_headers[0] !~ /Origin/) || ($cors_headers[0] !~ /Accept/)) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>',
+				detail => 'inappropriate Access-Control-Allow-Headers, need "Content-Type", "Origin" and "Accept" header=<@cors_headers>',
 				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			delete $options{add_to_list};
-		}	
+		}
 	} elsif ($cors eq 'on') {
 		if (! @cors_headers) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'missing Access-Control-Allow-Origin header',
+				detail => 'missing Access-Control-Allow-Headers header',
 				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
@@ -1635,29 +1704,29 @@ sub validate_url {
 		} elsif (@cors_headers > 1) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'multiple Access-Control-Allow-Origin headers=<@cors_headers>',
+				detail => 'multiple Access-Control-Allow-Headers headers=<@cors_headers>',
 				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			return undef;
-		} elsif ($cors_headers[0] ne '*') {
+		} elsif (($cors_headers[0] !~ /Content-Type/) || ($cors_headers[0] !~ /Origin/) || ($cors_headers[0] !~ /Accept/)) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_headers>',
+				detail => 'inappropriate Access-Control-Allow-Headers, need "Content-Type", "Origin" and "Accept" header=<@cors_headers>',
 				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			return undef;
-		}	
+		}
 	} elsif ($cors eq 'off') {
 		if (@cors_headers) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'Access-Control-Allow-Origin header returned when should not be',
+				detail => 'Access-Control-Allow-Headers header returned when should not be',
 				%options
 			);
 			return undef;
-		}	
+		}
 	} else {
 		confess "unknown cors option";
 	}
