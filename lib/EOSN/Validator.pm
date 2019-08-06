@@ -301,7 +301,8 @@ sub run_validate {
 		field => 'main web site',
 		class => 'regproducer',
 		content_type => 'html',
-		cors => 'either',
+		cors_origin => 'either',
+		cors_headers => 'either',
 		dupe => 'skip',
 		add_to_list => 'resources/regproducer_url',
 		timeout => 10
@@ -318,7 +319,8 @@ sub run_validate {
 		failure_code => 'err',
 		class => 'chains',
 		content_type => 'json',
-		cors => 'should',
+		cors_origin => 'should',
+		cors_headers => 'either',
 		dupe => 'err',
 		add_to_list => 'resources/chainjson',
 		see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json',
@@ -370,7 +372,8 @@ sub run_validate {
 		field => 'BP info JSON URL',
 		class => 'org',
 		content_type => 'json',
-		cors => 'should',
+		cors_origin => 'should',
+		cors_headers => 'either',
 		dupe => 'err',
 		add_to_list => 'resources/bpjson',
 		timeout => 10
@@ -1416,7 +1419,8 @@ sub validate_url {
 	my $class = $options{class} || confess "class not provided";
 	my $content_type = $options{content_type} || confess "content_type not provided";
 	my $ssl = $options{ssl} || 'either'; # either, on, off
-	my $cors = $options{cors} || 'either'; #either, on, off, should
+	my $cors_origin = $options{cors_origin} || 'either'; #either, on, off, should
+	my $cors_headers = $options{cors_headers} || 'either'; #either, on, off, should
 	my $url_ext = $options{url_ext} || '';
 	my $non_standard_port = $options{non_standard_port}; # true/false
 	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
@@ -1604,9 +1608,9 @@ sub validate_url {
 	}
 
 	my @cors_origin = $res->header('Access-Control-Allow-Origin');
-	if ($cors eq 'either') {
+	if ($cors_origin eq 'either') {
 		# do nothing
-	} elsif ($cors eq 'should') {
+	} elsif ($cors_origin eq 'should') {
 		# error, but not fatal, but not ok either
 		if (! @cors_origin) {
 			$self->add_message(
@@ -1633,7 +1637,7 @@ sub validate_url {
 			);
 			delete $options{add_to_list};
 		}
-	} elsif ($cors eq 'on') {
+	} elsif ($cors_origin eq 'on') {
 		if (! @cors_origin) {
 			$self->add_message(
 				kind => 'err',
@@ -1659,7 +1663,7 @@ sub validate_url {
 			);
 			return undef;
 		}
-	} elsif ($cors eq 'off') {
+	} elsif ($cors_origin eq 'off') {
 		if (@cors_origin) {
 			$self->add_message(
 				kind => 'err',
@@ -1673,9 +1677,9 @@ sub validate_url {
 	}
 
 	my @cors_headers = $res->header('Access-Control-Allow-Headers');
-	if ($cors eq 'either') {
+	if ($cors_headers eq 'either') {
 		# do nothing
-	} elsif ($cors eq 'should') {
+	} elsif ($cors_headers eq 'should') {
 		# error, but not fatal, but not ok either
 		if (! @cors_headers) {
 			$self->add_message(
@@ -1702,7 +1706,7 @@ sub validate_url {
 			);
 			delete $options{add_to_list};
 		}
-	} elsif ($cors eq 'on') {
+	} elsif ($cors_headers eq 'on') {
 		if (! @cors_headers) {
 			$self->add_message(
 				kind => 'err',
@@ -1728,7 +1732,7 @@ sub validate_url {
 			);
 			return undef;
 		}
-	} elsif ($cors eq 'off') {
+	} elsif ($cors_headers eq 'off') {
 		if (@cors_headers) {
 			$self->add_message(
 				kind => 'err',
@@ -1926,7 +1930,8 @@ sub validate_basic_api {
 		class => 'endpoint',
 		url_ext => '/v1/chain/get_info',
 		content_type => 'json',
-		cors => 'on',
+		cors_origin => 'on',
+		cors_headers => 'on',
 		non_standard_port => 1,
 		extra_check => 'validate_basic_api_extra_check',
 		add_result_to_list => 'response',
@@ -1954,7 +1959,8 @@ sub validate_hyperion_api {
 		class => 'history',
 		url_ext => '/v1/chain/get_info',
 		content_type => 'json',
-		cors => 'on',
+		cors_origin => 'on',
+		cors_headers => 'on',
 		non_standard_port => 1,
 		extra_check => 'validate_hyperion_api_extra_check',
 		add_result_to_list => 'response',
@@ -1982,7 +1988,8 @@ sub validate_history_api {
 		class => 'history',
 		url_ext => '/v1/chain/get_info',
 		content_type => 'json',
-		cors => 'on',
+		cors_origin => 'on',
+		cors_headers => 'on',
 		non_standard_port => 1,
 		extra_check => 'validate_history_api_extra_check',
 		add_result_to_list => 'response',
