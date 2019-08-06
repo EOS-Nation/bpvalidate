@@ -24,33 +24,33 @@ sub go {
 
 		print "--------- run chain: $chain ----------\n";
 
-		#system ("./bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=alohaeosprod,eosnationftw,cryptolions1,eoscanadacom,bitfinexeos1,hexlantttttt,eosriobrazil,acroeos12345,eosriobrazil");
-	       	#system ("./bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=cryptolions1");
-		#system ("./bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw,teamgreymass,eosbeijingbp,sheos21sheos,eosriobrazil,eosswedenorg");
-		#system ("./bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosliquideos,eosauthority,eosnationftw,atticlabeosb,cryptolions1,eosbeijingbp,eostribeprod,sheos21sheos,eosswedenorg");
-		#system ("./bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw,bosnationftw,kainosblkpro,eosiodetroit,bosriobrazil,boseouldotio");
-		#system ("./bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=bosnationftw,bosriobrazil,boseouldotio");
-		#system ("./bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=none");
-		#system ("./bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw");
-		system ("./bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000");
+		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=alohaeosprod,eosnationftw,cryptolions1,eoscanadacom,bitfinexeos1,hexlantttttt,eosriobrazil,acroeos12345,eosriobrazil");
+	       	#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=cryptolions1");
+		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw,teamgreymass,eosbeijingbp,sheos21sheos,eosriobrazil,eosswedenorg");
+		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosliquideos,eosauthority,eosnationftw,atticlabeosb,cryptolions1,eosbeijingbp,eostribeprod,sheos21sheos,eosswedenorg");
+		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw,bosnationftw,kainosblkpro,eosiodetroit,bosriobrazil,boseouldotio");
+		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=bosnationftw,bosriobrazil,boseouldotio");
+		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=none");
+		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw");
+		system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000");
 
-		system ("./bp-report-errors --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-producers --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-endpoints --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-node_types --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-resources --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-api-versions --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-country --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-timezone --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-config --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-blacklist --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-producer-version --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-producer-cpu --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-producer-virtualization --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-		system ("./bp-report-producer-hbversion --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-errors --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-producers --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-endpoints --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-node_types --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-resources --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-api-versions --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-country --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-timezone --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-config --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-blacklist --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-producer-version --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-producer-cpu --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-producer-virtualization --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		system ("bp-report-producer-hbversion --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
 	}
 
 	print "---------- generate website -----------\n";
 
-	system ("./bp-website-builder --out=$outdir --config=$confdir");
+	system ("bp-website-builder --out=$outdir --config=$confdir");
 }

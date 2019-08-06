@@ -27,11 +27,11 @@ sub go {
 			print sprintf ("%20s = %s\n", $key, $$properties{$key});
 		}
 
-		system ("./bp-schema --chain=$chain");
-		system ("./bp-website-chain --chain=$chain --out=/var/www/bpvalidate --config=$confdir");
+		system ("bp-schema --chain=$chain");
+		system ("bp-website-chain --chain=$chain --out=/var/www/bpvalidate --config=$confdir");
 	}
 
 	print "---------- generate website -----------\n";
 
-	system ("./bp-website-builder --out=$outdir --config=$confdir");
+	system ("bp-website-builder --out=$outdir --config=$confdir");
 }
