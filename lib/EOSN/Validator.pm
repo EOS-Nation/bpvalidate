@@ -1683,10 +1683,10 @@ sub validate_url {
 				%options
 			);
 			delete $options{add_to_list};
-		} elsif (($cors_headers[0] !~ /Content-Type/) || ($cors_headers[0] !~ /Origin/) || ($cors_headers[0] !~ /Accept/)) {
+		} elsif (($cors_headers[0] ne '*') && (($cors_headers[0] !~ /Content-Type/) || ($cors_headers[0] !~ /Origin/) || ($cors_headers[0] !~ /Accept/))) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'inappropriate Access-Control-Allow-Headers, need "Content-Type", "Origin" and "Accept" header=<@cors_headers>',
+				detail => 'inappropriate Access-Control-Allow-Headers, need "*" or "Content-Type", "Origin" and "Accept" header=<@cors_headers>',
 				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
@@ -1709,10 +1709,10 @@ sub validate_url {
 				%options
 			);
 			return undef;
-		} elsif (($cors_headers[0] !~ /Content-Type/) || ($cors_headers[0] !~ /Origin/) || ($cors_headers[0] !~ /Accept/)) {
+		} elsif (($cors_headers[0] ne '*') && (($cors_headers[0] !~ /Content-Type/) || ($cors_headers[0] !~ /Origin/) || ($cors_headers[0] !~ /Accept/))) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'inappropriate Access-Control-Allow-Headers, need "Content-Type", "Origin" and "Accept" header=<@cors_headers>',
+				detail => 'inappropriate Access-Control-Allow-Headers, need "*" or "Content-Type", "Origin" and "Accept" header=<@cors_headers>',
 				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
