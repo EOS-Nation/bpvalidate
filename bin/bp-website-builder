@@ -36,7 +36,7 @@ sub read_globals {
 
 		$generated{navigation_producers} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/producers/">%chain_' . $chain . '%</a>' . "\n";
 		$generated{navigation_reports} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/reports/">%chain_' . $chain . '%</a>' . "\n";
-		$generated{navigation_data} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/data/">%chain_' . $chain . '%</a>' . "\n";
+		$generated{navigation_info} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/info/">%chain_' . $chain . '%</a>' . "\n";
 		$generated{networks} .= (' ' x 4) . '<li> <a href="' . $chain . '/">%chain_' . $chain . '%</a>' . "\n";
 
 		# --------- list of active reports

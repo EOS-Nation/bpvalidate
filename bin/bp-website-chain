@@ -16,14 +16,14 @@ my $outdir = outdir ();
 if (! -d "$outdir/$chain") {
 	print "Create directory structure for location=<$outdir/$chain>...\n";
 	mkdir "$outdir/$chain";
-	mkdir "$outdir/$chain/data";
+	mkdir "$outdir/$chain/info";
 	mkdir "$outdir/$chain/reports";
 	mkdir "$outdir/$chain/producers";
 	write_file ("$outdir/$chain/bps.json", "{}");
 }
 
 do_copy ("$outdir/res/chain", "$outdir/$chain");
-do_copy ("$outdir/res/chain/data", "$outdir/$chain/data");
+do_copy ("$outdir/res/chain/info", "$outdir/$chain/info");
 do_copy ("$outdir/res/chain/reports", "$outdir/$chain/reports");
 
 sub do_copy {
