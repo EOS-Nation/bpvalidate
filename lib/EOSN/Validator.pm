@@ -1602,7 +1602,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'missing Access-Control-Allow-Origin header',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			delete $options{add_to_list};
@@ -1610,7 +1610,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'multiple Access-Control-Allow-Origin headers=<@cors_origin>',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			delete $options{add_to_list};
@@ -1618,7 +1618,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_origin>',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			delete $options{add_to_list};
@@ -1628,7 +1628,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'missing Access-Control-Allow-Origin header',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			return undef;
@@ -1636,7 +1636,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'multiple Access-Control-Allow-Origin headers=<@cors_origin>',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			return undef;
@@ -1644,7 +1644,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'inappropriate Access-Control-Allow-Origin header=<@cors_origin>',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			return undef;
@@ -1671,7 +1671,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'missing Access-Control-Allow-Headers header',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			delete $options{add_to_list};
@@ -1679,7 +1679,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'multiple Access-Control-Allow-Headers headers=<@cors_headers>',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			delete $options{add_to_list};
@@ -1687,7 +1687,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'inappropriate Access-Control-Allow-Headers, need "*" or "Content-Type", "Origin" and "Accept" header=<@cors_headers>',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			delete $options{add_to_list};
@@ -1697,7 +1697,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'missing Access-Control-Allow-Headers header',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			return undef;
@@ -1705,7 +1705,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'multiple Access-Control-Allow-Headers headers=<@cors_headers>',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			return undef;
@@ -1713,7 +1713,7 @@ sub validate_url {
 			$self->add_message(
 				kind => 'err',
 				detail => 'inappropriate Access-Control-Allow-Headers, need "*" or "Content-Type", "Origin" and "Accept" header=<@cors_headers>',
-				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
+				see2 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS',
 				%options
 			);
 			return undef;
