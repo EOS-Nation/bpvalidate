@@ -11,6 +11,7 @@ binmode(STDOUT, ":utf8");
 # ---------------------------------------------------------------------------
 # Main
 
+my %generated;
 my %globals;
 my $labels;
 get_report_options_website();
@@ -24,7 +25,17 @@ go();
 sub read_globals {
 	$globals{"template"} = read_file ("$outdir/res/template.html");
 	$globals{generated_at} = time2str ("%C", time);
+
 	$labels = labels ();
+
+        foreach my $chain (chains()) {
+		my $properties = chain_properties ($chain);
+		next if (! $$properties{active});
+		$generated{navigation_producers} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/producers/">%chain_' . $chain . '%</a>' . "\n";
+		$generated{navigation_reports} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/reports/">%chain_' . $chain . '%</a>' . "\n";
+		$generated{navigation_data} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/data/">%chain_' . $chain . '%</a>' . "\n";
+		$generated{networks} .= (' ' x 4) . '<li> <a href="' . $chain . '/">%chain_' . $chain . '%</a>' . "\n";
+	}
 }
 
 sub go {
@@ -67,6 +78,11 @@ sub generate_content {
 
 	foreach my $key (keys %variables) {
 		my $value = $variables{$key};
+		$output =~ s/%$key%/$value/g;
+	}
+
+	foreach my $key (keys %generated) {
+		my $value = $generated{$key};
 		$output =~ s/%$key%/$value/g;
 	}
 

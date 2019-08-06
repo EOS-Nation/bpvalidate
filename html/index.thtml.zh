@@ -24,8 +24,7 @@ bp.json验证器是一个检查出块节点和备选出块节点是否以“标�
   </header>
   <div class="card-content">
     <ul class="menu-list">
-    <li> <a href="mainnet/">%chain_mainnet%</a>
-    <li> <a href="bos/">%chain_bos%</a>
+%networks%
     </ul>
   </div>
 </div>

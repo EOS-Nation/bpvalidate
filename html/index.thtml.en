@@ -27,8 +27,7 @@ EOS community determine which organizations to vote for.
   </header>
   <div class="card-content">
     <ul class="menu-list">
-    <li> <a href="mainnet/">%chain_mainnet%</a>
-    <li> <a href="bos/">%chain_bos%</a>
+%networks%
     </ul>
   </div>
 </div>
