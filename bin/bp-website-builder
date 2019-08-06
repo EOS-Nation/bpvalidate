@@ -31,10 +31,27 @@ sub read_globals {
         foreach my $chain (chains()) {
 		my $properties = chain_properties ($chain);
 		next if (! $$properties{active});
+
+		# ---------- navigation
+
 		$generated{navigation_producers} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/producers/">%chain_' . $chain . '%</a>' . "\n";
 		$generated{navigation_reports} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/reports/">%chain_' . $chain . '%</a>' . "\n";
 		$generated{navigation_data} .= (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/data/">%chain_' . $chain . '%</a>' . "\n";
 		$generated{networks} .= (' ' x 4) . '<li> <a href="' . $chain . '/">%chain_' . $chain . '%</a>' . "\n";
+
+		# --------- list of active reports
+
+		my $xproperties;
+                foreach my $property (keys %$properties) {
+                        next if ($property !~ /^report_/);
+                        next if (! $$properties{$property});
+			$$xproperties{$property} = $$properties{$property};
+		}
+                foreach my $property (sort {$$xproperties{$a} <=> $$xproperties{$b}} keys %$xproperties) {
+                        my $report = $property;
+                        $report =~ s/^report_//;
+			$generated{"report_list_$chain"} .= (' ' x 2) . '<li><a href="' . $report . '.html">%title_reports/' . $report . '%</a>' . "\n";
+		}
 	}
 }
 
@@ -71,9 +88,11 @@ sub generate_content {
 	if ($variables{chain}) {
 		$globals{chain} = $$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain};
 		$globals{chain_title} = ($$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain}) . ": ";
+		$generated{report_list} = $generated{'report_list_' . $variables{chain}};
 	} else {
 		$globals{chain} = '--';
 		$globals{chain_title} = '';
+		$generated{report_list} = 'xxxxxxxx';
 	}
 
 	foreach my $key (keys %variables) {

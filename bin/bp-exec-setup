@@ -24,7 +24,7 @@ sub go {
 
 		print "--------- setup chain: $chain ----------\n";
 		foreach my $key (sort keys %$properties) {
-			print sprintf ("%20s = %s\n", $key, $$properties{$key});
+			print sprintf ("%30s = %s\n", $key, $$properties{$key});
 		}
 
 		system ("bp-schema --chain=$chain");
