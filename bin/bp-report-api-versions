@@ -48,7 +48,7 @@ foreach my $lang (languages()) {
 				}
 			}
 
-			push (@report, {name => $kinds{$kind}, rows => \@section});
+			push (@report, {name => $kinds{$kind}, rows => \@section}) if (@section);
 		}
 
 		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/api_versions", text => 1, json => 1, html => 1);
