@@ -3,10 +3,10 @@
 /etc/init.d/apache2 start
 #cp -pra /var/www/bpvalidate/html_template/* /var/www/bpvalidate
 
-./bp-exec-setup --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+bp-exec-setup --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
 
 while [ 1 ]
 do
-	./bp-exec-run --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
+	bp-exec-run --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
 	sleep 240
 done
