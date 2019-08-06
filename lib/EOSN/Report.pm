@@ -72,7 +72,7 @@ sub languages {
 }
 
 sub chains {
-	return keys %$chains;
+	return sort {$$chains{$a}{sort_order} <=> $$chains{$b}{sort_order}} keys %$chains;
 }
 
 sub outdir {
