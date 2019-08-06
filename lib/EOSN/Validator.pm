@@ -1083,6 +1083,15 @@ sub check_nodes {
 					node_type => $node_type,
 					location => $location
 				);
+				my $result_history = $self->validate_hyperion_api(
+					api_url => $$node{api_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$node_number].api_endpoint",
+					ssl => 'off',
+					add_to_list => 'nodes/history_http',
+					node_type => $node_type,
+					location => $location
+				);
 			}
 		}
 
@@ -1099,6 +1108,15 @@ sub check_nodes {
 			if ($result) {
 				$valid_basic_ssl_endpoint++;
 				my $result_history = $self->validate_history_api(
+					api_url => $$node{ssl_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$node_number].ssl_endpoint",
+					ssl => 'on',
+					add_to_list => 'nodes/history_https',
+					node_type => $node_type,
+					location => $location
+				);
+				my $result_history = $self->validate_hyperion_api(
 					api_url => $$node{ssl_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$node_number].ssl_endpoint",
@@ -1919,6 +1937,34 @@ sub validate_basic_api {
 	);
 }
 
+sub validate_hyperion_api {
+	my ($self, %options) = @_;
+
+	my $api_url = $options{api_url};
+	my $history_type = $options{history_type};
+	my $field = $options{field};
+
+	if ($history_type && $history_type ne 'hyperion') {
+		return;
+	}
+
+	return $self->validate_url(
+		api_url => $api_url,
+		field => $field,
+		class => 'history',
+		url_ext => '/v1/chain/get_info',
+		content_type => 'json',
+		cors => 'on',
+		non_standard_port => 1,
+		extra_check => 'validate_hyperion_api_extra_check',
+		add_result_to_list => 'response',
+		add_info_to_list => 'info',
+		dupe => 'info',
+		timeout => 2,
+		%options
+	);
+}
+
 sub validate_history_api {
 	my ($self, %options) = @_;
 
@@ -1926,7 +1972,7 @@ sub validate_history_api {
 	my $history_type = $options{history_type};
 	my $field = $options{field};
 
-	if ($history_type && $history_type eq 'none') {
+	if ($history_type && $history_type ~~ /^(traditional|mongo)$/) {
 		return;
 	}
 
@@ -2147,6 +2193,42 @@ sub validate_basic_api_extra_check {
 	return \%info;
 }
 
+sub validate_hyperion_api_extra_check {
+	my ($self, $result, $res, $options) = @_;
+
+	my $url = $$options{api_url};
+	my $field = $$options{field};
+	my $class = $$options{class};
+	my $node_type = $$options{node_type};
+	my $ssl = $$options{ssl} || 'either'; # either, on, off
+	my $url_ext = $$options{url_ext} || '';
+
+	my %info;
+	my $errors;
+	my $versions = $self->versions;
+
+	if (! $self->test_history_transaction (api_url => $url, api_version => 2, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+		$errors++;
+	}
+	if (! $self->test_history_actions (api_url => $url, api_version => 2, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+		$errors++;
+	}
+	if (! $self->test_history_key_accounts (api_url => $url, api_version => 2, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+		$errors++;
+	}
+
+	if ($info{history_type}) {
+		my $new_value = 'history_' . $info{history_type} . '_';
+		$$options{add_to_list} =~ s/history_/$new_value/;
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	return \%info;
+}
+
 sub validate_history_api_extra_check {
 	my ($self, $result, $res, $options) = @_;
 
@@ -2161,13 +2243,13 @@ sub validate_history_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	if (! $self->test_history_transaction (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_transaction (api_url => $url, api_version => 1, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_actions (api_url => $url, api_version => 1, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_key_accounts (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_key_accounts (api_url => $url, api_version => 1, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2738,7 +2820,9 @@ sub test_abi_serializer {
 
 sub test_history_transaction {
 	my ($self, %options) = @_;
-	$options{api_url} .= '/v1/history/get_transaction';
+
+	my $version = $options{api_version} || die "$0: missing api_version";
+	$options{api_url} .= "/v$version/history/get_transaction";
 
 	my $transactions = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
 
@@ -2779,7 +2863,9 @@ sub test_history_transaction {
 
 sub test_history_actions {
 	my ($self, %options) = @_;
-	$options{api_url} .= '/v1/history/get_actions';
+
+	my $version = $options{api_version} || die "$0: missing api_version";
+	$options{api_url} .= "/v$version/history/get_actions";
 	$options{post_data} = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
 
 	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
@@ -2869,7 +2955,8 @@ sub test_history_key_accounts {
 	my ($self, %options) = @_;
 
 	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
-	$options{api_url} .= '/v1/history/get_key_accounts';
+	my $version = $options{api_version} || die "$0: missing api_version";
+	$options{api_url} .= "/v$version/history/get_key_accounts";
 	$options{post_data} = '{"json": true, "public_key": "' . $public_key . '"}';
 
 	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
