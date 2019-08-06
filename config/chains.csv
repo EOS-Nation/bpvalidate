@@ -3,4 +3,4 @@ mainnet,1,100,http://mainnet.eosn.io,http://eos.greymass.com/v1/history/get_key_
 bos,1,102,http://bos.eosn.io,http://bos.eosn.io/v2/state/get_key_accounts,bos.json,d5a3d18fbb3c084e3b1f3fa98c21014b5f3db536cc15d08f9f6479517c6a3d86,timezone,BOS,bosnationftw,c4a2ef620464e3b199996a6b50a35771be39b50f2d6f6a5781ff0bbf850917a2,196058,EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd,1,1,1,0,1,1,0,1,0
 telos,0,110,http://api.kainosbp.com:8888,,bp.json,4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11,country,TLOS,kainosblkpro,,,,1,1,1,0,1,1,0,1,0
 kylin,0,902,http://kylin.eosn.io,http://kylin.eosn.io/v2/state/get_key_accounts,kylin.json,5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191,country,EOS,eosnationftw,,,,1,1,1,0,1,1,0,1,0
-jungle,1,900,http://jungle.eosn.io,http://jungle.eosn.io/v2/state/get_key_accounts,jungle.json,e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473,country,EOS,eosnationftw,,,,1,1,1,0,1,1,0,1,0
+jungle,0,900,http://jungle.eosn.io,http://jungle.eosn.io/v2/state/get_key_accounts,jungle.json,e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473,country,EOS,eosnationftw,,,,1,1,1,0,1,1,0,1,0
