@@ -66,46 +66,58 @@ sub setup_jobs {
 
 	# ---- on-chain json
 
-	my $onchainbpjson_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "producerjson", scope => "producerjson", table => "producerjson");
+	my $onchainbpjson_list = [];
 
-	if (! $onchainbpjson_list) {
-		warn "$0: $chain: cannot get onchainbpjson list";
-	}
+	if ($$chains{$chain}{class_bpjson}) {
+		$onchainbpjson_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "producerjson", scope => "producerjson", table => "producerjson");
 
-	foreach my $obj (@$onchainbpjson_list) {
-		my $owner = $$obj{owner};
-		my $json = $$obj{json};
-		$onchain{bpjson}{$owner} = $json;
+		if (! $onchainbpjson_list) {
+			warn "$0: $chain: cannot get onchainbpjson list";
+		}
+
+		foreach my $obj (@$onchainbpjson_list) {
+			my $owner = $$obj{owner};
+			my $json = $$obj{json};
+			$onchain{bpjson}{$owner} = $json;
+		}
 	}
 
 	# ---- on-chain heartbeat
 
-	my $onchainheartbeat_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "eosheartbeat", scope => "eosheartbeat", table => "hbstruct");
+	my $onchainheartbeat_list = [];
 
-	if (! $onchainheartbeat_list) {
-		warn "$0: $chain: cannot get onchainheartbeat list";
-	}
+	if ($$chains{$chain}{class_heartbeat}) {
+		$onchainheartbeat_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "eosheartbeat", scope => "eosheartbeat", table => "hbstruct");
 
-	foreach my $obj (@$onchainheartbeat_list) {
-		my $user = $$obj{user};
-		my $json = $$obj{metadata_json};
-		my $timestamp = $$obj{timestamp};
-		$onchain{heartbeat}{$user}{json} = $json;
-		$onchain{heartbeat}{$user}{timestamp} = $timestamp;
+		if (! $onchainheartbeat_list) {
+			warn "$0: $chain: cannot get onchainheartbeat list";
+		}
+
+		foreach my $obj (@$onchainheartbeat_list) {
+			my $user = $$obj{user};
+			my $json = $$obj{metadata_json};
+			my $timestamp = $$obj{timestamp};
+			$onchain{heartbeat}{$user}{json} = $json;
+			$onchain{heartbeat}{$user}{timestamp} = $timestamp;
+		}
 	}
 
 	# ---- on-chain blacklist
 
-	my $onchainblacklist_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "theblacklist", scope => "theblacklist", table => "producerhash");
+	my $onchainblacklist_list = [];
 
-	if (! $onchainblacklist_list) {
-		warn "$0: $chain: cannot get onchainblacklist list";
-	}
+	if ($$chains{$chain}{class_blacklist}) {
+		$onchainblacklist_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "theblacklist", scope => "theblacklist", table => "producerhash");
 
-	foreach my $obj (@$onchainblacklist_list) {
-		my $user = $$obj{producer};
-		my $hash = $$obj{hash};
-		$onchain{blacklist}{$user} = $hash;
+		if (! $onchainblacklist_list) {
+			warn "$0: $chain: cannot get onchainblacklist list";
+		}
+
+		foreach my $obj (@$onchainblacklist_list) {
+			my $user = $$obj{producer};
+			my $hash = $$obj{hash};
+			$onchain{blacklist}{$user} = $hash;
+		}
 	}
 
 	# ----- votes
