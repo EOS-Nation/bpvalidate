@@ -79,6 +79,10 @@ sub outdir {
 	return $outdir;
 }
 
+sub confdir {
+	return $confdir;
+}
+
 sub chain {
 	return $chain;
 }
