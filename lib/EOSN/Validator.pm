@@ -1055,8 +1055,6 @@ sub check_nodes {
 		my $node_type = $$node{node_type};
 		my $valid_basic_api_endpoint = 0;
 		my $valid_basic_ssl_endpoint = 0;
-		my $valid_history_api_endpoint = 0;
-		my $valid_history_ssl_endpoint = 0;
 		my $valid_peer_endpoint = 0;
 		my $valid_bnet_endpoint = 0;
 		my $found_api_ssl_endpoint = 0;
@@ -1076,7 +1074,7 @@ sub check_nodes {
 			);
 			if ($result) {
 				$valid_basic_api_endpoint++;
-				my $result2 = $self->validate_history_api(
+				my $result_history = $self->validate_history_api(
 					api_url => $$node{api_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$node_number].api_endpoint",
@@ -1085,9 +1083,6 @@ sub check_nodes {
 					node_type => $node_type,
 					location => $location
 				);
-				if ($result2) {
-					$valid_history_api_endpoint++;
-				}
 			}
 		}
 
@@ -1103,7 +1098,7 @@ sub check_nodes {
 			);
 			if ($result) {
 				$valid_basic_ssl_endpoint++;
-				my $result2 = $self->validate_history_api(
+				my $result_history = $self->validate_history_api(
 					api_url => $$node{ssl_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$node_number].ssl_endpoint",
@@ -1112,9 +1107,6 @@ sub check_nodes {
 					node_type => $node_type,
 					location => $location
 				);
-				if ($result2) {
-					$valid_history_ssl_endpoint++;
-				}
 			}
 		}
 
