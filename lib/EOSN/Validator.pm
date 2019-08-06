@@ -1083,7 +1083,7 @@ sub check_nodes {
 					node_type => $node_type,
 					location => $location
 				);
-				my $result_history = $self->validate_hyperion_api(
+				my $result_hyperion = $self->validate_hyperion_api(
 					api_url => $$node{api_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$node_number].api_endpoint",
@@ -1116,7 +1116,7 @@ sub check_nodes {
 					node_type => $node_type,
 					location => $location
 				);
-				my $result_history = $self->validate_hyperion_api(
+				my $result_hyperion = $self->validate_hyperion_api(
 					api_url => $$node{ssl_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$node_number].ssl_endpoint",
@@ -1972,7 +1972,7 @@ sub validate_history_api {
 	my $history_type = $options{history_type};
 	my $field = $options{field};
 
-	if ($history_type && $history_type ~~ /^(traditional|mongo)$/) {
+	if ($history_type && $history_type !~ /^(traditional|mongo)$/) {
 		return;
 	}
 
