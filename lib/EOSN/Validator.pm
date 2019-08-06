@@ -2677,7 +2677,7 @@ sub test_block_one {
 	$options{api_url} .= "/v1/chain/get_block";
 	$options{post_data} = '{"block_num_or_id": "1", "json": true}';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -2711,7 +2711,7 @@ sub test_patreonous {
 	$options{api_url} .= "/v1/chain/get_table_rows";
 	$options{post_data} = '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -2746,7 +2746,7 @@ sub test_error_message {
 	$options{api_url} .= '/v1/chain/validate_error_message';
 	$options{post_data} = '{"json": true}';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -2787,7 +2787,7 @@ sub test_abi_serializer {
 	foreach my $big_block (split (/,/, $big_blocks)) {
 		$options{post_data} = '{"json": true, "block_num_or_id": ' . $big_block . '}';
 
-		my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+		my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 		my $res = $self->run_request ($req, \%options);
 		my $status_code = $res->code;
 		my $status_message = $res->status_line;
@@ -2828,7 +2828,7 @@ sub test_history_transaction {
 
 	foreach my $transaction (split (/,/, $transactions)) {
 		$options{post_data} = '{"json": true, "id": "' . $transaction . '"}';
-		my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+		my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 		my $res = $self->run_request ($req, \%options);
 		my $status_code = $res->code;
 		my $status_message = $res->status_line;
@@ -2868,7 +2868,7 @@ sub test_history_actions {
 	$options{api_url} .= "/v$version/history/get_actions";
 	$options{post_data} = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -2959,7 +2959,7 @@ sub test_history_key_accounts {
 	$options{api_url} .= "/v$version/history/get_key_accounts";
 	$options{post_data} = '{"json": true, "public_key": "' . $public_key . '"}';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -3019,7 +3019,7 @@ sub test_system_symbol {
 	$options{api_url} .= '/v1/chain/get_currency_balance';
 	$options{post_data} = '{"json": true, "account": "' . $test_account . '", "code":"eosio.token", "symbol": "' . $core_symbol . '"}';
 
-	my $req = HTTP::Request->new('POST', $options{api_url}, undef, $options{post_data});
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -3134,7 +3134,7 @@ sub test_regproducer_key {
 	my $url = $self->{chain_properties}{key_accounts_url} || die "$0: key_accounts_url is undefined in chains.csv";
 	my $post_data = '{"json": true, "public_key": "' . $key . '"}';
 
-	my $req = HTTP::Request->new('POST', $url, undef, $post_data);
+	my $req = HTTP::Request->new('POST', $url, ['Content-Type' => 'application/json'], $post_data);
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
