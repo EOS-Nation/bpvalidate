@@ -3131,7 +3131,7 @@ sub test_regproducer_key {
 	my ($self, %options) = @_;
 
 	my $key = $options{key};
-	my $url = 'http://eos.greymass.com/v1/history/get_key_accounts';
+	my $url = $self->{chain_properties}{key_accounts_url} || die "$0: key_accounts_url is undefined in chains.csv";
 	my $post_data = '{"json": true, "public_key": "' . $key . '"}';
 
 	my $req = HTTP::Request->new('POST', $url, undef, $post_data);
