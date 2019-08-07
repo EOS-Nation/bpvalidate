@@ -2851,7 +2851,7 @@ sub test_hyperion_transaction {
 				value => $status_message,
 				explanation => 'check hyperion configuration',
 				response_host => $response_host,
-				see1 => 'http://t.me/eosfullnodes',
+				see1 => 'https://t.me/EOSHyperion',
 				%options
 			);
 			return undef;
@@ -2889,7 +2889,7 @@ sub test_hyperion_actions {
 			value => $status_message,
 			response_host => $response_host,
 			explanation => 'check hyperion configuration',
-			see1 => 'http://t.me/eosfullnodes',
+			see1 => 'https://t.me/EOSHyperion',
 			%options
 		);
 		return undef;
@@ -2953,22 +2953,14 @@ sub test_hyperion_key_accounts {
 			value => $status_message,
 			response_host => $response_host,
 			explanation => 'check hyperion configuration',
-			see1 => 'http://t.me/eosfullnodes',
+			see1 => 'https://t.me/EOSHyperion',
 			%options
 		);
 		return undef;
 	}
 
 	my $json = $self->get_json ($content, %options) || return undef;
-	if (ref $json eq 'ARRAY') {
-		$self->add_message(
-			kind => 'err',
-			detail => 'invalid JSON response (array)',
-			response_host => $response_host,
-			%options
-		);
-		return undef;
-	}
+
 	if (! scalar (@{$$json{account_names}})) {
 		$self->add_message(
 			kind => 'err',
