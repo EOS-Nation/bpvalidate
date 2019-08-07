@@ -4,6 +4,7 @@ use utf8;
 use strict;
 use EOSN::Report;
 use EOSN::FileUtil qw(read_file write_file);
+use File::Slurp qw(read_dir);
 use File::Find;
 
 binmode(STDOUT, ":utf8");
@@ -27,6 +28,11 @@ sub read_globals {
 	$globals{generated_at} = time2str ("%C", time);
 
 	$labels = labels ();
+
+	foreach my $file (read_dir ("$outdir/res/maintainer")) {
+		my ($maintainer, $lang) = (split (/\./, $file))[0,2];
+		$$labels{"maintainer_$maintainer"}{"label_$lang"} = read_file ("$outdir/res/maintainer/$file");
+	}
 
         foreach my $chain (chains()) {
 		my $properties = chain_properties ($chain);
@@ -86,13 +92,19 @@ sub generate_content {
 	$globals{lang} = $lang;
 	$globals{last_update} = datetime($globals{generated_at}, $lang);
 	if ($variables{chain}) {
+		$globals{chain_plain} = $variables{chain};
 		$globals{chain} = $$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain};
 		$globals{chain_title} = ($$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain}) . ": ";
 		$generated{report_list} = $generated{'report_list_' . $variables{chain}};
+
+		my $properties = chain_properties ($variables{chain});
+		foreach my $key (qw (filename chain_id core_symbol)) {
+			$generated{"config_$key"} = $$properties{$key};
+		}
+		$generated{maintainer} = '%maintainer_' . $$properties{maintainer} . '%';
 	} else {
 		$globals{chain} = '--';
 		$globals{chain_title} = '';
-		$generated{report_list} = 'xxxxxxxx';
 	}
 
 	foreach my $key (keys %variables) {

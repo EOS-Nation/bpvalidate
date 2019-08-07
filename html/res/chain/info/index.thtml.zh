@@ -1,5 +1,5 @@
-title = %title_site%: 下载
-h1 = 下载出块节点验证结果
+title = %title_site%: Network Information
+h1 = Network Information
 
 <div class="card">
   <header class="card-header">
@@ -8,9 +8,7 @@ h1 = 下载出块节点验证结果
     </p>
   </header>
   <div class="card-content">
-  <p>
-所有可解析的bp.json输入文件以及分析报告都被整合在bps.json的输出文件中。以下文件均可下载。欢迎在其他项目中使用这些文件。
-  </p>
+%maintainer%
   </div>
 </div>
 
@@ -19,10 +17,31 @@ h1 = 下载出块节点验证结果
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      下载
+      Network Configuration
     </p>
   </header>
   <div class="card-content">
+<ul>
+<li> Chain ID: %config_chain_id%
+<li> Core Symbol: %config_core_symbol%
+<li> Filename: %config_filename%
+<li> Valid eosio versions: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.csv">GitHub</a>.
+</ul>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Block Producer Validator Results Data Download
+    </p>
+  </header>
+  <div class="card-content">
+  <p>
+所有可解析的bp.json输入文件以及分析报告都被整合在bps.json的输出文件中。以下文件均可下载。欢迎在其他项目中使用这些文件。
+  </p>
     <a href=../bps.json>JSON格式</a>
   </div>
 </div>

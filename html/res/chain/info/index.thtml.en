@@ -1,5 +1,5 @@
-title = %title_site%: Download
-h1 = Download the Block Producer Validator Results
+title = %title_site%: Network Information
+h1 = Network Information
 
 <div class="card">
   <header class="card-header">
@@ -8,10 +8,7 @@ h1 = Download the Block Producer Validator Results
     </p>
   </header>
   <div class="card-content">
-  <p>
-All of the parsable input bp.json files as well as the analysis are consolidated into a single output file: bps.json.  You can download the file below.  Feel free to use 
-this file in any projects you may have.
-  </p>
+%maintainer%
   </div>
 </div>
 
@@ -20,10 +17,32 @@ this file in any projects you may have.
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Download
+      Network Configuration
     </p>
   </header>
   <div class="card-content">
+<ul>
+<li> Chain ID: %config_chain_id%
+<li> Core Symbol: %config_core_symbol%
+<li> Filename: %config_filename%
+<li> Valid eosio versions: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.csv">GitHub</a>.
+</ul>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Block Producer Validator Results Data Download
+    </p>
+  </header>
+  <div class="card-content">
+  <p>
+All of the parsable input bp.json files as well as the analysis are consolidated into a single output file: bps.json.  You can download the file below.  Feel free to use 
+this file in any projects you may have.
+  </p>
     <a href=../bps.json>JSON Format</a>
   </div>
 </div>

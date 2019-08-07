@@ -11,7 +11,7 @@ h1 = %title_site%
     <ul class="menu-list">
     <li> <a href="producers/">Producer Scorecard</a>
     <li> <a href="reports/">Validator Reports</a>
-    <li> <a href="info/">Data Download</a>
+    <li> <a href="info/">Network Information</a>
     </ul>
   </div>
 </div>
