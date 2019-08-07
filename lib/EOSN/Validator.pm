@@ -748,7 +748,14 @@ sub check_onchainheartbeat {
 				detail => 'version is out of date',
 				value => $name,
 				see1 => 'https://validate.eosnation.io/faq/#versions',
-				%message_options	
+				%message_options
+			);
+		} else {
+			$self->add_message(
+				kind => 'ok',
+				detail => 'version is ok',
+				value => $name,
+				%message_options
 			);
 		}
 	}
@@ -2166,6 +2173,16 @@ sub validate_basic_api_extra_check {
 					class => $class,
 					node_type => $node_type,
 					see1 => 'https://validate.eosnation.io/faq/#versions'
+				);
+			} else {
+				$self->add_message(
+					kind => 'ok',
+					detail => 'server_version is ok',
+					value => $name,
+					url => $url,
+					field => $field,
+					class => $class,
+					node_type => $node_type
 				);
 			}
 		}
