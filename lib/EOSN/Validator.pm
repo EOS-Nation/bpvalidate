@@ -1091,7 +1091,7 @@ sub check_nodes {
 					history_type => $$node{history_type},
 					field => "node[$node_number].api_endpoint",
 					ssl => 'off',
-					add_to_list => 'nodes/history_http',
+					add_to_list => 'nodes/hyperion_http',
 					node_type => $node_type,
 					location => $location
 				);
@@ -1124,7 +1124,7 @@ sub check_nodes {
 					history_type => $$node{history_type},
 					field => "node[$node_number].ssl_endpoint",
 					ssl => 'on',
-					add_to_list => 'nodes/history_https',
+					add_to_list => 'nodes/hyperion_https',
 					node_type => $node_type,
 					location => $location
 				);
@@ -1949,14 +1949,14 @@ sub validate_hyperion_api {
 	my $history_type = $options{history_type};
 	my $field = $options{field};
 
-	if ($history_type && $history_type ne 'hyperion') {
-		return;
-	}
+#	if ($history_type && $history_type ne 'hyperion') {
+#		return;
+#	}
 
 	return $self->validate_url(
 		api_url => $api_url,
 		field => $field,
-		class => 'history',
+		class => 'hyperion',
 		url_ext => '/v1/chain/get_info',
 		content_type => 'json',
 		cors_origin => 'on',
@@ -1978,9 +1978,9 @@ sub validate_history_api {
 	my $history_type = $options{history_type};
 	my $field = $options{field};
 
-	if ($history_type && $history_type !~ /^(traditional|mongo)$/) {
-		return;
-	}
+#	if ($history_type && $history_type !~ /^(traditional|mongo)$/) {
+#		return;
+#	}
 
 	return $self->validate_url(
 		api_url => $api_url,
@@ -2214,13 +2214,13 @@ sub validate_hyperion_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	if (! $self->test_history_transaction (api_url => $url, api_version => 2, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_transaction (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, api_version => 2, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_actions (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_key_accounts (api_url => $url, api_version => 2, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_key_accounts (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2250,13 +2250,13 @@ sub validate_history_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	if (! $self->test_history_transaction (api_url => $url, api_version => 1, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_transaction (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, api_version => 1, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_actions (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_key_accounts (api_url => $url, api_version => 1, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_key_accounts (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2825,11 +2825,173 @@ sub test_abi_serializer {
 	return 1;
 }
 
+sub test_hyperion_transaction {
+	my ($self, %options) = @_;
+
+	my $base_url = $options{api_url};
+
+	my $transactions = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
+
+	foreach my $transaction (split (/,/, $transactions)) {
+		$options{api_url} = $base_url . '/v2/history/get_transaction?id=' . $transaction;
+		my $req = HTTP::Request->new('GET', $options{api_url});
+		my $res = $self->run_request ($req, \%options);
+		my $status_code = $res->code;
+		my $status_message = $res->status_line;
+		my $response_url = $res->request->uri;
+		my $response_host = $res->header('host');
+		my $content = $res->content;
+
+		$self->check_response_errors (response => $res, %options);
+
+		if (! $res->is_success) {
+			$self->add_message(
+				kind => 'crit',
+				detail => 'error retriving transaction history',
+				value => $status_message,
+				explanation => 'check hyperion configuration',
+				response_host => $response_host,
+				see1 => 'http://t.me/eosfullnodes',
+				%options
+			);
+			return undef;
+		}
+	}
+
+	$self->add_message(
+		kind => 'ok',
+		detail => 'get_transaction hyperion test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_hyperion_actions {
+	my ($self, %options) = @_;
+
+	$options{api_url} .= '/v2/history/get_actions?limit=1';
+
+	my $req = HTTP::Request->new('GET', $options{api_url});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message(
+			kind => 'crit',
+			detail => 'error retriving actions history',
+			value => $status_message,
+			response_host => $response_host,
+			explanation => 'check hyperion configuration',
+			see1 => 'http://t.me/eosfullnodes',
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options) || return undef;
+	if (! scalar (@{$$json{actions}})) {
+		$self->add_message(
+			kind => 'err',
+			detail => 'invalid JSON response',
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	my $block_time = $$json{actions}[0]{'@timestamp'};
+	my $time = str2time($block_time . ' UTC');
+	my $delta = abs(time - $time);
+	if ($delta > 300) {
+		$self->add_message(
+			kind => 'err',
+			detail => 'hyperion not up-to-date: last action is more than 5 minutes in the past',
+			value => $block_time,
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message(
+		kind => 'ok',
+		detail => 'get_actions hyperion test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_hyperion_key_accounts {
+	my ($self, %options) = @_;
+
+	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
+	$options{api_url} .= '/v2/state/get_key_accounts';
+	$options{post_data} = '{"public_key": "' . $public_key . '"}';
+
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message(
+			kind => 'crit',
+			detail => 'error retriving key_accounts history',
+			value => $status_message,
+			response_host => $response_host,
+			explanation => 'check hyperion configuration',
+			see1 => 'http://t.me/eosfullnodes',
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options) || return undef;
+	if (ref $json eq 'ARRAY') {
+		$self->add_message(
+			kind => 'err',
+			detail => 'invalid JSON response (array)',
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+	if (! scalar (@{$$json{account_names}})) {
+		$self->add_message(
+			kind => 'err',
+			detail => 'invalid JSON response',
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message(
+		kind => 'ok',
+		detail => 'get_key_accounts hyperion test passed',
+		%options
+	);
+
+	return 1;
+}
+
 sub test_history_transaction {
 	my ($self, %options) = @_;
 
-	my $version = $options{api_version} || die "$0: missing api_version";
-	$options{api_url} .= "/v$version/history/get_transaction";
+	$options{api_url} .= '/v1/history/get_transaction';
 
 	my $transactions = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
 
@@ -2871,8 +3033,7 @@ sub test_history_transaction {
 sub test_history_actions {
 	my ($self, %options) = @_;
 
-	my $version = $options{api_version} || die "$0: missing api_version";
-	$options{api_url} .= "/v$version/history/get_actions";
+	$options{api_url} .= '/v1/history/get_actions';
 	$options{post_data} = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
 
 	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
@@ -2962,8 +3123,7 @@ sub test_history_key_accounts {
 	my ($self, %options) = @_;
 
 	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
-	my $version = $options{api_version} || die "$0: missing api_version";
-	$options{api_url} .= "/v$version/history/get_key_accounts";
+	$options{api_url} .= '/v1/history/get_key_accounts';
 	$options{post_data} = '{"json": true, "public_key": "' . $public_key . '"}';
 
 	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});

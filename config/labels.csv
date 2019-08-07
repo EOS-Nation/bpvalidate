@@ -8,6 +8,7 @@ class_endpoint,Endpoints,终端
 class_blacklist,Blacklist,黑名单
 class_bpjson,bp.json On-Chain,链上bp.json
 class_history,History,历史
+class_hyperion,Hyperion,
 class_heartbeat,Heartbeat,心跳
 class_chains,Chains.json,Chains.json
 class_ipv6,IPv6,IPv6协议
@@ -16,6 +17,7 @@ class_regproducer_l,Regproducer Check,注册出块节点 验证
 class_org_l,Organization Check,机构 验证
 class_endpoint_l,Endpoints Check,终端 验证
 class_history_l,History Check,历史 验证
+class_hyperion_l,Hyperion Check,
 class_blacklist_l,Blacklist Check,黑名单 验证
 class_bpjson_l,bp.json On-Chain Check,链上bp.json 验证
 class_heartbeat_l,Heartbeat Check,心跳 验证
@@ -30,6 +32,7 @@ check_crit,Critical,批评
 check_bonus_blacklist,OK,OK
 check_bonus_bpjson,OK,OK
 check_bonus_history,OK,OK
+check_bonus_hyperion,OK,OK
 check_bonus_heartbeat,OK,OK
 check_bonus_chains,OK,OK
 check_bonus_ipv6,OK,OK
