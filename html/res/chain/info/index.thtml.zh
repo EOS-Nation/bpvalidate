@@ -17,15 +17,15 @@ h1 = Network Information
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Network Configuration
+      网络配置
     </p>
   </header>
   <div class="card-content">
 <ul>
-<li> Chain ID: %config_chain_id%
-<li> Core Symbol: %config_core_symbol%
-<li> Filename: %config_filename%
-<li> Valid eosio versions: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.csv">GitHub</a>.
+<li> 链ID: %config_chain_id%
+<li> 核心特征: %config_core_symbol%
+<li> 文件名: %config_filename%
+<li> 有效eosio版本: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.csv">GitHub</a>.
 </ul>
   </div>
 </div>
@@ -35,7 +35,7 @@ h1 = Network Information
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Block Producer Validator Results Data Download
+      节点验证器结果数据下载
     </p>
   </header>
   <div class="card-content">
