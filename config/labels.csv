@@ -8,7 +8,7 @@ class_endpoint,Endpoints,终端
 class_blacklist,Blacklist,黑名单
 class_bpjson,bp.json On-Chain,链上bp.json
 class_history,History,历史
-class_hyperion,Hyperion,
+class_hyperion,Hyperion,Hyperion
 class_heartbeat,Heartbeat,心跳
 class_chains,Chains.json,Chains.json
 class_ipv6,IPv6,IPv6协议
@@ -17,7 +17,7 @@ class_regproducer_l,Regproducer Check,注册出块节点 验证
 class_org_l,Organization Check,机构 验证
 class_endpoint_l,Endpoints Check,终端 验证
 class_history_l,History Check,历史 验证
-class_hyperion_l,Hyperion Check,
+class_hyperion_l,Hyperion Check,Hyperion 验证
 class_blacklist_l,Blacklist Check,黑名单 验证
 class_bpjson_l,bp.json On-Chain Check,链上bp.json 验证
 class_heartbeat_l,Heartbeat Check,心跳 验证
@@ -57,14 +57,14 @@ title_reports/producer_virtualization,Producer Virtualization Report,出块节�
 title_reports/producer_hbversion,Producer Heartbeat Version Report,出块节点Heartbeat版本报告
 title_producers,Report for %producer_name_html%,%producer_name_html%报告
 label_text_version,text version,文字内容版本
-label_json_version,json version,
+label_json_version,json version,json版本
 filter_yes,Yes,是
 filter_na,n/a,无内容
 filter_no,No,不是
 nav_title,bp.json Validator,bp.json 验证器
 nav_producers,Producer Scorecard, 出块节点计分卡
 nav_reports,Reports,报告
-nav_info,Network Info,
+nav_info,Network Info,网络信息
 nav_about,About,关于
 nav_update,Validator last update: %last_update%, 验证器最后更新: %last_update%
 nav_lang,Language: %lang%,语言: %lang%
