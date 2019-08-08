@@ -83,5 +83,5 @@ vtype_hvm,HVM,HVM
 chain_mainnet,Mainnet,主网
 chain_bos,BOS,BOS
 chain_telos,Telos,Telos
-chain_jungle,Jungle Testnet,
-chain_kylin,Kylin Testnet,
+chain_jungle,Jungle Testnet,Jungle测试网
+chain_kylin,Kylin Testnet,Kylin测试网
