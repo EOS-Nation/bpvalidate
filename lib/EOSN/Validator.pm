@@ -3330,6 +3330,12 @@ sub test_regproducer_key {
 	my $response_url = $res->request->uri;
 	my $content = $res->content;
 
+	if (! $res->is_success) {
+		# API endpoint is unavilable, so we can't run this test.  Assume ok
+		warn "API endpoint error url=<$url> status=<$status_code $status_message> with data=<$post_data>\n";
+		return 1;
+	}
+
 	my $json = $self->get_json ($content, %options) || return 1;  #skip if down
 
 	if ((ref $$json{account_names} ne 'ARRAY') || (scalar @{$$json{account_names}} != 0)) {
