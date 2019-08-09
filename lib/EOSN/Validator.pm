@@ -240,7 +240,7 @@ sub run_validate {
 		return undef;
 	}
 
-	$self->test_regproducer_key (key => $key, class => 'regproducer', request_timeout => 10, cache_timeout => 600);
+	$self->test_regproducer_key (key => $key, class => 'regproducer', request_timeout => 10, cache_timeout => 300);
 
 	if ($location_check eq 'country') {
 		my $country = $self->validate_country_n (country => $location, class => 'regproducer');
@@ -305,7 +305,7 @@ sub run_validate {
 		dupe => 'skip',
 		add_to_list => 'resources/regproducer_url',
 		request_timeout => 10,
-		cache_timeout => 600
+		cache_timeout => 300
 	);
 
 	my $xurl = $url;
@@ -325,7 +325,7 @@ sub run_validate {
 		add_to_list => 'resources/chainjson',
 		see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json',
 		request_timeout => 10,
-		cache_timeout => 600
+		cache_timeout => 300
 	);
 	if ($chains_json) {
 		my $count = scalar (keys %{$$chains_json{chains}});
@@ -378,7 +378,7 @@ sub run_validate {
 		dupe => 'err',
 		add_to_list => 'resources/bpjson',
 		request_timeout => 10,
-		cache_timeout => 600
+		cache_timeout => 300
 	);
 	return undef if (! $json);
 
@@ -886,7 +886,7 @@ sub check_org_misc {
 		add_to_list => 'resources/website',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 3600
+		cache_timeout => 12 * 3600
 	);
 	$self->validate_url(
 		url => $$json{org}{code_of_conduct},
@@ -896,7 +896,7 @@ sub check_org_misc {
 		add_to_list => 'resources/conduct',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 3600
+		cache_timeout => 12 * 3600
 	);
 	$self->validate_url(
 		url => $$json{org}{ownership_disclosure},
@@ -906,7 +906,7 @@ sub check_org_misc {
 		add_to_list => 'resources/ownership',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 3600
+		cache_timeout => 12 * 3600
 	);
 
 	return 1;
@@ -934,7 +934,7 @@ sub check_org_branding {
 		add_to_list => 'resources/social_logo_256',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 3600
+		cache_timeout => 12 * 3600
 	);
 	$self->validate_url(
 		url => $$json{org}{branding}{logo_1024},
@@ -944,7 +944,7 @@ sub check_org_branding {
 		add_to_list => 'resources/social_logo_1024',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 3600
+		cache_timeout => 12 * 3600
 	);
 	$self->validate_url(
 		url => $$json{org}{branding}{logo_svg},
@@ -954,7 +954,7 @@ sub check_org_branding {
 		add_to_list => 'resources/social_logo_svg',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 3600
+		cache_timeout => 12 * 3600
 	);
 }
 
@@ -995,24 +995,25 @@ sub check_org_social {
 			if (! $self->validate_url(
 				url => $url,
 				field => "org.social.$key",
+				failure_code => 'err',
 				class => 'org',
 				content_type => 'html',
 				add_to_list => "social/$key",
 				dupe => 'warn',
 				request_timeout => 10,
-				cache_timeout => 21600
+				cache_timeout => 24 * 3600
 			)) {
 				next;
 			}
 		}
 
-		$self->add_message(
-			kind => 'ok',
-			detail => 'valid social reference',
-			value => $value,
-			field => "org.social.$key",
-			class => 'org'
-		);
+#		$self->add_message(
+#			kind => 'ok',
+#			detail => 'valid social reference',
+#			value => $value,
+#			field => "org.social.$key",
+#			class => 'org'
+#		);
 		$valid++;
 	}
 
@@ -1954,7 +1955,7 @@ sub validate_basic_api {
 		add_info_to_list => 'info',
 		dupe => 'info',
 		request_timeout => 2,
-		cache_timeout => 600,
+		cache_timeout => 300,
 		%options
 	);
 }
@@ -1984,7 +1985,7 @@ sub validate_hyperion_api {
 		add_info_to_list => 'info',
 		dupe => 'info',
 		request_timeout => 2,
-		cache_timeout => 600,
+		cache_timeout => 300,
 		%options
 	);
 }
@@ -2014,7 +2015,7 @@ sub validate_history_api {
 		add_info_to_list => 'info',
 		dupe => 'info',
 		request_timeout => 2,
-		cache_timeout => 600,
+		cache_timeout => 300,
 		%options
 	);
 }
@@ -2200,25 +2201,25 @@ sub validate_basic_api_extra_check {
 		}
 	}
 
-	if (! $self->test_block_one (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_block_one (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_patreonous (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_patreonous (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_error_message (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_error_message (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_abi_serializer (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_abi_serializer (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_system_symbol (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_system_symbol (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_producer_api (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_producer_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_net_api (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_net_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2243,13 +2244,13 @@ sub validate_hyperion_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	if (! $self->test_hyperion_transaction (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_hyperion_actions (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_hyperion_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2279,13 +2280,13 @@ sub validate_history_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	if (! $self->test_history_transaction (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
