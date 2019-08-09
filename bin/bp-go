@@ -8,5 +8,5 @@ bp-exec-setup --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
 while [ 1 ]
 do
 	bp-exec-run --out=/var/www/bpvalidate/ --config=/etc/bpvalidate/
-	sleep 240
+	sleep 120
 done
