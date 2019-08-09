@@ -423,8 +423,10 @@ sub generate_message {
 	my $count = $$options{count};
 	my $value = $$options{value};
 	my $suggested_value = $$options{suggested_value};
-	my $timeout = $$options{timeout};
+	my $request_timeout = $$options{request_timeout};
+	my $cache_timeout = $$options{cache_timeout};
 	my $elapsed_time = $$options{elapsed_time};
+	my $check_time = $$options{check_time};
 	my $kind = $$options{kind} || confess "missing kind";
 	my $detail = $$options{detail} || confess "missing detail";
 	my $threshold = $$options{threshold};
@@ -447,6 +449,8 @@ sub generate_message {
 	my $last_update_time = $$options{last_update_time};
 	my $diff = $$options{diff};
 
+	# ---------- formatting
+
 	if ($url && $url !~ m#^https?://.#) {
 		$host = $url;
 		$url = undef;
@@ -455,39 +459,52 @@ sub generate_message {
 		$response_url = undef if ($url eq $response_url);
 	}
 
-	$timeout .= ' s' if ($timeout);
+	$request_timeout .= ' ' . label('time_s', $lang) if ($request_timeout);
+
+	if ($cache_timeout) {
+		$cache_timeout = undef if ($cache_timeout < 1800);
+	}
+	if ($cache_timeout) {
+		$cache_timeout = int ($cache_timeout / 60);
+		$cache_timeout .= ' ' . label('time_m', $lang);
+	}
+
 	$elapsed_time .= ' s' if ($elapsed_time);
 
-	$detail .= format_message_entry ('threshold', $threshold, 0, $content_type);
-	$detail .= format_message_entry ('count', $count, 0, $content_type);
-	$detail .= format_message_entry ('value', $value, 0, $content_type);
-	$detail .= format_message_entry ('suggested to use value', $suggested_value, 0, $content_type);
-	$detail .= format_message_entry ('field', $field, 0, $content_type);
-	$detail .= format_message_entry ('contract', $contract, 0, $content_type);
-	$detail .= format_message_entry ('having node_type', $node_type, 0, $content_type);
-	$detail .= format_message_entry ('resource', $resource, 0, $content_type);
-	$detail .= format_message_entry ('api_url', $api_url, 0, $content_type);
-	$detail .= format_message_entry ('url', $url, 1, $content_type);
-	$detail .= format_message_entry ('post_data', $post_data, 0, $content_type);
-	$detail .= format_message_entry ('redirected to response_url', $response_url, 0, $content_type);
-	$detail .= format_message_entry ('response from host', $response_host, 0, $content_type);
-	$detail .= format_message_entry ('host', $host, 0, $content_type);
-	$detail .= format_message_entry ('ip', $ip, 0, $content_type);
-	$detail .= format_message_entry ('dns', $dns, 0, $content_type);
-	$detail .= format_message_entry ('port', $port, 0, $content_type);
-	$detail .= format_message_entry ('elapsed time', $elapsed_time, 0, $content_type);
-	$detail .= format_message_entry ('timeout', $timeout, 0, $content_type);
-	$detail .= format_message_entry ('explanation', $explanation, 0, $content_type);
-	$detail .= format_message_entry ('see', $see1, 1, $content_type);
-	$detail .= format_message_entry ('see', $see2, 1, $content_type);
-	$detail .= format_message_entry ('last updated at', datetime($last_update_time, $lang), 0, $content_type);
-	$detail .= format_message_entry ('diff', $diff, 2, $content_type);
+	# ---------- output
+
+	$detail .= format_message_entry ('threshold', $threshold, 0, $content_type, $lang);
+	$detail .= format_message_entry ('count', $count, 0, $content_type, $lang);
+	$detail .= format_message_entry ('value', $value, 0, $content_type, $lang);
+	$detail .= format_message_entry ('suggested to use value', $suggested_value, 0, $content_type, $lang);
+	$detail .= format_message_entry ('field', $field, 0, $content_type, $lang);
+	$detail .= format_message_entry ('contract', $contract, 0, $content_type, $lang);
+	$detail .= format_message_entry ('having node_type', $node_type, 0, $content_type, $lang);
+	$detail .= format_message_entry ('resource', $resource, 0, $content_type, $lang);
+	$detail .= format_message_entry ('api_url', $api_url, 0, $content_type, $lang);
+	$detail .= format_message_entry ('url', $url, 1, $content_type, $lang);
+	$detail .= format_message_entry ('post_data', $post_data, 0, $content_type, $lang);
+	$detail .= format_message_entry ('redirected to response_url', $response_url, 0, $content_type, $lang);
+	$detail .= format_message_entry ('response from host', $response_host, 0, $content_type, $lang);
+	$detail .= format_message_entry ('host', $host, 0, $content_type, $lang);
+	$detail .= format_message_entry ('ip', $ip, 0, $content_type, $lang);
+	$detail .= format_message_entry ('dns', $dns, 0, $content_type, $lang);
+	$detail .= format_message_entry ('port', $port, 0, $content_type, $lang);
+	$detail .= format_message_entry ('elapsed time', $elapsed_time, 0, $content_type, $lang);
+	$detail .= format_message_entry ('timeout', $request_timeout, 0, $content_type, $lang);
+	$detail .= format_message_entry ('validated at', datetime($check_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('validated every', $cache_timeout, 0, $content_type, $lang);
+	$detail .= format_message_entry ('explanation', $explanation, 0, $content_type, $lang);
+	$detail .= format_message_entry ('see', $see1, 1, $content_type, $lang);
+	$detail .= format_message_entry ('see', $see2, 1, $content_type, $lang);
+	$detail .= format_message_entry ('last updated at', datetime($last_update_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('diff', $diff, 2, $content_type, $lang);
 
 	return $detail;
 }
 
 sub format_message_entry {
-	my ($key, $value, $is_url, $content_type) = @_;
+	my ($key, $value, $is_url, $content_type, $lang) = @_;
 
 	return '' if (! defined $value);
 	return '' if ($value eq '');
@@ -500,12 +517,12 @@ sub format_message_entry {
 		} else {
 			$value = encode_entities ($value);
 		}
-		return ", $key=&lt;$value&gt;";
+		return ', ' . label($key, $lang) . '=&lt;' . $value . '&gt;';
 	} else {
 		if ($is_url == 2) {
 			return "";
 		} else {
-			return ", $key=<$value>";
+			return ', ' . label($key, $lang) . '=<' . $value .'>';
 		}
 	}
 }
