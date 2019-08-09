@@ -1,0 +1,6 @@
+title = %title_site%: Reports
+h1 = Validator Reports
+
+<ul class="menu-list">
+%report_list%
+</ul>

@@ -1,0 +1,48 @@
+title = %title_site%
+h1 = %title_site%
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Introduction
+    </p>
+  </header>
+  <div class="card-content">
+
+The bp.json validator aims to check if Block Producers and Standby Block Producers are providing information to the community in a "standard" way.  The validator has a set 
+of "checks" and after executing the "checks" it then reports how well the bp.json file published by each block producer aligns to the "standard".  To get a full 
+understanding of how well a Block Producer or Standby Block Producer is contributing to the community takes more than the checks done here, but these checks can help the 
+EOS community determine which organizations to vote for.
+
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Networks
+    </p>
+  </header>
+  <div class="card-content">
+    <ul class="menu-list">
+%networks%
+    </ul>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <header class="card-header">
+    <p class="card-header-title">
+      Information
+    </p>
+  </header>
+  <div class="card-content">
+    <ul class="menu-list">
+    <li> <a href="about/">About</a>
+    </ul>
+  </div>
+</div>
