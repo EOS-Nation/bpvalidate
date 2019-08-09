@@ -126,7 +126,7 @@ sub get_report_options {
 }
 
 sub get_report_options_website {
-	GetOptions('output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
+	GetOptions('chain=s' => \$chain, 'output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
 
 	confess "$0: output dir not given" if (! $outdir);
 	confess "$0: config dir not given" if (! $confdir);

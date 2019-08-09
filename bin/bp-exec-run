@@ -47,8 +47,7 @@ sub go {
 		print "--------- run report: $chain producers ----------\n";
 		system ("bp-report-producers --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
 
+		print "---------- generate website: $chain -----------\n";
+		system ("bp-website-builder --chain=$chain --out=$outdir --config=$confdir");
 	}
-
-	print "---------- generate website -----------\n";
-	system ("bp-website-builder --out=$outdir --config=$confdir");
 }
