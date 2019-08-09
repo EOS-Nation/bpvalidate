@@ -473,32 +473,32 @@ sub generate_message {
 
 	# ---------- output
 
-	$detail .= format_message_entry ('threshold', $threshold, 0, $content_type, $lang);
-	$detail .= format_message_entry ('count', $count, 0, $content_type, $lang);
-	$detail .= format_message_entry ('value', $value, 0, $content_type, $lang);
-	$detail .= format_message_entry ('suggested_to_use_value', $suggested_value, 0, $content_type, $lang);
-	$detail .= format_message_entry ('field', $field, 0, $content_type, $lang);
-	$detail .= format_message_entry ('contract', $contract, 0, $content_type, $lang);
-	$detail .= format_message_entry ('having_node_type', $node_type, 0, $content_type, $lang);
-	$detail .= format_message_entry ('resource', $resource, 0, $content_type, $lang);
-	$detail .= format_message_entry ('api_url', $api_url, 0, $content_type, $lang);
-	$detail .= format_message_entry ('url', $url, 1, $content_type, $lang);
-	$detail .= format_message_entry ('post_data', $post_data, 0, $content_type, $lang);
-	$detail .= format_message_entry ('redirected_to_response_url', $response_url, 0, $content_type, $lang);
-	$detail .= format_message_entry ('response_from_host', $response_host, 0, $content_type, $lang);
-	$detail .= format_message_entry ('host', $host, 0, $content_type, $lang);
-	$detail .= format_message_entry ('ip', $ip, 0, $content_type, $lang);
-	$detail .= format_message_entry ('dns', $dns, 0, $content_type, $lang);
-	$detail .= format_message_entry ('port', $port, 0, $content_type, $lang);
-	$detail .= format_message_entry ('elapsed_time', $elapsed_time, 0, $content_type, $lang);
-	$detail .= format_message_entry ('timeout', $request_timeout, 0, $content_type, $lang);
-	$detail .= format_message_entry ('validated_at', datetime($check_time, $lang), 0, $content_type, $lang);
-	$detail .= format_message_entry ('validated_every', $cache_timeout, 0, $content_type, $lang);
-	$detail .= format_message_entry ('explanation', $explanation, 0, $content_type, $lang);
-	$detail .= format_message_entry ('see', $see1, 1, $content_type, $lang);
-	$detail .= format_message_entry ('see', $see2, 1, $content_type, $lang);
-	$detail .= format_message_entry ('last_updated_at', datetime($last_update_time, $lang), 0, $content_type, $lang);
-	$detail .= format_message_entry ('diff', $diff, 2, $content_type, $lang);
+	$detail .= format_message_entry ('msg_threshold', $threshold, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_count', $count, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_value', $value, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_suggested_to_use_value', $suggested_value, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_field', $field, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_contract', $contract, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_having_node_type', $node_type, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_resource', $resource, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_api_url', $api_url, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_url', $url, 1, $content_type, $lang);
+	$detail .= format_message_entry ('msg_post_data', $post_data, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_redirected_to_response_url', $response_url, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_response_from_host', $response_host, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_host', $host, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_ip', $ip, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_dns', $dns, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_port', $port, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_elapsed_time', $elapsed_time, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_timeout', $request_timeout, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_validated_at', datetime($check_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_validated_every', $cache_timeout, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_explanation', $explanation, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_see', $see1, 1, $content_type, $lang);
+	$detail .= format_message_entry ('msg_see', $see2, 1, $content_type, $lang);
+	$detail .= format_message_entry ('msg_last_updated_at', datetime($last_update_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_diff', $diff, 2, $content_type, $lang);
 
 	return $detail;
 }
