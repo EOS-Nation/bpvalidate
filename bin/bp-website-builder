@@ -62,7 +62,12 @@ sub read_globals {
 }
 
 sub go {
-	find({wanted => \&generate_content, no_chdir => 1}, $outdir);
+	my $dir = $outdir;
+	my $chain = chain ();
+	if ($chain) {
+		$dir = "$dir/$chain";
+	}
+	find({wanted => \&generate_content, no_chdir => 1}, $dir);
 }
 
 sub generate_content {
