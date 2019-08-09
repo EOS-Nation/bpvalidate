@@ -4,17 +4,27 @@ use utf8;
 use strict;
 use Exporter;
 use LWPx::ParanoidAgent;
+use EOSN::CachingAgent;
 use JSON qw(from_json to_json);
 use Data::Dumper;
 
 use parent qw(Exporter);
-our @EXPORT_OK = qw(eosn_ua get_table);
+our @EXPORT_OK = qw(eosn_normal_ua eosn_cache_ua get_table);
 
 # --------------------------------------------------------------------------
 # Subroutines
 
-sub eosn_ua {
+sub eosn_normal_ua {
 	my $ua = new LWPx::ParanoidAgent;
+	$ua->agent("curl/7.58.0");
+	$ua->protocols_allowed(["http", "https"]);
+	$ua->timeout(10);
+
+	return $ua;
+}
+
+sub eosn_cache_ua {
+	my $ua = new EOSN::CachingAgent;
 	$ua->agent("curl/7.58.0");
 	$ua->protocols_allowed(["http", "https"]);
 	$ua->timeout(10);

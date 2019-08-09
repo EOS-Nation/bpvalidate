@@ -3,13 +3,11 @@ package EOSN::Validator;
 use utf8;
 use strict;
 use JSON;
-use EOSN::UA qw(eosn_ua get_table);
 use Locale::Country;
 use List::Util qw(maxstr);
 use Data::Validate qw(is_integer is_numeric is_between);
 use Data::Validate::IP qw(is_public_ip);
 use IO::Socket;
-use Data::Dumper;
 use Net::DNS;
 use Date::Format qw(time2str);
 use Date::Parse qw(str2time);
@@ -17,6 +15,7 @@ use Carp qw(confess);
 use Time::Seconds;
 use Text::Diff;
 use Time::HiRes qw(time);
+use Digest::MD5 qw(md5_hex);
 
 our %content_types;
 $content_types{json} = ['application/json'];
@@ -163,7 +162,7 @@ sub validate {
 
 	$self->prefix_message(
 		kind => 'info',
-		detail => 'bp.json is re-validated approximately every 30 minutes',
+		detail => 'bp.json is re-validated approximately every 30 minutes; some URLs are checked less often',
 		last_update_time => $update_time,
 		class => 'general'
 	);
@@ -241,7 +240,7 @@ sub run_validate {
 		return undef;
 	}
 
-	$self->test_regproducer_key (key => $key, class => 'regproducer', timeout => 10);
+	$self->test_regproducer_key (key => $key, class => 'regproducer', request_timeout => 10, cache_timeout => 600);
 
 	if ($location_check eq 'country') {
 		my $country = $self->validate_country_n (country => $location, class => 'regproducer');
@@ -305,7 +304,8 @@ sub run_validate {
 		cors_headers => 'either',
 		dupe => 'skip',
 		add_to_list => 'resources/regproducer_url',
-		timeout => 10
+		request_timeout => 10,
+		cache_timeout => 600
 	);
 
 	my $xurl = $url;
@@ -324,7 +324,8 @@ sub run_validate {
 		dupe => 'err',
 		add_to_list => 'resources/chainjson',
 		see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json',
-		timeout => 10
+		request_timeout => 10,
+		cache_timeout => 600
 	);
 	if ($chains_json) {
 		my $count = scalar (keys %{$$chains_json{chains}});
@@ -376,7 +377,8 @@ sub run_validate {
 		cors_headers => 'either',
 		dupe => 'err',
 		add_to_list => 'resources/bpjson',
-		timeout => 10
+		request_timeout => 10,
+		cache_timeout => 600
 	);
 	return undef if (! $json);
 
@@ -883,7 +885,8 @@ sub check_org_misc {
 		content_type => 'html',
 		add_to_list => 'resources/website',
 		dupe => 'warn',
-		timeout => 10
+		request_timeout => 10,
+		cache_timeout => 3600
 	);
 	$self->validate_url(
 		url => $$json{org}{code_of_conduct},
@@ -892,7 +895,8 @@ sub check_org_misc {
 		content_type => 'html',
 		add_to_list => 'resources/conduct',
 		dupe => 'warn',
-		timeout => 10
+		request_timeout => 10,
+		cache_timeout => 3600
 	);
 	$self->validate_url(
 		url => $$json{org}{ownership_disclosure},
@@ -901,7 +905,8 @@ sub check_org_misc {
 		content_type => 'html',
 		add_to_list => 'resources/ownership',
 		dupe => 'warn',
-		timeout => 10
+		request_timeout => 10,
+		cache_timeout => 3600
 	);
 
 	return 1;
@@ -928,7 +933,8 @@ sub check_org_branding {
 		content_type => 'png_jpg',
 		add_to_list => 'resources/social_logo_256',
 		dupe => 'warn',
-		timeout => 10
+		request_timeout => 10,
+		cache_timeout => 3600
 	);
 	$self->validate_url(
 		url => $$json{org}{branding}{logo_1024},
@@ -937,7 +943,8 @@ sub check_org_branding {
 		content_type => 'png_jpg',
 		add_to_list => 'resources/social_logo_1024',
 		dupe => 'warn',
-		timeout => 10
+		request_timeout => 10,
+		cache_timeout => 3600
 	);
 	$self->validate_url(
 		url => $$json{org}{branding}{logo_svg},
@@ -946,7 +953,8 @@ sub check_org_branding {
 		content_type => 'svg',
 		add_to_list => 'resources/social_logo_svg',
 		dupe => 'warn',
-		timeout => 10
+		request_timeout => 10,
+		cache_timeout => 3600
 	);
 }
 
@@ -967,10 +975,11 @@ sub check_org_social {
 	my $valid = 0;
 	foreach my $key (sort keys %social) {
 		next if (! exists $$json{org}{social}{$key});
+		next if ($$json{org}{social}{$key} eq '');
 		my $value = $$json{org}{social}{$key};
 		my $url_prefix = $social{$key};
 
-		if ($value =~ m#https?://#) {
+		if ($value =~ m#^https?://#) {
 			$self->add_message(
 				kind => 'err',
 				detail => 'social references must be relative',
@@ -983,18 +992,18 @@ sub check_org_social {
 		if ($url_prefix) {
 			my $url = $url_prefix . $value;
 			$url .= '/' if ($key eq 'keybase');
-# disable until caching is implemented
-#			if (! $self->validate_url(
-#				url => $url,
-#				field => "org.social.$key",
-#				class => 'org',
-#				content_type => 'html',
-#				add_to_list => "social/$key",
-#				dupe => 'warn',
-#				timeout => 10
-#			)) {
-#				next;
-#			}
+			if (! $self->validate_url(
+				url => $url,
+				field => "org.social.$key",
+				class => 'org',
+				content_type => 'html',
+				add_to_list => "social/$key",
+				dupe => 'warn',
+				request_timeout => 10,
+				cache_timeout => 21600
+			)) {
+				next;
+			}
 		}
 
 		$self->add_message(
@@ -1944,7 +1953,8 @@ sub validate_basic_api {
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
 		dupe => 'info',
-		timeout => 2,
+		request_timeout => 2,
+		cache_timeout => 600,
 		%options
 	);
 }
@@ -1973,7 +1983,8 @@ sub validate_hyperion_api {
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
 		dupe => 'info',
-		timeout => 2,
+		request_timeout => 2,
+		cache_timeout => 600,
 		%options
 	);
 }
@@ -2002,7 +2013,8 @@ sub validate_history_api {
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
 		dupe => 'info',
-		timeout => 2,
+		request_timeout => 2,
+		cache_timeout => 600,
 		%options
 	);
 }
@@ -2188,25 +2200,25 @@ sub validate_basic_api_extra_check {
 		}
 	}
 
-	if (! $self->test_block_one (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_block_one (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_patreonous (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_patreonous (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_error_message (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_error_message (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_abi_serializer (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_abi_serializer (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_system_symbol (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_system_symbol (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_producer_api (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_producer_api (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_net_api (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_net_api (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2231,13 +2243,13 @@ sub validate_hyperion_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	if (! $self->test_hyperion_transaction (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_transaction (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_hyperion_actions (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_actions (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_hyperion_key_accounts (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2267,13 +2279,13 @@ sub validate_history_api_extra_check {
 	my $errors;
 	my $versions = $self->versions;
 
-	if (! $self->test_history_transaction (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_transaction (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_actions (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_key_accounts (api_url => $url, timeout => 10, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 600, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -3465,8 +3477,6 @@ sub check_response_errors {
 	my @response_host = $res->header('host');
 	return undef if (! @response_host);
 
-#	print Dumper $res->headers;
-
 	my $errors = 0;
 
 	# ---------- duplicate response hosts
@@ -3525,18 +3535,12 @@ sub version_cleanup {
 sub run_request {
 	my ($self, $req, $options) = @_;
 
-	my $clock = time;
+	$self->ua->dbh ($self->dbh);
+	$self->ua->options ($options);
 
-	my $timeout = $$options{timeout} || confess "$0: timeout not provided";
-	$self->ua->timeout($timeout * 2);
-	my $res = $self->ua->request($req);
+	my $res = $self->ua->request ($req);
 
-	my $time = time - $clock;
-	$$options{elapsed_time} = sprintf ("%.1f", $time);
-
-	print sprintf ("%.2f %3d %4s %s %s\n", $time, $res->code, $req->method, $req->uri, $req->content);
-
-	if ($time > $timeout) {
+	if ($$options{elapsed_time} > $$options{request_timeout}) {
 		$self->add_message(
 			kind => 'err',
 			detail => 'response took longer than expected',

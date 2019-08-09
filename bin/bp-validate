@@ -7,7 +7,7 @@ use Parallel::ForkManager;
 use EOSN::SQL qw(do_connect);
 use EOSN::Validator;
 use EOSN::FileUtil qw(write_file read_csv_hash);
-use EOSN::UA qw(eosn_ua get_table);
+use EOSN::UA qw(eosn_normal_ua eosn_cache_ua get_table);
 use Date::Format qw(time2str);
 use Getopt::Long;
 
@@ -40,14 +40,13 @@ print "read from url=<$base_url>\n";
 
 setup_jobs();
 run_validation();
-cleanup();
 write_results();
 
 # ---------------------------------------------------------------------------
 # Subroutines
 
 sub setup_jobs {
-	my $ua = eosn_ua();
+	my $ua = eosn_normal_ua();
 	my $dbh = do_connect('validate');
 	my $rank = 0;
 	my %onchain;
@@ -130,45 +129,49 @@ sub setup_jobs {
 
 	# ---- go
 
+	$dbh->do("update producer_$chain set status = 'hold'");
+	my $data = $dbh->selectall_hashref("select * from producer_$chain", 'producer');
+
 	foreach my $entry (@{$producer_list}) {
 		$rank++;
 		my $owner = $$entry{owner};
 
-		$dbh->do("insert ignore into producer_$chain (producer, status, regproducer_at) values (?, ?, ?)", {}, $owner, 'hold', time);
+		if (! $$data{$owner}) {
+			$dbh->do("insert into producer_$chain (producer, status, checked_at, regproducer_at) values (?, ?, ?, ?)", {}, $owner, 'hold', 0, time);
+			my $id = $dbh->last_insert_id();
+			$$data{$owner}{id} = $id;
+			$$data{$owner}{status} = 'hold';
+			$$data{$owner}{checked_at} = 0;
+		}
 
 		my $vote_percent = 0;
 		if ($$entry{is_active}) {
 			$vote_percent = $$entry{total_votes} / $vote_total * 100;
 		}
+
 		my $state;
-		my $limit;
 		if (! $filter_producer) {
 			print ">> normal $$entry{owner}\n" if ($debug);
-			$state = 'check';
-			$limit = time - 1500;
-
+			$state = 'check' if ($$data{$owner}{checked_at} < time - 1500);
 		} elsif (exists $filter_producers{$$entry{owner}}) {
 			print ">> force $$entry{owner}\n" if ($debug);
 			$state = 'check';
-			$limit = time;
-
-		} else {
-			#print ">> skip $$entry{owner}\n" if ($debug);
-			$state = 'hold';
-			$limit = time;
 		}
 
 		$dbh->do("update producer_$chain set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, 
 			onchainbpjson_enabled = ?, onchainbpjson_data = ?,
 			onchainheartbeat_enabled = ?, onchainheartbeat_data = ?, onchainheartbeat_timestamp = ?,
 			onchainblacklist_enabled = ?, onchainblacklist_data = ?
-			where producer = ? and (checked_at < ? or checked_at is null)"
+			where id = ?"
 			, {}, $state, time, to_json ($entry), $rank, $vote_percent,
 			(scalar (@$onchainbpjson_list) ? 1 : 0), $onchain{bpjson}{$owner},
 			(scalar (@$onchainheartbeat_list) ? 1 : 0), $onchain{heartbeat}{$owner}{json}, $onchain{heartbeat}{$owner}{timestamp},
 			(scalar (@$onchainblacklist_list) ? 1 : 0), $onchain{blacklist}{$owner},
-			$owner, $limit);
+			$$data{$owner}{id});
 	}
+
+	$dbh->do("delete from url where checked_at < ?", {}, time - (3600 * 24 * 14));
+	$dbh->do("delete from producer_$chain where regproducer_at < ?", {}, time - (3600 * 9));
 }
 
 sub run_validation {
@@ -187,11 +190,6 @@ sub run_validation {
 	}
 }
 
-sub cleanup {
-	my $dbh = do_connect('validate');
-	$dbh->do("delete from producer_$chain where regproducer_at < ?", {}, time - (3600 * 9));
-}
-
 sub doit {
 	my ($thread_id) = @_;
 
@@ -204,8 +202,9 @@ sub doit {
 			return;
 		}
 		warn "[$thread_id] processing: $$entry{producer}\n" if ($debug);
-		my $ua = eosn_ua();
+		my $ua = eosn_cache_ua();
 		my $producer = new EOSN::Validator (ua => $ua,
+			dbh => $dbh,
 			globals => $globals,
 			properties => from_json ($$entry{regproducer_data}),
 			versions => $versions,
@@ -223,7 +222,7 @@ sub doit {
 		);
 		my $results = $producer->validate;
 		#print "[$thread_id] >>> ", to_json ($results), "\n";
-		$dbh->do("update producer_$chain set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?", {}, 'done', time, to_json ($results), $$entry{id});
+		$dbh->do("update producer_$chain set thread_id = null, status = ?, checked_at = ?, results_data = ? where id = ?", {}, 'hold', time, to_json ($results), $$entry{id});
 	}
 }
 
