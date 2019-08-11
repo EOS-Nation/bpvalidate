@@ -1,5 +1,5 @@
 key,label_en,label_zh,label_ko
-format_datetime,%Y-%m-%d %R %Z,%Y年%m月%d日 %R %Z,%Y년 %M월 %D일 %R %Z
+format_datetime,%Y-%m-%d %R %Z,%Y年%m月%d日 %R %Z,%Y년 %m월 %d일 %R %Z
 class_general,General Info,基本信息,기본정보
 class_regproducer,Regproducer,注册出块节点,Regproducer
 class_org,Organization,机构,기관
