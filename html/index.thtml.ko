@@ -9,10 +9,10 @@ h1 = %title_site%
   </header>
   <div class="card-content">
 
-The bp.json validator aims to check if Block Producers and Standby Block Producers are providing information to the community in a "standard" way.  The validator has a set 
-of "checks" and after executing the "checks" it then reports how well the bp.json file published by each block producer aligns to the "standard".  To get a full 
-understanding of how well a Block Producer or Standby Block Producer is contributing to the community takes more than the checks done here, but these checks can help the 
-EOS community determine which organizations to vote for.
+bp.json 검증기는 BP가 커뮤니티에게 '표준적인' 방법으로 정보를 제공하는지 검증할 것 입니다. 검증기는 몇 가지 검증 항목 리스트를 가지고 있으며, 
+검증이 끝난 후에는 각 BP들에 의해 업로드된 bp.json 파일들이 규정을 얼마나 잘 준수하고 있는지 보고합니다. 
+BP들이 정확히 얼마만큼 커뮤니티에게 기여하고 있는지 알기 위해서는 이 검증 항목들보다 많은 정보들이 필요할 것입니다. 
+하지만, 이 검증 정보는 분명히 커뮤니티가 어떠한 BP에게 투표를 할지 결정하는데 도움을 줄 것 입니다.
 
   </div>
 </div>
