@@ -886,7 +886,8 @@ sub check_org_misc {
 		add_to_list => 'resources/website',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 12 * 3600
+		cache_timeout => 7 * 24 * 3600,
+		cache_fast_fail => 1
 	);
 	$self->validate_url(
 		url => $$json{org}{code_of_conduct},
@@ -896,7 +897,8 @@ sub check_org_misc {
 		add_to_list => 'resources/conduct',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 12 * 3600
+		cache_timeout => 7 * 24 * 3600,
+		cache_fast_fail => 1
 	);
 	$self->validate_url(
 		url => $$json{org}{ownership_disclosure},
@@ -906,7 +908,8 @@ sub check_org_misc {
 		add_to_list => 'resources/ownership',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 12 * 3600
+		cache_timeout => 7 * 24 * 3600,
+		cache_fast_fail => 1
 	);
 
 	return 1;
@@ -934,7 +937,8 @@ sub check_org_branding {
 		add_to_list => 'resources/social_logo_256',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 12 * 3600
+		cache_timeout => 7 * 24 * 3600,
+		cache_fast_fail => 1
 	);
 	$self->validate_url(
 		url => $$json{org}{branding}{logo_1024},
@@ -944,7 +948,8 @@ sub check_org_branding {
 		add_to_list => 'resources/social_logo_1024',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 12 * 3600
+		cache_timeout => 7 * 24 * 3600,
+		cache_fast_fail => 1
 	);
 	$self->validate_url(
 		url => $$json{org}{branding}{logo_svg},
@@ -954,7 +959,8 @@ sub check_org_branding {
 		add_to_list => 'resources/social_logo_svg',
 		dupe => 'warn',
 		request_timeout => 10,
-		cache_timeout => 12 * 3600
+		cache_timeout => 7 * 24 * 3600,
+		cache_fast_fail => 1
 	);
 }
 
@@ -1001,7 +1007,8 @@ sub check_org_social {
 				add_to_list => "social/$key",
 				dupe => 'warn',
 				request_timeout => 10,
-				cache_timeout => 24 * 3600
+				cache_timeout => 7 * 24 * 3600,
+				cache_fast_fail => 1
 			)) {
 				next;
 			}

@@ -17,7 +17,7 @@ binmode(STDOUT, ":utf8");
 # Main
 
 my $chain = undef;
-my $max_processes = 16;
+my $max_processes = 8;
 my $filter_producer = undef;
 my $outfile = undef;
 my $versionsfile = undef;
@@ -171,7 +171,6 @@ sub setup_jobs {
 	}
 
 	$dbh->do("delete from url where checked_at < ?", {}, time - (3600 * 24 * 14));
-	$dbh->do("delete from url where response_code = ?", {}, 429);  # forcibly age out "too many requests"
 	$dbh->do("delete from producer_$chain where regproducer_at < ?", {}, time - (3600 * 9));
 }
 

@@ -38,6 +38,7 @@ sub request {
 
 	my $dbh = $self->dbh;
 	my $options = $self->options;
+	my $sleep = 0;
 
 	# --------- prepare the database
 
@@ -63,6 +64,14 @@ sub request {
 		confess "$0: cache_timeout not provided";
 	}
 
+	if ($$options{cache_fast_fail}) {
+		if ($$cache{response_code} != 200) {
+			$cache_timeout = int($cache_timeout) / 28;
+			print sprintf ("previous response_code=<%d>: cut cache by 28x to=<%d> for url=<%s> and wait 10s if requesting\n", $$cache{response_code}, $cache_timeout, $req->uri);
+			$sleep = 20;
+		}
+	}
+
 	if ($$cache{checked_at} && ($$cache{checked_at} > time - $cache_timeout)) {
 		my $res = HTTP::Response->new($$cache{response_code}, $$cache{response_message}, from_json($$cache{response_headers}), $$cache{response_content});
 		$res->request($req);
@@ -84,6 +93,10 @@ sub request {
 	$$options{elapsed_time} = sprintf ("%.1f", $elapsed_time);
 	$$options{check_time} = time2str("%C", $clock);
 	print sprintf ("r %.2f %3d %4s %s %s\n", $elapsed_time, $res->code, $req->method, $req->uri, $req->content);
+
+	# ---------- wait if needed to avoid overloading remote systems
+
+	sleep ($sleep) if ($sleep);
 
 	# ---------- update the database
 

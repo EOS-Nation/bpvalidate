@@ -465,8 +465,13 @@ sub generate_message {
 		$cache_timeout = undef if ($cache_timeout < 1800);
 	}
 	if ($cache_timeout) {
-		$cache_timeout = int ($cache_timeout / 60);
-		$cache_timeout .= ' ' . label('time_m', $lang);
+		if ($cache_timeout > 3600) {
+			$cache_timeout = int ($cache_timeout / 3600);
+			$cache_timeout .= ' ' . label('time_h', $lang);
+		} else {
+			$cache_timeout = int ($cache_timeout / 60);
+			$cache_timeout .= ' ' . label('time_m', $lang);
+		}
 	}
 
 	$elapsed_time .= ' s' if ($elapsed_time);
