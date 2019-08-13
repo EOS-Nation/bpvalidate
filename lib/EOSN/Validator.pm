@@ -995,6 +995,16 @@ sub check_org_social {
 			next;
 		}
 
+		if ($value =~ /^@/) {
+			$self->add_message(
+				kind => 'err',
+				detail => 'social references must start with at symbol',
+				field => "org.social.$key",
+				class => 'org'
+			);
+			next;
+		}
+
 		if ($url_prefix) {
 			my $url = $url_prefix . $value;
 			$url .= '/' if ($key eq 'keybase');
