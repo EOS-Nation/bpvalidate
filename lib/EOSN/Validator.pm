@@ -998,7 +998,7 @@ sub check_org_social {
 		if ($value =~ /^@/) {
 			$self->add_message(
 				kind => 'err',
-				detail => 'social references must start with at symbol',
+				detail => 'social references must not start with the at symbol',
 				field => "org.social.$key",
 				class => 'org'
 			);
