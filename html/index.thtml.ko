@@ -4,7 +4,7 @@ h1 = %title_site%
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Introduction
+      소개
     </p>
   </header>
   <div class="card-content">
@@ -22,7 +22,7 @@ BP들이 정확히 얼마만큼 커뮤니티에게 기여하고 있는지 알기
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Networks
+      네트워크
     </p>
   </header>
   <div class="card-content">
@@ -37,7 +37,7 @@ BP들이 정확히 얼마만큼 커뮤니티에게 기여하고 있는지 알기
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Information
+      정보
     </p>
   </header>
   <div class="card-content">
