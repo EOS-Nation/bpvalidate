@@ -1,5 +1,5 @@
-title = %title_site%: Reports
-h1 = Validator Reports
+title = %title_site%: 보고
+h1 = 검증 보고 
 
 <ul class="menu-list">
 %report_list%
