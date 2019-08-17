@@ -4,7 +4,7 @@ h1 = %title_site%
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Main Menu
+      메인메뉴
     </p>
   </header>
   <div class="card-content">
