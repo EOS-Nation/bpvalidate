@@ -1007,7 +1007,7 @@ sub check_org_social {
 		}
 
 		if ($key eq 'youtube') {
-			if ($value) {
+			if (($value) && ($value =~ /^channel/)) {
 				$value =~ s#^channel/?##;
 				$self->add_message(
 					kind => 'info',
