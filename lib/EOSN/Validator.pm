@@ -35,7 +35,8 @@ $social{'twitter'} = 'https://twitter.com/';
 $social{'youtube'} = 'https://www.youtube.com/channel/';
 $social{'facebook'} = 'https://www.facebook.com/';
 $social{'github'} = 'https://github.com/';
-$social{'reddit'} = 'https://www.reddit.com/user/';
+#$social{'reddit'} = 'https://www.reddit.com/user/';
+$social{'reddit'} = undef;
 $social{'keybase'} = 'https://keybase.pub/';
 $social{'telegram'} = 'https://t.me/';
 $social{'wechat'} = undef;
@@ -1034,15 +1035,16 @@ sub check_org_social {
 			)) {
 				next;
 			}
+		} else {
+			$self->add_message(
+				kind => 'ok',
+				detail => 'valid social reference',
+				value => $value,
+				field => "org.social.$key",
+				class => 'org'
+			);
 		}
 
-#		$self->add_message(
-#			kind => 'ok',
-#			detail => 'valid social reference',
-#			value => $value,
-#			field => "org.social.$key",
-#			class => 'org'
-#		);
 		$valid++;
 	}
 
