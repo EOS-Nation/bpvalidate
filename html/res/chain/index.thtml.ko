@@ -4,14 +4,14 @@ h1 = %title_site%
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Main Menu
+      메인메뉴
     </p>
   </header>
   <div class="card-content">
     <ul class="menu-list">
-    <li> <a href="producers/">Producer Scorecard</a>
-    <li> <a href="reports/">Validator Reports</a>
-    <li> <a href="info/">Network Information</a>
+    <li> <a href="producers/">프로듀서 스코어카드</a>
+    <li> <a href="reports/">검증보고</a>
+    <li> <a href="info/">네트워크 정보</a>
     </ul>
   </div>
 </div>

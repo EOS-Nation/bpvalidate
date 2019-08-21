@@ -1,10 +1,10 @@
-title = %title_site%: Network Information
-h1 = Network Information
+title = %title_site%: 네트워크 정보
+h1 = 네트워크 정보
 
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Introduction
+      소개
     </p>
   </header>
   <div class="card-content">
@@ -17,15 +17,15 @@ h1 = Network Information
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Network Configuration
+      네트워크 환경설정
     </p>
   </header>
   <div class="card-content">
 <ul>
-<li> Chain ID: %config_chain_id%
-<li> Core Symbol: %config_core_symbol%
-<li> Filename: %config_filename%
-<li> Valid eosio versions: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.csv">GitHub</a>.
+<li> 체인 ID: %config_chain_id%
+<li> 코어특징: %config_core_symbol%
+<li> 파일명: %config_filename%
+<li> 유효eosio버전: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.csv">GitHub</a>.
 </ul>
   </div>
 </div>
@@ -35,13 +35,13 @@ h1 = Network Information
 <div class="card">
   <header class="card-header">
     <p class="card-header-title">
-      Block Producer Validator Results Data Download
+      BP 검증결과 데이터 다운로드 
     </p>
   </header>
   <div class="card-content">
   <p>
-All of the parsable input bp.json files as well as the analysis are consolidated into a single output file: bps.json.  You can download the file below.  Feel free to use 
-this file in any projects you may have.
+모든 분석가능한 bp.json 파일과 분석내용들은 bps.json 이하는 파일로 통합됩니다. 아래에서 파일을 다운로드하세요. 
+당신이 원하는 모든 프로젝트에서 이 파일을 이용하실 수 있습니다.
   </p>
     <a href=../bps.json>JSON Format</a>
   </div>
