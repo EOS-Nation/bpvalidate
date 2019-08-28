@@ -81,6 +81,8 @@ vtype_bare-metal,Bare-metal,裸金属架构,Bare-metal
 vtype_hvm,HVM,HVM,HVM
 chain_eos,EOS,主网,EOS
 chain_bos,BOS,BOS,BOS
+chain_wax,WAX,WAX,WAX
+chain_meetone,MeetOne,MeetOne,MeetOne
 chain_telos,Telos,Telos,Telos
 chain_jungle,Jungle Testnet,Jungle测试网,정글 테스트넷
 chain_kylin,Kylin Testnet,Kylin测试网,Kylin 테스트넷
