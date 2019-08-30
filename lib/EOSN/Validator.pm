@@ -32,7 +32,7 @@ our %social;
 $social{'medium'} = 'https://medium.com/@';
 $social{'steemit'} = 'https://steemit.com/@';
 $social{'twitter'} = 'https://twitter.com/';
-$social{'youtube'} = 'https://www.youtube.com/channel/';
+$social{'youtube'} = 'https://www.youtube.com/';
 $social{'facebook'} = 'https://www.facebook.com/';
 $social{'github'} = 'https://github.com/';
 #$social{'reddit'} = 'https://www.reddit.com/user/';
@@ -1004,18 +1004,6 @@ sub check_org_social {
 				class => 'org'
 			);
 			next;
-		}
-
-		if ($key eq 'youtube') {
-			if (($value) && ($value =~ /^channel/)) {
-				$value =~ s#^channel/?##;
-				$self->add_message(
-					kind => 'info',
-					detail => 'removing channel/ from the given value; it is already assumed',
-					field => "org.social.$key",
-					class => 'org'
-				);
-			}
 		}
 
 		if ($url_prefix) {
