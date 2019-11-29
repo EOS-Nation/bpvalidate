@@ -1931,8 +1931,21 @@ sub validate_connection {
 		#print ">> check connection to [$host]:[$port]\n";
 		my $sh = new IO::Socket::INET (PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5);
 		if ($sh) {
-			$success++;
-			close ($sh);
+			my $buffer;
+			my $data = recv ($sh, $buffer, 1, MSG_PEEK | MSG_DONTWAIT);
+			if (! defined $data) {
+				$success++;
+				close ($sh);
+			} else {
+				$self->add_message(
+					kind => 'err',
+					detail => 'connection to peer dropped',
+					field => $field,
+					class => $class,
+					host => $host,
+					port => $port
+				);
+			}
 		} else {
 			$self->add_message(
 				kind => 'err',
