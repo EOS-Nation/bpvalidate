@@ -3117,7 +3117,7 @@ sub test_history_actions {
 	if (! scalar (@{$$json{actions}})) {
 		$self->add_message(
 			kind => 'err',
-			detail => 'invalid JSON response',
+			detail => 'no actions included in the response',
 			response_host => $response_host,
 			%options
 		);
