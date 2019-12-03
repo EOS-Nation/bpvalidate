@@ -64,7 +64,7 @@ sub request {
 		confess "$0: cache_timeout not provided";
 	}
 
-	if ($$options{cache_fast_fail}) {
+	if ($$options{cache_fast_fail} && $$cache{response_code}) {
 		if ($$cache{response_code} != 200) {
 			$cache_timeout = int($cache_timeout) / 28;
 			print sprintf ("previous response_code=<%d>: cut cache by 28x to=<%d> for url=<%s> and wait 10s if requesting\n", $$cache{response_code}, $cache_timeout, $req->uri);
