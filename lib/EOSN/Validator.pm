@@ -2851,31 +2851,49 @@ sub test_abi_serializer {
 	my ($self, %options) = @_;
 	$options{api_url} .= '/v1/chain/get_block';
 
-	my $big_blocks = $self->{chain_properties}{test_big_block} || return; # test_big_block is undefined in chains.csv
+	my $big_block = $self->{chain_properties}{test_big_block} || return; # test_big_block is undefined in chains.csv
+	my $number_of_transactions = $self->{chain_properties}{big_block_transactions} || return; # big_block_transactions is undefined in chains.csv
 
-	foreach my $big_block (split (/,/, $big_blocks)) {
-		$options{post_data} = '{"json": true, "block_num_or_id": ' . $big_block . '}';
+	$options{post_data} = '{"json": true, "block_num_or_id": ' . $big_block . '}';
 
-		my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
-		my $res = $self->run_request ($req, \%options);
-		my $status_code = $res->code;
-		my $status_message = $res->status_line;
-		my $response_url = $res->request->uri;
-		my $response_host = $res->header('host');
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
 
-		$self->check_response_errors (response => $res, %options);
+	$self->check_response_errors (response => $res, %options);
 
-		if (! $res->is_success) {
-			$self->add_message(
-				kind => 'err',
-				detail => 'error retriving large block',
-				value => $status_message,
-				response_host => $response_host,
-				explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)',
-				%options
-			);
-			return undef;
-		}
+	if (! $res->is_success) {
+		$self->add_message(
+			kind => 'err',
+			detail => 'error retriving large block',
+			value => $status_message,
+			response_host => $response_host,
+			explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)',
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options) || return undef;
+
+	my $transactions = $$json{transactions};
+	my $transaction_count = @$transactions;
+
+	if ($transaction_count != $number_of_transactions) {
+		$self->add_message(
+			kind => 'err',
+			detail => 'large block does not contain correct amount of transactions',
+			suggested_value => $number_of_transactions,
+			value => $transaction_count,
+			response_host => $response_host,
+			explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)',
+			%options
+		);
+		return undef;
 	}
 
 	$self->add_message(
