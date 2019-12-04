@@ -2743,7 +2743,8 @@ sub validate_country_n {
 
 sub test_block_one {
 	my ($self, %options) = @_;
-	$options{api_url} .= "/v1/chain/get_block";
+
+	$options{api_url} .= '/v1/chain/get_block';
 	$options{post_data} = '{"block_num_or_id": "1", "json": true}';
 
 	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
@@ -2777,7 +2778,8 @@ sub test_block_one {
 
 sub test_patreonous {
 	my ($self, %options) = @_;
-	$options{api_url} .= "/v1/chain/get_table_rows";
+
+	$options{api_url} .= '/v1/chain/get_table_rows';
 	$options{post_data} = '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}';
 
 	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
@@ -2812,6 +2814,7 @@ sub test_patreonous {
 
 sub test_error_message {
 	my ($self, %options) = @_;
+
 	$options{api_url} .= '/v1/chain/validate_error_message';
 	$options{post_data} = '{"json": true}';
 
@@ -2849,6 +2852,7 @@ sub test_error_message {
 
 sub test_abi_serializer {
 	my ($self, %options) = @_;
+
 	$options{api_url} .= '/v1/chain/get_block';
 
 	my $big_block = $self->{chain_properties}{test_big_block} || return; # test_big_block is undefined in chains.csv
@@ -2909,7 +2913,6 @@ sub test_hyperion_transaction {
 	my ($self, %options) = @_;
 
 	my $base_url = $options{api_url};
-
 	my $transactions = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
 
 	foreach my $transaction (split (/,/, $transactions)) {
@@ -3300,6 +3303,7 @@ sub test_system_symbol {
 
 sub test_net_api {
 	my ($self, %options) = @_;
+
 	$options{api_url} .= '/v1/net/connections';
 
 	my $req = HTTP::Request->new('GET', $options{api_url}, undef);
@@ -3334,6 +3338,7 @@ sub test_net_api {
 
 sub test_producer_api {
 	my ($self, %options) = @_;
+
 	$options{api_url} .= '/v1/producer/get_integrity_hash';
 
 	my $req = HTTP::Request->new('GET', $options{api_url}, undef);
@@ -3370,10 +3375,10 @@ sub test_regproducer_key {
 	my ($self, %options) = @_;
 
 	my $key = $options{key};
-	my $url = $self->{chain_properties}{key_accounts_url} || die "$0: key_accounts_url is undefined in chains.csv";
-	my $post_data = '{"json": true, "public_key": "' . $key . '"}';
+	$options{api_url} = $self->{chain_properties}{key_accounts_url} || die "$0: key_accounts_url is undefined in chains.csv";
+	$options{post_data} = '{"json": true, "public_key": "' . $key . '"}';
 
-	my $req = HTTP::Request->new('POST', $url, ['Content-Type' => 'application/json'], $post_data);
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -3382,7 +3387,7 @@ sub test_regproducer_key {
 
 	if (! $res->is_success) {
 		# API endpoint is unavilable, so we can't run this test.  Assume ok
-		warn "API endpoint error url=<$url> status=<$status_code $status_message> with data=<$post_data>\n";
+		warn "API endpoint error url=<$options{api_url}> status=<$status_code $status_message> with data=<$options{post_data}>\n";
 		return 1;
 	}
 
@@ -3391,7 +3396,6 @@ sub test_regproducer_key {
 	if ((ref $$json{account_names} ne 'ARRAY') || (scalar @{$$json{account_names}} != 0)) {
 		$self->add_message(
 			kind => 'err',
-			post_data => $post_data,
 			detail => 'regproducer key is assigned to an account; better to use a dedicated signing key',
 			see1 => 'https://steemit.com/eos/@eostribe/eos-bp-guide-on-how-to-setup-a-block-signing-key',
 			%options
@@ -3402,7 +3406,6 @@ sub test_regproducer_key {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'regproducer signing key test passed',
-		post_data => $post_data,
 		%options
 	);
 
