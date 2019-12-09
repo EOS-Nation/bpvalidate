@@ -86,6 +86,7 @@ chain_meetone,MeetOne,MeetOne,MeetOne
 chain_telos,Telos,Telos,Telos
 chain_jungle,Jungle Testnet,Jungle测试网,정글 테스트넷
 chain_kylin,Kylin Testnet,Kylin测试网,Kylin 테스트넷
+chain_waxtest,WAX Testnet,WAX测试网,WAX 테스트넷
 time_h,h,h,시
 time_m,m,m,분
 time_s,s,s,초
