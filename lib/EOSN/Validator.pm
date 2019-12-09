@@ -409,7 +409,8 @@ sub run_validate {
 sub check_onchainbpjson {
 	my ($self) = @_;
 
-	my %message_options = (contract => 'producerjson', class => 'bpjson');
+	my $contract =  $self->{chain_properties}{test_bpjson_scope};
+	my %message_options = (contract => $contract, class => 'bpjson');
 
 	my $onchainbpjson_enabled = $self->{onchainbpjson_enabled};
 	my $onchainbpjson_data = $self->{onchainbpjson_data};
