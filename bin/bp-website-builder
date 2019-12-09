@@ -124,6 +124,9 @@ sub generate_content {
 
 	foreach my $key (keys %$labels) {
 		my $value = $$labels{$key}{"label_$lang"} || $$labels{$key}{"label_en"};
+		if (! defined $value) {
+			die "$0: cannot get label for key=<$key>\n";
+		}
 		$output =~ s/%$key%/$value/g;
 	}
 
