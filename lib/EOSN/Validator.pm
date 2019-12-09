@@ -3375,8 +3375,14 @@ sub test_regproducer_key {
 	my ($self, %options) = @_;
 
 	my $key = $options{key};
-	$options{api_url} = $self->{chain_properties}{key_accounts_url} || die "$0: key_accounts_url is undefined in chains.csv";
+	$options{api_url} = $self->{chain_properties}{key_accounts_url};
 	$options{post_data} = '{"json": true, "public_key": "' . $key . '"}';
+
+	if (! $options{api_url}) {
+		# test disabled
+		warn "API endpoint missing because key_accounts_url is undefined in chains.csv; test disabled";
+		return 1;
+	}
 
 	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
