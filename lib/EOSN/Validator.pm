@@ -2914,32 +2914,35 @@ sub test_hyperion_transaction {
 	my ($self, %options) = @_;
 
 	my $base_url = $options{api_url};
-	my $transactions = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
+	my $transaction = $self->{chain_properties}{test_transaction};
 
-	foreach my $transaction (split (/,/, $transactions)) {
-		$options{api_url} = $base_url . '/v2/history/get_transaction?id=' . $transaction;
-		my $req = HTTP::Request->new('GET', $options{api_url});
-		my $res = $self->run_request ($req, \%options);
-		my $status_code = $res->code;
-		my $status_message = $res->status_line;
-		my $response_url = $res->request->uri;
-		my $response_host = $res->header('host');
-		my $content = $res->content;
+	if (! $transaction) [
+		warn "$0: Cannot run test_hyperion_transaction because test_transaction is undefined in chains.csv; test disabled\n";
+		return 1;
+	}
 
-		$self->check_response_errors (response => $res, %options);
+	$options{api_url} = $base_url . '/v2/history/get_transaction?id=' . $transaction;
+	my $req = HTTP::Request->new('GET', $options{api_url});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
 
-		if (! $res->is_success) {
-			$self->add_message(
-				kind => 'crit',
-				detail => 'error retriving transaction history',
-				value => $status_message,
-				explanation => 'check hyperion configuration',
-				response_host => $response_host,
-				see1 => 'https://t.me/EOSHyperion',
-				%options
-			);
-			return undef;
-		}
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message(
+			kind => 'crit',
+			detail => 'error retriving transaction history',
+			value => $status_message,
+			explanation => 'check hyperion configuration',
+			response_host => $response_host,
+			see1 => 'https://t.me/EOSHyperion',
+			%options
+		);
+		return undef;
 	}
 
 	$self->add_message(
@@ -3068,33 +3071,35 @@ sub test_history_transaction {
 	my ($self, %options) = @_;
 
 	$options{api_url} .= '/v1/history/get_transaction';
+	my $transaction = $self->{chain_properties}{test_transaction};
 
-	my $transactions = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv";
+	if (! $transaction) [
+		warn "$0: Cannot test test_history_transaction because test_transaction is undefined in chains.csv; test disabled\n";
+		return 1;
+	}
 
-	foreach my $transaction (split (/,/, $transactions)) {
-		$options{post_data} = '{"json": true, "id": "' . $transaction . '"}';
-		my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
-		my $res = $self->run_request ($req, \%options);
-		my $status_code = $res->code;
-		my $status_message = $res->status_line;
-		my $response_url = $res->request->uri;
-		my $response_host = $res->header('host');
-		my $content = $res->content;
+	$options{post_data} = '{"json": true, "id": "' . $transaction . '"}';
+	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
 
-		$self->check_response_errors (response => $res, %options);
+	$self->check_response_errors (response => $res, %options);
 
-		if (! $res->is_success) {
-			$self->add_message(
-				kind => 'crit',
-				detail => 'error retriving transaction history',
-				value => $status_message,
-				explanation => 'edit config.ini to turn on history and replay all blocks',
-				response_host => $response_host,
-				see1 => 'http://t.me/eosfullnodes',
-				%options
-			);
-			return undef;
-		}
+	if (! $res->is_success) {
+		$self->add_message(
+			kind => 'crit',
+			detail => 'error retriving transaction history',
+			value => $status_message,
+			explanation => 'edit config.ini to turn on history and replay all blocks',
+			response_host => $response_host,
+			see1 => 'http://t.me/eosfullnodes',
+			%options
+		);
+		return undef;
 	}
 
 	$self->add_message(
@@ -3380,8 +3385,7 @@ sub test_regproducer_key {
 	$options{post_data} = '{"json": true, "public_key": "' . $key . '"}';
 
 	if (! $options{api_url}) {
-		# test disabled
-		warn "API endpoint missing because key_accounts_url is undefined in chains.csv; test disabled";
+		warn "$0: Cannot run test_regproducer_key because key_accounts_url is undefined in chains.csv; test disabled\n";
 		return 1;
 	}
 
@@ -3394,7 +3398,7 @@ sub test_regproducer_key {
 
 	if (! $res->is_success) {
 		# API endpoint is unavilable, so we can't run this test.  Assume ok
-		warn "API endpoint error url=<$options{api_url}> status=<$status_code $status_message> with data=<$options{post_data}>\n";
+		warn "$0: Cannot run test_regproducer_key due to endpoint error url=<$options{api_url}> status=<$status_code $status_message> data=<$options{post_data}>; remainder of test disabled\n";
 		return 1;
 	}
 
