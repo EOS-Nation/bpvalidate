@@ -2914,12 +2914,7 @@ sub test_hyperion_transaction {
 	my ($self, %options) = @_;
 
 	my $base_url = $options{api_url};
-	my $transaction = $self->{chain_properties}{test_transaction};
-
-	if (! $transaction) {
-		warn "$0: Cannot run test_hyperion_transaction because test_transaction is undefined in chains.csv; test disabled\n";
-		return 1;
-	}
+	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv\n";
 
 	$options{api_url} = $base_url . '/v2/history/get_transaction?id=' . $transaction;
 	my $req = HTTP::Request->new('GET', $options{api_url});
@@ -3071,12 +3066,7 @@ sub test_history_transaction {
 	my ($self, %options) = @_;
 
 	$options{api_url} .= '/v1/history/get_transaction';
-	my $transaction = $self->{chain_properties}{test_transaction};
-
-	if (! $transaction) {
-		warn "$0: Cannot test test_history_transaction because test_transaction is undefined in chains.csv; test disabled\n";
-		return 1;
-	}
+	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv\n";
 
 	$options{post_data} = '{"json": true, "id": "' . $transaction . '"}';
 	my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
@@ -3385,7 +3375,7 @@ sub test_regproducer_key {
 	$options{post_data} = '{"json": true, "public_key": "' . $key . '"}';
 
 	if (! $options{api_url}) {
-		warn "$0: Cannot run test_regproducer_key because key_accounts_url is undefined in chains.csv; test disabled\n";
+		warn "Cannot run test_regproducer_key because key_accounts_url is undefined in chains.csv; test disabled\n";
 		return 1;
 	}
 
@@ -3398,7 +3388,7 @@ sub test_regproducer_key {
 
 	if (! $res->is_success) {
 		# API endpoint is unavilable, so we can't run this test.  Assume ok
-		warn "$0: Cannot run test_regproducer_key due to endpoint error url=<$options{api_url}> status=<$status_code $status_message> data=<$options{post_data}>; remainder of test disabled\n";
+		warn "Cannot run test_regproducer_key due to endpoint error url=<$options{api_url}> status=<$status_code $status_message> data=<$options{post_data}>; remainder of test disabled\n";
 		return 1;
 	}
 
