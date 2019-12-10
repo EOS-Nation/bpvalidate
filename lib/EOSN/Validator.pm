@@ -2916,7 +2916,7 @@ sub test_hyperion_transaction {
 	my $base_url = $options{api_url};
 	my $transaction = $self->{chain_properties}{test_transaction};
 
-	if (! $transaction) [
+	if (! $transaction) {
 		warn "$0: Cannot run test_hyperion_transaction because test_transaction is undefined in chains.csv; test disabled\n";
 		return 1;
 	}
@@ -3073,7 +3073,7 @@ sub test_history_transaction {
 	$options{api_url} .= '/v1/history/get_transaction';
 	my $transaction = $self->{chain_properties}{test_transaction};
 
-	if (! $transaction) [
+	if (! $transaction) {
 		warn "$0: Cannot test test_history_transaction because test_transaction is undefined in chains.csv; test disabled\n";
 		return 1;
 	}
