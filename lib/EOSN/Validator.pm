@@ -2856,8 +2856,13 @@ sub test_abi_serializer {
 
 	$options{api_url} .= '/v1/chain/get_block';
 
-	my $big_block = $self->{chain_properties}{test_big_block} || return; # test_big_block is undefined in chains.csv
-	my $number_of_transactions = $self->{chain_properties}{big_block_transactions} || return; # big_block_transactions is undefined in chains.csv
+	my $big_block = $self->{chain_properties}{test_big_block};
+	my $number_of_transactions = $self->{chain_properties}{big_block_transactions};
+
+	if (! $big_block || ! $number_of_transactions) {
+		warn "Cannot run test_abi_serializer because big_block or number_of_transactions is undefined in chains.csv; test disabled\n";
+		return 1;
+	}
 
 	$options{post_data} = '{"json": true, "block_num_or_id": ' . $big_block . '}';
 
