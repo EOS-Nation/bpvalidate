@@ -2252,6 +2252,9 @@ sub validate_basic_api_extra_check {
 	if (! $self->test_producer_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
+	if (! $self->test_db_size_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+		$errors++;
+	}
 	if (! $self->test_net_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
@@ -3366,6 +3369,41 @@ sub test_producer_api {
 	$self->add_message(
 		kind => 'ok',
 		detail => 'producer api disabled',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_db_size_api {
+	my ($self, %options) = @_;
+
+	$options{api_url} .= '/v1/db_size/get';
+
+	my $req = HTTP::Request->new('GET', $options{api_url}, undef);
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
+        my $response_content_type = $res->content_type;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (($res->is_success) && ($response_url eq $options{api_url}))  {
+		$self->add_message(
+			kind => 'err',
+			detail => 'db_size api is enabled',
+			value => $status_message,
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message(
+		kind => 'ok',
+		detail => 'db_size api disabled',
 		%options
 	);
 
