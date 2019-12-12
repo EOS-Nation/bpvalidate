@@ -15,7 +15,6 @@ use Carp qw(confess);
 use Time::Seconds;
 use Text::Diff;
 use Time::HiRes qw(time);
-use Digest::MD5 qw(md5_hex);
 
 our %content_types;
 $content_types{json} = ['application/json'];
