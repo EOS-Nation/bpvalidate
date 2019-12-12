@@ -65,12 +65,12 @@ nav_producers,Producer Scorecard, 出块节点计分卡,프로듀서 스코어 �
 nav_reports,Reports,报告,보고 
 nav_info,Network Info,网络信息,네트워크 정보
 nav_about,About,关于,About
-nav_update,Validator last update: %last_update%, 验证器最后更新: %last_update%,검증기 최신 업데이트: %last_update%
 nav_lang,Language: %lang%,语言: %lang%,언어:  %lang%
 nav_chain,Network: %chain%,网络：%chain%,네트워크: %chain%
 txt_chain,Network:,网络：,네트워크:
 txt_update,Validator last update:, 验证器最后更新:,검증기 최신 업데이트:
 txt_about,For details on how this is generated see https://validate.eosnation.io/about/,关于如何生成的详细信息请参见https://validate.eosnation.io/about/, 상세내용울 보기 위해서는 https://validate.eosnatio.io/about/을 방문해주세요.  
+txt_update,Validator last update: %last_update%, 验证器最后更新: %last_update%,검증기 최신 업데이트: %last_update%
 unknown,Unknown,未知,UnKnown
 cpu_zzother,Other,其它,기타 
 cpu_xeon_silver,Xeon Silver,Xeon Silver系列,Xeon Silver 시스탬
