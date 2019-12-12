@@ -3,6 +3,7 @@
 use utf8;
 use strict;
 use EOSN::Report;
+use File::Touch qw(touch);
 
 binmode(STDOUT, ":utf8");
 
@@ -42,12 +43,21 @@ sub go {
 
 			print "--------- run report: $chain $report ----------\n";
 			system ("$report --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+
 		}
 
 		print "--------- run report: $chain producers ----------\n";
-		system ("bp-report-producers --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
-	}
 
-	print "---------- generate website: -----------\n";
-	system ("bp-website-builder --out=$outdir --config=$confdir");
+		system ("bp-report-producers --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+
+		print "---------- generate website: -----------\n";
+
+		foreach my $lang (languages()) {
+			my $xfile = "$outdir/about/index.thtml.$lang";
+			#print "touch file=<$xfile>\n";
+			touch ($xfile);
+		}
+
+		system ("bp-website-builder --out=$outdir --config=$confdir");
+	}
 }

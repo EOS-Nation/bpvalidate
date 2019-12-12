@@ -85,7 +85,7 @@ sub generate_content {
 		return;
 	}
 
-	print "generate file from=<$filename_in> to=<$filename_out>\n";
+	#print "generate file from=<$filename_in> to=<$filename_out>\n";
 	my (@content) = read_file ($filename_in);
 
 	my $header = 1;
