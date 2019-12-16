@@ -33,10 +33,8 @@ foreach my $lang (languages()) {
 			foreach my $entry (@{$$data{producers}}) {
 				my $producer = $$entry{regproducer}{owner};
 				my $important_bp = is_important_bp ($entry);
-				my $country_name = $$entry{info}{country_name};
 				my $key = $$entry{info}{timezone} || 'zzunknown';
 				next if ($key ne $kind);
-				$name = $$entry{info}{country_name} if ($$entry{info}{country_name});
 
 				if ($key ne 'zzunknown' || $important_bp) {
 					push (@section, {

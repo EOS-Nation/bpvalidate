@@ -287,6 +287,40 @@ sub run_validate {
 			$self->{results}{info}{timezone} = $time_zone;
 			#print ">>> TIME ZONE: $time_zone for location=<$location> url=<$url>\n";
 		}	
+	} elsif ($location_check eq 'timezone100') {
+		if ($location !~ /^\d+/) {
+			$self->add_message(
+				kind => 'crit',
+				detail => 'location is not a number (UTC offset)',
+				value => $location,
+				class => 'regproducer'
+			);
+		} elsif ($location < 0 || $location > 2399) {
+			$self->add_message(
+				kind => 'crit',
+				detail => 'location is not a number between 0 and 2399 (UTC offset * 100)',
+				value => $location,
+				class => 'regproducer'
+			);
+		} else {
+			my $time_zone = '';
+			my $locationx = int($location / 100);
+			if ($locationx == 0) {
+				$time_zone = 'UTC+0';
+			} elsif ($locationx >= 12) {
+				$time_zone = 'UTC-' . (24 - $locationx);
+			} else {
+				$time_zone = 'UTC+' . $locationx;
+			}
+			$self->add_message(
+				kind => 'ok',
+				detail => 'location time zone',
+				value => $time_zone,
+				class => 'regproducer'
+			);
+			$self->{results}{info}{timezone} = $time_zone;
+			#print ">>> TIME ZONE: $time_zone for location=<$location> url=<$url>\n";
+		}
 	} else {
 		$self->add_message(
 			kind => 'skip',
