@@ -40,7 +40,7 @@ foreach my $lang (languages()) {
 					push (@section, {
 						producer => $producer,
 						sprintf => "",
-						data => []
+						data => [$$entry{info}{timezone_value}]
 					});
 				}
 			}
