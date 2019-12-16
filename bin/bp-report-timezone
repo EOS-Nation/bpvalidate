@@ -17,9 +17,9 @@ my %kinds;
 foreach my $entry (@{$$data{producers}}) {
 	if ($$entry{info}{timezone}) {
 		my $key = $$entry{info}{timezone};
-		$kinds{$key} = $$entry{regproducer}{location};
+		$kinds{$key} = $$entry{info}{timezone_value};
 	} else {
-		$kinds{zzunknown} = 99;
+		$kinds{zzunknown} = 9999;
 	}
 }
 

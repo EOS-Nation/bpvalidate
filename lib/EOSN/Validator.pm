@@ -285,6 +285,7 @@ sub run_validate {
 				class => 'regproducer'
 			);
 			$self->{results}{info}{timezone} = $time_zone;
+			$self->{results}{info}{timezone_value} = $location;
 			#print ">>> TIME ZONE: $time_zone for location=<$location> url=<$url>\n";
 		}	
 	} elsif ($location_check eq 'timezone100') {
@@ -319,6 +320,7 @@ sub run_validate {
 				class => 'regproducer'
 			);
 			$self->{results}{info}{timezone} = $time_zone;
+			$self->{results}{info}{timezone_value} = $location;
 			#print ">>> TIME ZONE: $time_zone for location=<$location> url=<$url>\n";
 		}
 	} else {
