@@ -24,15 +24,16 @@ sub go {
 		next if (! $$properties{active});
 
 		print "--------- run chain: $chain ----------\n";
-		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=alohaeosprod,eosnationftw,cryptolions1,eoscanadacom,bitfinexeos1,hexlantttttt,eosriobrazil,acroeos12345,eosriobrazil");
-	       	#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=cryptolions1");
-		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw,teamgreymass,eosbeijingbp,sheos21sheos,eosriobrazil,eosswedenorg");
-		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosliquideos,eosauthority,eosnationftw,atticlabeosb,cryptolions1,eosbeijingbp,eostribeprod,sheos21sheos,eosswedenorg");
-		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw,bosnationftw,kainosblkpro,eosiodetroit,bosriobrazil,boseouldotio");
-		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=bosnationftw,bosriobrazil,boseouldotio");
-		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=none");
-		#system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw");
-		system ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000");
+		#run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=alohaeosprod,eosnationftw,cryptolions1,eoscanadacom,bitfinexeos1,hexlantttttt,eosriobrazil,acroeos12345,eosriobrazil");
+		#run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=cryptolions1");
+		#run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw,teamgreymass,eosbeijingbp,sheos21sheos,eosriobrazil,eosswedenorg");
+		#run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosliquideos,eosauthority,eosnationftw,atticlabeosb,cryptolions1,eosbeijingbp,eostribeprod,sheos21sheos,eosswedenorg");
+		#run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw,bosnationftw,kainosblkpro,eosiodetroit,bosriobrazil,boseouldotio");
+		#run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=bosnationftw,bosriobrazil,boseouldotio");
+		#run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=none");
+		#run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=eosnationftw");
+		#run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000 --debug --producer=alohaeosprod");
+		run_command ("bp-validate --chain=$chain --output=$outdir/$chain/bps.json --versions=$confdir/versions_${chain}.csv --chains=$confdir/chains.csv --limit=1000");
 
 		foreach my $property (keys %$properties) {
 			next if ($property !~ /^report_/);
@@ -42,13 +43,13 @@ sub go {
 			$report =~ s/^report/bp-report/;
 
 			print "--------- run report: $chain $report ----------\n";
-			system ("$report --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
 
+			run_command ("$report --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
 		}
 
 		print "--------- run report: $chain producers ----------\n";
 
-		system ("bp-report-producers --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
+		run_command ("bp-report-producers --chain=$chain --input=$outdir/$chain/bps.json --out=$outdir --config=$confdir");
 
 		print "---------- generate website: -----------\n";
 
@@ -58,6 +59,13 @@ sub go {
 			touch ($xfile);
 		}
 
-		system ("bp-website-builder --out=$outdir --config=$confdir");
+		run_command ("bp-website-builder --out=$outdir --config=$confdir");
 	}
+}
+
+sub run_command {
+	my ($command) = @_;
+
+	print ">> $command\n";
+	system ($command);
 }
