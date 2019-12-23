@@ -1208,7 +1208,7 @@ sub check_nodes {
 			if ($self->validate_connection(
 					peer => $$node{p2p_endpoint},
 					field => "node[$node_number].p2p_endpoint",
-					connection_field => 'p2p',
+					connection_type => 'p2p',
 					add_to_list => 'nodes/p2p',
 					node_type => $node_type,
 					location => $location,
@@ -1223,7 +1223,7 @@ sub check_nodes {
 			if ($self->validate_connection(
 					peer => $$node{bnet_endpoint},
 					field => "node[$node_number].bnet_endpoint",
-					connection_field => 'bnet',
+					connection_type => 'bnet',
 					add_to_list => 'nodes/bnet',
 					node_type => $node_type,
 					location => $location,
@@ -1918,27 +1918,26 @@ sub validate_connection {
 	$options{class} = 'endpoint';
 
 	my $peer = $options{peer};
-	my $field = $options{field};
-	my $class = $options{class};
 	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
+	my $field = $options{field} || confess "field not provided";
+	my $class = $options{class} || confess "class not provided";
+	delete $options{peer};
 
 	#print ">> peer=[$peer]\n";
 
-	return undef if (! $self->check_duplicates ($peer, 'duplicate peer', field => $field, class => $class, host => $peer, dupe => $dupe));
+	return undef if (! $self->check_duplicates ($peer, 'duplicate peer', host => $peer, dupe => $dupe, %options));
 
 	if ($peer =~ m#^https?://#) {
 		$self->add_message(
 			kind => 'err',
 			detail => 'peer cannot begin with http(s)://',
-			field => $field,
-			class => $class,
-			host => $peer
+			host => $peer,
+			%options
 		);
 		return undef;
 	}		
 
 	my $connection_type = $options{connection_type};
-
 	my $host;
 	my $port;
 
@@ -1960,47 +1959,128 @@ sub validate_connection {
 		return undef;
 	}
 
-	# need to be able to connect to at least one host
-
-	my $success = 0;
-	foreach my $host (@hosts) {
-		#print ">> check connection to [$host]:[$port]\n";
-		my $sh = new IO::Socket::INET (PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5);
-		if ($sh) {
-			my $buffer;
-			my $data = recv ($sh, $buffer, 1, MSG_PEEK | MSG_DONTWAIT);
-			if (! defined $data) {
-				$success++;
-				close ($sh);
-			} else {
-				$self->add_message(
-					kind => 'err',
-					detail => 'connection to peer dropped',
-					field => $field,
-					class => $class,
-					host => $host,
-					port => $port
-				);
-			}
-		} else {
-			$self->add_message(
-				kind => 'err',
-				detail => 'cannot connect to peer',
-				field => $field,
-				class => $class,
-				host => $host,
-				port => $port
-			);
-		}
+	my $errors = 0;
+	foreach my $xhost (@hosts) {
+		$errors++ if (! $self->do_validate_connection ($xhost, $port, %options));
 	}
 
-	if (! $success) {
+	if ($errors) {
 		return undef;
 	}
 
-	$self->add_to_list(host => $peer, %options) if ($options{add_to_list});
+	if ($connection_type eq 'p2p') {
+		$self->do_validate_p2p ($host, $port, %options);
+	} else {
+		$self->add_to_list(host => $peer, %options) if ($options{add_to_list});
+	}
 
 	return 1;
+}
+
+sub do_validate_p2p {
+	my ($self, $host, $port, %options) = @_;
+
+	my $url = $self->{chain_properties}{url};
+	my $content = `p2ptest -a $url -h $host -p $port -b 29`;
+
+	my $result = $self->get_json ($content, %options);
+	return undef if (! $result);
+
+	use Data::Dumper;
+	print Dumper ($result);
+
+	if ($$result{status} ne 'success') {
+		$self->add_message(
+			kind => 'err',
+			detail => $$result{error_detail},
+			host => $host,
+			port => $port,
+			%options
+		);
+
+		return undef;
+	}
+
+	my $speed = sprintf ("%.2f", $$result{speed});
+	my $ok_speed = 2;
+	my $errors = 0;
+
+	if ($speed < $ok_speed) {
+		$self->add_message(
+			kind => 'warn',
+			detail => 'p2p block transmission speed too slow',
+			value => $speed,
+			threshold => $ok_speed,
+			host => $host,
+			port => $port,
+			%options
+		);
+
+		$errors++;
+	} else {
+		$self->add_message(
+			kind => 'ok',
+			detail => 'p2p block transmission speed ok',
+			value => $speed,
+			threshold => $ok_speed,
+			host => $host,
+			port => $port,
+			%options
+		);
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	my $info = {speed => $speed};
+
+	$self->add_to_list(
+		add_info_to_list => 'info',
+		info => $info,
+		add_result_to_list => 'response',
+		result => $result,
+		host => $host,
+		port => $port,
+		%options
+	) if ($options{add_to_list});
+
+	return $result;
+}
+
+sub do_validate_connection {
+	my ($self, $host, $port, %options) = @_;
+
+	#print ">> check connection to [$host]:[$port]\n";
+	my $sh = new IO::Socket::INET (PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5);
+	if (! $sh) {
+		$self->add_message(
+			kind => 'err',
+			detail => 'cannot connect to peer',
+			host => $host,
+			port => $port,
+			%options
+		);
+
+		return undef;
+	}
+
+	my $buffer;
+	my $data = recv ($sh, $buffer, 1, MSG_PEEK | MSG_DONTWAIT);
+	if (! defined $data) {
+		close ($sh);
+		return 1;
+	}
+
+	$self->add_message(
+		kind => 'err',
+		detail => 'connection to peer dropped',
+		host => $host,
+		port => $port,
+		%options
+	);
+
+	return undef;
 }
 
 sub validate_basic_api {
@@ -3532,7 +3612,11 @@ sub add_to_list {
 	}
 
 	my %data;
-	$data{address} = $host;
+	if ($host && $options{port}) {
+		$data{address} = "$host:$options{port}";
+	} else {
+		$data{address} = $host;
+	}
 
 	if ($options{add_result_to_list} && $options{result}) {
 		my $key = $options{add_result_to_list};
