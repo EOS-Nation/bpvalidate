@@ -39,7 +39,7 @@ foreach my $lang (languages()) {
 				if ($key ne 'zzunknown' || $important_bp) {
 					push (@section, {
 						producer => $producer,
-						sprintf => "",
+						sprintf => "%s",
 						data => [$$entry{info}{timezone_value}]
 					});
 				}
