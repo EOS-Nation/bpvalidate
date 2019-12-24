@@ -1999,7 +1999,7 @@ sub do_validate_p2p {
 		return undef;
 	}
 
-	my $speed = sprintf ("%.2f", $$result{speed});
+	my $speed = sprintf ("%d", $$result{speed});
 	my $ok_speed = 2;
 	my $errors = 0;
 
