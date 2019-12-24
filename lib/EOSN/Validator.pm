@@ -1986,10 +1986,8 @@ sub do_validate_p2p {
 	my $result = $self->get_json ($content, %options);
 	return undef if (! $result);
 
-	use Data::Dumper;
-	print Dumper ($result);
-
 	if ($$result{status} ne 'success') {
+		print ">> p2p error $host:$port => $$result{error_detail}\n";
 		$self->add_message(
 			kind => 'err',
 			detail => $$result{error_detail},
