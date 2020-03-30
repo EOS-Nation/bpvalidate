@@ -2993,6 +2993,10 @@ sub test_history_actions {
 	my @actions = @{$$json{actions}};
 	my $block_time = '2000-01-01';
 	foreach my $action (@actions) {
+		if (! defined $$action{block_time}) {
+			warn "$0: action block time not defined";
+			next;
+		}
 		$block_time = maxstr ($$action{block_time}, $block_time);
 	}
 
