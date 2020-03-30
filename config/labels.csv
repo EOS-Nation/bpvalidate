@@ -8,7 +8,6 @@ class_blacklist,Blacklist,黑名单,블랙리스트
 class_bpjson,bp.json On-Chain,链上bp.json,bp.json 온체인
 class_history,History,历史,히스토리
 class_hyperion,Hyperion,Hyperion,히페리온 
-class_heartbeat,Heartbeat,心跳,Heartbeat
 class_chains,Chains.json,Chains.json,Chains.json
 class_ipv6,IPv6,IPv6协议,IPv6
 class_general_l,General Info Check,基本信息 验证,기본정보 검증
@@ -19,7 +18,6 @@ class_history_l,History Check,历史 验证,히스토리 검증
 class_hyperion_l,Hyperion Check,Hyperion 验证,히페리온 검증
 class_blacklist_l,Blacklist Check,黑名单 验证,블랙리스트 검증
 class_bpjson_l,bp.json On-Chain Check,链上bp.json 验证,bp.json 온체인 검증
-class_heartbeat_l,Heartbeat Check,心跳 验证,Heartbeat 검증
 class_chains_l,Chains.json Check,Chains.json 验证,Chains.json 검증
 class_ipv6_l,IPv6 Check,IPv6协议 验证,IPv6 검증
 check_skip,Skipped,跳过,건너뛰기
@@ -32,7 +30,6 @@ check_bonus_blacklist,OK,OK,OK
 check_bonus_bpjson,OK,OK,OK  
 check_bonus_history,OK,OK,OK  
 check_bonus_hyperion,OK,OK,OK  
-check_bonus_heartbeat,OK,OK,OK  
 check_bonus_chains,OK,OK,OK  
 check_bonus_ipv6,OK,OK,OK  
 bp_top21,Top 21 BP,前21名BP,탑 21BP
@@ -51,10 +48,6 @@ title_reports/resources,Resources Report,资源报告,자원 보고
 title_reports/api_versions,API Versions Report,API版本报告,API 버전 보고
 title_reports/p2p_speed,P2P Speed Report
 title_reports/blacklist,Blacklist Report,黑名单报告,블랙리스트 보고
-title_reports/producer_version,Producer Nodeos Version Report,出块节点Nodeos版本报告,프로듀서 Nodeos 버전 보고
-title_reports/producer_cpu,Producer CPU Report,出块节点CPU报告,프로듀서 CPU 보고
-title_reports/producer_virtualization,Producer Virtualization Report,出块节点虚拟化技术报告,프로듀서 가상화 보고
-title_reports/producer_hbversion,Producer Heartbeat Version Report,出块节点Heartbeat版本报告,프로듀서 Heartbeat버전 보고
 title_producers,Report for %producer_name_html%,%producer_name_html%报告,%producer_name_html% 보고
 label_text_version,text version,文字内容版本,텍스트 버전 보고
 label_json_version,json version,json版本,json 버전
