@@ -85,26 +85,6 @@ sub setup_jobs {
 		}
 	}
 
-	# ---- on-chain heartbeat
-
-	my $onchainheartbeat_list = [];
-
-	if ($$chains{$chain}{class_heartbeat}) {
-		$onchainheartbeat_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $limit, code => "eosheartbeat", scope => "eosheartbeat", table => "hbstruct");
-
-		if (! $onchainheartbeat_list) {
-			warn "$0: $chain: cannot get onchainheartbeat list";
-		}
-
-		foreach my $obj (@$onchainheartbeat_list) {
-			my $user = $$obj{user};
-			my $json = $$obj{metadata_json};
-			my $timestamp = $$obj{timestamp};
-			$onchain{heartbeat}{$user}{json} = $json;
-			$onchain{heartbeat}{$user}{timestamp} = $timestamp;
-		}
-	}
-
 	# ---- on-chain blacklist
 
 	my $onchainblacklist_list = [];
@@ -164,12 +144,10 @@ sub setup_jobs {
 
 		$dbh->do("update producer_$chain set status = ?, regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, 
 			onchainbpjson_enabled = ?, onchainbpjson_data = ?,
-			onchainheartbeat_enabled = ?, onchainheartbeat_data = ?, onchainheartbeat_timestamp = ?,
 			onchainblacklist_enabled = ?, onchainblacklist_data = ?
 			where id = ?"
 			, {}, $state, time, to_json ($entry), $rank, $vote_percent,
 			(scalar (@$onchainbpjson_list) ? 1 : 0), $onchain{bpjson}{$owner},
-			(scalar (@$onchainheartbeat_list) ? 1 : 0), $onchain{heartbeat}{$owner}{json}, $onchain{heartbeat}{$owner}{timestamp},
 			(scalar (@$onchainblacklist_list) ? 1 : 0), $onchain{blacklist}{$owner},
 			$$data{$owner}{id});
 	}
@@ -216,9 +194,6 @@ sub doit {
 			vote_percent => $$entry{regproducer_vote_percent},
 			onchainbpjson_enabled => $$entry{onchainbpjson_enabled},
 			onchainbpjson_data => $$entry{onchainbpjson_data},
-			onchainheartbeat_enabled => $$entry{onchainheartbeat_enabled},
-			onchainheartbeat_data => $$entry{onchainheartbeat_data},
-			onchainheartbeat_timestamp => $$entry{onchainheartbeat_timestamp},
 			onchainblacklist_enabled => $$entry{onchainblacklist_enabled},
 			onchainblacklist_data => $$entry{onchainblacklist_data},
 			chain => $chain,
