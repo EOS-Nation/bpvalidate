@@ -1,0 +1,44 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::Report;
+use File::Slurp qw(read_dir);
+
+binmode(STDOUT, ":utf8");
+
+# ---------------------------------------------------------------------------
+# Main
+
+get_report_options_website();
+my $confdir = confdir();
+my $outdir = outdir();
+go();
+
+# ---------------------------------------------------------------------------
+# Subroutines
+
+sub go {
+	foreach my $chain (chains()) {
+		my $properties = chain_properties ($chain);
+		#next if (! $$properties{active});
+
+		clean_dir ('producer', "$outdir/$chain/producers");
+	}
+}
+
+sub clean_dir {
+	my ($type, $dir) = @_;
+
+	next if (! -e $dir);
+	my @files = read_dir ($dir);
+
+	foreach my $file (@files) {
+		my $mtime = (stat "$dir/$file")[9];
+		my $age = time - $mtime;
+		if ($age > 3600 * 24) {
+			print ">> Remove old file type=<$type> file=<$dir/$file>\n";
+#			unlink ("$dir/$file");
+		}
+	}
+}
