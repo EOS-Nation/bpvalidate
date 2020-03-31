@@ -848,6 +848,7 @@ sub check_nodes {
 		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
 			$found_api_endpoint++;
 			my $result = $self->validate_basic_api(
+				class => 'endpoint',
 				api_url => $$node{api_endpoint},
 				field => "node[$node_number].api_endpoint",
 				ssl => 'off',
@@ -858,6 +859,7 @@ sub check_nodes {
 			if ($result) {
 				$valid_api_endpoint++;
 				my $result_history = $self->validate_history_api(
+					class => 'history',
 					api_url => $$node{api_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$node_number].api_endpoint",
@@ -867,6 +869,7 @@ sub check_nodes {
 					location => $location
 				);
 				my $result_hyperion = $self->validate_hyperion_api(
+					class => 'hyperion',
 					api_url => $$node{api_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$node_number].api_endpoint",
@@ -881,6 +884,7 @@ sub check_nodes {
 		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
 			$found_ssl_endpoint++;
 			my $result = $self->validate_basic_api(
+				class => 'endpoint',
 				api_url => $$node{ssl_endpoint},
 				field => "node[$node_number].ssl_endpoint",
 				ssl => 'on',
@@ -891,6 +895,7 @@ sub check_nodes {
 			if ($result) {
 				$valid_ssl_endpoint++;
 				my $result_history = $self->validate_history_api(
+					class => 'history',
 					api_url => $$node{ssl_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$node_number].ssl_endpoint",
@@ -900,6 +905,7 @@ sub check_nodes {
 					location => $location
 				);
 				my $result_hyperion = $self->validate_hyperion_api(
+					class => 'hyperion',
 					api_url => $$node{ssl_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$node_number].ssl_endpoint",
@@ -914,6 +920,7 @@ sub check_nodes {
 		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
 			$found_p2p_endpoint++;
 			if ($self->validate_connection(
+					class => 'endpoint',
 					peer => $$node{p2p_endpoint},
 					field => "node[$node_number].p2p_endpoint",
 					connection_type => 'p2p',
@@ -1593,8 +1600,6 @@ sub validate_url {
 sub validate_connection {
 	my ($self, %options) = @_;
 
-	$options{class} = 'endpoint';
-
 	my $peer = $options{peer};
 	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
 	my $field = $options{field} || confess "field not provided";
@@ -1764,11 +1769,12 @@ sub validate_basic_api {
 
 	my $api_url = $options{api_url};
 	my $field = $options{field};
+	my $class = $options{class} || confess "class not provided";
 
 	return $self->validate_url(
 		api_url => $api_url,
 		field => $field,
-		class => 'endpoint',
+		class => $class,
 		url_ext => '/v1/chain/get_info',
 		content_type => 'json',
 		cors_origin => 'on',
@@ -1790,6 +1796,7 @@ sub validate_hyperion_api {
 	my $api_url = $options{api_url};
 	my $history_type = $options{history_type};
 	my $field = $options{field};
+	my $class = $options{class} || confess "class not provided";
 
 #	if ($history_type && $history_type ne 'hyperion') {
 #		return;
@@ -1798,7 +1805,7 @@ sub validate_hyperion_api {
 	return $self->validate_url(
 		api_url => $api_url,
 		field => $field,
-		class => 'hyperion',
+		class => $class,
 		url_ext => '/v1/chain/get_info',
 		content_type => 'json',
 		cors_origin => 'on',
@@ -1820,6 +1827,7 @@ sub validate_history_api {
 	my $api_url = $options{api_url};
 	my $history_type = $options{history_type};
 	my $field = $options{field};
+	my $class = $options{class} || confess "class not provided";
 
 #	if ($history_type && $history_type !~ /^(traditional|mongo)$/) {
 #		return;
@@ -1828,7 +1836,7 @@ sub validate_history_api {
 	return $self->validate_url(
 		api_url => $api_url,
 		field => $field,
-		class => 'history',
+		class => $class,
 		url_ext => '/v1/chain/get_info',
 		content_type => 'json',
 		cors_origin => 'on',
