@@ -38,7 +38,7 @@ sub clean_dir {
 		my $age = time - $mtime;
 		if ($age > 3600 * 24) {
 			print ">> Remove old file type=<$type> file=<$dir/$file>\n";
-#			unlink ("$dir/$file");
+			unlink ("$dir/$file");
 		}
 	}
 }
