@@ -823,8 +823,8 @@ sub check_nodes {
 	my $total_valid_basic_ssl_endpoint = 0;
 	my $total_valid_peer_endpoint = 0;
 	my $total_valid_bnet_endpoint = 0;
-	my $total_found_api_ssl_endpoint = 0;
-	my $total_found_peer_bnet_endpoint = 0;
+	my $total_found_api_or_ssl_endpoint = 0;
+	my $total_found_peer_or_bnet_endpoint = 0;
 	my $count_node_type_full = 0;
 	my $count_node_type_seed = 0;
 	my $count_node_type_producer = 0;
@@ -1051,8 +1051,8 @@ sub check_nodes {
 		$total_valid_basic_ssl_endpoint += $valid_basic_ssl_endpoint;
 		$total_valid_peer_endpoint += $valid_peer_endpoint;
 		$total_valid_bnet_endpoint += $valid_bnet_endpoint;
-		$total_found_api_ssl_endpoint += $found_api_ssl_endpoint;
-		$total_found_peer_bnet_endpoint += $found_peer_bnet_endpoint;
+		$total_found_api_or_ssl_endpoint += $found_api_ssl_endpoint;
+		$total_found_peer_or_bnet_endpoint += $found_peer_bnet_endpoint;
 		$node_number++;
 	}
 
@@ -1102,7 +1102,7 @@ sub check_nodes {
 		);
 	}
 
-	if (! $total_found_api_ssl_endpoint) {
+	if (! $total_found_api_or_ssl_endpoint) {
 		$self->add_message(
 			kind => 'crit',
 			detail => 'no HTTP or HTTPS API endpoints provided in any node',
@@ -1137,7 +1137,7 @@ sub check_nodes {
 		);
 	}
 
-	if (! $total_found_peer_bnet_endpoint) {
+	if (! $total_found_peer_or_bnet_endpoint) {
 		$self->add_message(
 			kind => 'crit',
 			detail => 'no P2P or BNET endpoints provided in any node',
