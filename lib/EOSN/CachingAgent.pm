@@ -47,7 +47,7 @@ sub request {
 	}
 
 	my $fetch = $dbh->prepare_cached ("select * from url where md5 = ?");
-	my $insert = $dbh->prepare_cached ("insert into url set md5 = ?, checked_at = ?, elapsed_time = ?, request_method = ?, request_url = ?, request_headers = ?, request_content = ?, response_code = ?, response_message = ?, response_headers = ?, response_content = ?");
+	my $insert = $dbh->prepare_cached ("insert into url (md5, checked_at, elapsed_time, request_method, request_url, request_headers, request_content, response_code, response_message, response_headers, response_content) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 	my $update = $dbh->prepare_cached ("update url set checked_at = ?, elapsed_time = ?, request_method = ?, request_url = ?, request_headers = ?, request_content = ?, response_code = ?, response_message = ?, response_headers = ?, response_content = ? where id = ?");
 
 	# --------- check if the query has been executed recently
