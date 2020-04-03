@@ -209,10 +209,14 @@ sub generate_report_txt {
 			my $sprintf = $$line{sprintf};
 			my $data = $$line{data};
 			my $producer = $$line{producer};
+			my $value = '';
+			if ($$data[0]) {
+				$value = sprintf ("$sprintf\n", @$data);
+			}
 			if ($producer) {
-				push (@out, sprintf ("%12s", $producer) . " " . sprintf ("$sprintf\n", @$data));
+				push (@out, sprintf ("%12s", $producer) . " " . $value);
 			} else {
-				push (@out, sprintf ("$sprintf\n", @$data));
+				push (@out, $value);
 			}
 		}
 
@@ -341,7 +345,9 @@ sub generate_report_thtml {
 					} else {
 						$value = encode_entities ($value);
 					}
-					$formatted .= "<td>$value</td>";
+					if (defined $value) {
+						$formatted .= "<td>$value</td>";
+					}
 				}
 				$formatted .= "</tr>";
 			} else {
