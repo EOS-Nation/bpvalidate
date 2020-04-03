@@ -15,6 +15,7 @@ use Carp qw(confess);
 use Time::Seconds;
 use Text::Diff;
 use Time::HiRes qw(time);
+use EOSN::CommandUtil;
 
 our %content_types;
 $content_types{json} = ['application/json'];
@@ -134,6 +135,16 @@ sub versions {
 	}
 
 	return $self->{versions};
+}
+
+sub log_prefix {
+	my ($self, $log_prefix) = @_;
+
+	if ($log_prefix) {
+		$self->{log_prefix} = $log_prefix;
+	}
+
+	return $self->{log_prefix};
 }
 
 # --------------------------------------------------------------------------
@@ -332,7 +343,7 @@ sub run_validate {
 	}
 
 	$self->validate_url (
-		url => "$url",
+		url => $url,
 		field => 'main web site',
 		class => 'regproducer',
 		content_type => 'html',
@@ -1344,6 +1355,7 @@ sub validate_url {
 		confess "unknown ssl option";
 	}
 
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('GET', $xurl . $url_ext);
 	$req->header('Origin', 'https://example.com');
@@ -1670,7 +1682,7 @@ sub do_validate_p2p {
 	return undef if (! $result);
 
 	if ($$result{status} ne 'success') {
-		print ">> p2p error $host:$port => $$result{error_detail}\n";
+		$self->write_timestamp_log ("p2p error $host:$port => $$result{error_detail}");
 		$self->add_message (
 			kind => 'err',
 			detail => $$result{error_detail},
@@ -2549,6 +2561,7 @@ sub test_block_one {
 
 	$options{api_url} .= '/v1/chain/get_block';
 	$options{post_data} = '{"block_num_or_id": "1", "json": true}';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
@@ -2584,6 +2597,7 @@ sub test_patreonous {
 
 	$options{api_url} .= '/v1/chain/get_table_rows';
 	$options{post_data} = '{"scope":"eosio", "code":"eosio", "table":"global", "json": true}';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
@@ -2620,6 +2634,7 @@ sub test_error_message {
 
 	$options{api_url} .= '/v1/chain/validate_error_message';
 	$options{post_data} = '{"json": true}';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
@@ -2657,6 +2672,7 @@ sub test_abi_serializer {
 	my ($self, %options) = @_;
 
 	$options{api_url} .= '/v1/chain/get_block';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $big_block = $self->{chain_properties}{test_big_block};
 	my $number_of_transactions = $self->{chain_properties}{big_block_transactions};
@@ -2724,6 +2740,8 @@ sub test_hyperion_transaction {
 	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv\n";
 
 	$options{api_url} = $base_url . '/v2/history/get_transaction?id=' . $transaction;
+	$options{log_prefix} = $self->log_prefix;
+
 	my $req = HTTP::Request->new ('GET', $options{api_url});
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
@@ -2760,6 +2778,7 @@ sub test_hyperion_actions {
 	my ($self, %options) = @_;
 
 	$options{api_url} .= '/v2/history/get_actions?limit=1';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('GET', $options{api_url});
 	my $res = $self->run_request ($req, \%options);
@@ -2824,6 +2843,7 @@ sub test_hyperion_key_accounts {
 	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
 	$options{api_url} .= '/v2/state/get_key_accounts';
 	$options{post_data} = '{"public_key": "' . $public_key . '"}';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
@@ -2872,10 +2892,11 @@ sub test_hyperion_key_accounts {
 sub test_history_transaction {
 	my ($self, %options) = @_;
 
-	$options{api_url} .= '/v1/history/get_transaction';
 	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv\n";
-
+	$options{api_url} .= '/v1/history/get_transaction';
+	$options{log_prefix} = $self->log_prefix;
 	$options{post_data} = '{"json": true, "id": "' . $transaction . '"}';
+
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
@@ -2913,6 +2934,7 @@ sub test_history_actions {
 
 	$options{api_url} .= '/v1/history/get_actions';
 	$options{post_data} = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
@@ -3007,6 +3029,7 @@ sub test_history_key_accounts {
 	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
 	$options{api_url} .= '/v1/history/get_key_accounts';
 	$options{post_data} = '{"json": true, "public_key": "' . $public_key . '"}';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
@@ -3067,6 +3090,7 @@ sub test_system_symbol {
 	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.csv";
 	$options{api_url} .= '/v1/chain/get_currency_balance';
 	$options{post_data} = '{"json": true, "account": "' . $test_account . '", "code":"eosio.token", "symbol": "' . $core_symbol . '"}';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
@@ -3112,6 +3136,7 @@ sub test_net_api {
 	my ($self, %options) = @_;
 
 	$options{api_url} .= '/v1/net/connections';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('GET', $options{api_url}, undef);
 	my $res = $self->run_request ($req, \%options);
@@ -3147,6 +3172,7 @@ sub test_producer_api {
 	my ($self, %options) = @_;
 
 	$options{api_url} .= '/v1/producer/get_integrity_hash';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('GET', $options{api_url}, undef);
 	my $res = $self->run_request ($req, \%options);
@@ -3182,6 +3208,7 @@ sub test_db_size_api {
 	my ($self, %options) = @_;
 
 	$options{api_url} .= '/v1/db_size/get';
+	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('GET', $options{api_url}, undef);
 	my $res = $self->run_request ($req, \%options);
@@ -3219,6 +3246,7 @@ sub test_regproducer_key {
 	my $key = $options{key};
 	$options{api_url} = $self->{chain_properties}{key_accounts_url};
 	$options{post_data} = '{"json": true, "public_key": "' . $key . '"}';
+	$options{log_prefix} = $self->log_prefix;
 
 	if (! $options{api_url}) {
 		warn "Cannot run test_regproducer_key because key_accounts_url is undefined in chains.csv; test disabled\n";
@@ -3460,6 +3488,15 @@ sub run_request {
 	}
 
 	return $res;
+}
+
+sub write_timestamp_log {
+	my ($self, $message) = @_;
+
+	my $log_prefix = $self->log_prefix || '';
+	$log_prefix .= ' ' if ($log_prefix);
+
+	EOSN::CommandUtil::write_timestamp_log ($self->log_prefix . $message);
 }
 
 1;
