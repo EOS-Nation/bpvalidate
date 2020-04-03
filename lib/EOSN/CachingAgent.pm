@@ -6,6 +6,7 @@ use Carp qw(confess);
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes qw(time);
 use Date::Format qw(time2str);
+use EOSN::CommandUtil qw(write_timestamp_log);
 use JSON;
 
 use parent qw(LWPx::ParanoidAgent);
@@ -64,10 +65,13 @@ sub request {
 		confess "$0: cache_timeout not provided";
 	}
 
+	my $log_prefix = $$options{log_prefix} || '';
+	$log_prefix .= ' ' if ($log_prefix);
+
 	if ($$options{cache_fast_fail} && $$cache{response_code}) {
 		if ($$cache{response_code} != 200) {
 			$cache_timeout = int($cache_timeout) / 28;
-			print sprintf ("previous response_code=<%d>: cut cache by 28x to=<%d> for url=<%s> and wait 10s if requesting\n", $$cache{response_code}, $cache_timeout, $req->uri);
+			write_timestamp_log ($log_prefix . sprintf ("previous response_code=<%d>: cut cache by 28x to=<%d> for url=<%s> and wait 10s if requesting", $$cache{response_code}, $cache_timeout, $req->uri));
 			$sleep = 20;
 		}
 	}
@@ -77,7 +81,7 @@ sub request {
 		$res->request($req);
 		$$options{elapsed_time} = sprintf ("%.1f", $$cache{elapsed_time});
 		$$options{check_time} = time2str("%C", $$cache{checked_at});
-		print sprintf ("c %.2f %3d %4s %s %s\n", $$cache{elapsed_time}, $$cache{response_code}, $req->method, $req->uri, $req->content);
+		write_timestamp_log ($log_prefix . sprintf ("c %.2f %3d %4s %s %s", $$cache{elapsed_time}, $$cache{response_code}, $req->method, $req->uri, $req->content));
 		return $res;
 	}
 
@@ -92,7 +96,7 @@ sub request {
 	my $elapsed_time = time - $clock;
 	$$options{elapsed_time} = sprintf ("%.1f", $elapsed_time);
 	$$options{check_time} = time2str("%C", $clock);
-	print sprintf ("r %.2f %3d %4s %s %s\n", $elapsed_time, $res->code, $req->method, $req->uri, $req->content);
+	write_timestamp_log ($log_prefix . sprintf ("r %.2f %3d %4s %s %s", $elapsed_time, $res->code, $req->method, $req->uri, $req->content));
 
 	# ---------- wait if needed to avoid overloading remote systems
 
@@ -101,7 +105,7 @@ sub request {
 	# ---------- update the database
 
 	if ($$cache{id}) {
-		$update->execute (time, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content, $$cache{id});
+		$update->execute (time, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content, $$cache{ROWID});
 	} else {
 		$insert->execute ($md5, time, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content);
 	}
