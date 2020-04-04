@@ -43,7 +43,7 @@ sub get_table {
 	my $rows;
 
 	while ($more) {
-		print ">> get table $url: ", to_json (\%parameters), "\n";
+		#print ">> get table $url: ", to_json (\%parameters), "\n";
 		my $req = HTTP::Request->new('POST', $url, undef, to_json (\%parameters));
 		my $res = $ua->request($req);
 		my $status_code = $res->code;
