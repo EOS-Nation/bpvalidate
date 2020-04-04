@@ -1,9 +1,0 @@
-#!/bin/sh
-
-#script to test that things are working
-
-rm -fr /var/www/bpvalidate/*
-cp -pra $HOME/eosn/bpvalidate/html/* /var/www/bpvalidate/
-
-bp-exec-setup --out=/var/www/bpvalidate/ --config=../config/
-bp-exec-run --out=/var/www/bpvalidate/ --config=../config/

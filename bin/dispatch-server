@@ -1,0 +1,592 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use JSON;
+use EOSN::CommandUtil qw(write_timestamp_log);
+use EOSN::STOMP qw(do_connect_stomp);
+use EOSN::SQL qw(do_connect_mysql);
+use EOSN::FileUtil qw(write_file read_csv_hash);
+use EOSN::UA qw(eosn_normal_ua eosn_cache_ua get_table);
+use Getopt::Long;
+use Time::HiRes qw(usleep);
+
+binmode(STDOUT, ":utf8");
+
+# --------------------------------------------------------------------------
+# Config
+
+my %stats_config;
+$stats_config{max_checked_at} = {query => 'min(checked_at)', sort_order => 1};
+$stats_config{avg_checked_at} = {query => 'avg(checked_at)', sort_order => 2};
+$stats_config{min_checked_at} = {query => 'max(checked_at)', sort_order => 3};
+$stats_config{count_more_30min} = {query => 'sum(if(unix_timestamp() - checked_at > 1800, 1, 0))', sort_order => 4};
+$stats_config{count_more_60min} = {query => 'sum(if(unix_timestamp() - checked_at > 3600, 1, 0))', sort_order => 5};
+$stats_config{max_dispatched_at} = {query => 'min(dispatched_at)', sort_order => 6};
+$stats_config{avg_dispatched_at} = {query => 'avg(dispatched_at)', sort_order => 7};
+$stats_config{min_dispatched_at} = {query => 'max(dispatched_at)', sort_order => 8};
+$stats_config{count_stale} = {query => 'sum(if(unix_timestamp() - regproducer_at > 3600, 1, 0))', sort_order => 9};
+
+# --------------------------------------------------------------------------
+# Main
+
+my $configdir = undef;
+GetOptions ('config=s' => \$configdir) || exit 1;
+$configdir || die "$0: config dir not provided";
+
+my $chainsfile = "$configdir/chains.csv";
+if (! -e $chainsfile) {
+	die "$0: chains file not found: $chainsfile";
+}
+
+write_timestamp_log ('starting');
+
+my $chains = read_csv_hash ($chainsfile, 'name');
+my @pids;
+
+foreach my $chain (sort keys %$chains) {
+	fork_children ($chain);
+}
+
+fork_message_receiver ();
+fork_stats_counter ();
+
+wait ();
+
+write_timestamp_log ('stopping');
+
+foreach my $pid (@pids) {
+	write_timestamp_log ("kill pid=<$pid>");
+	kill ('TERM', $pid);
+}
+
+# --------------------------------------------------------------------------
+# Subroutines
+
+sub fork_children {
+	my ($chain) = @_;
+
+	return if (! $$chains{$chain}{active});
+
+	# ---------- update database
+
+	my $pid1 = fork;
+	if (! defined $pid1) {
+		die "$0: could not fork";
+		next;
+	} elsif (! $pid1) {
+		write_timestamp_log ("run update chain=<$chain>");
+		update_chain ($chain);
+		write_timestamp_log ("abnormal exit update chain=<$chain>");
+		die "$0: update chain=<$chain> exited abmormally";
+	} else {
+		push (@pids, $pid1);
+	}
+
+	# ---------- dispatch jobs
+
+	my $pid2 = fork;
+	if (! defined $pid2) {
+		die "$0: could not fork";
+		next;
+	} elsif (! $pid2) {
+		write_timestamp_log ("run dispatch chain=<$chain>");
+		dispatch_chain ($chain);
+		write_timestamp_log ("abnormal exit dispatch chain=<$chain>");
+		die "$0: dispatch chain=<$chain> exited abmormally";
+	} else {
+		push (@pids, $pid2);
+	}
+}
+
+sub fork_message_receiver {
+	my $pid = fork;
+	if (! defined $pid) {
+		die "$0: could not fork";
+		next;
+	} elsif (! $pid) {
+		write_timestamp_log ("run message receiver");
+		run_message_receiver ();
+		write_timestamp_log ("abnormal exit message receiver");
+		die "$0: message receiver exited abmormally";
+	} else {
+		push (@pids, $pid);
+	}
+}
+
+sub fork_stats_counter {
+	my $pid = fork;
+	if (! defined $pid) {
+		die "$0: could not fork";
+		next;
+	} elsif (! $pid) {
+		write_timestamp_log ("run stats counter");
+		run_stats_counter ();
+		write_timestamp_log ("abnormal exit stats counter");
+		die "$0: stats counter exited abmormally";
+	} else {
+		push (@pids, $pid);
+	}
+}
+
+sub run_message_receiver {
+	my $stomp = do_connect_stomp ('bpvalidate');
+
+	$stomp->subscribe ({
+		destination => '/queue/response',
+		'ack' => 'client',
+		'activemq.prefetchSize' => 1
+	});
+
+	my $dbh = do_connect_mysql ('bpvalidate');
+
+	while (1) {
+		exit if (getppid() == 1);
+
+		my $frame = $stomp->receive_frame ({timeout => 30});
+		if (! defined $frame) {
+			write_timestamp_log ('[receiver] no messages received');
+			$dbh->ping();
+			next; # will reconnect automatically
+		}
+
+		my $body = $frame->body;
+		utf8::decode ($body);
+		handle_message ($body, $dbh);
+
+		$stomp->ack ({
+			frame => $frame
+		});
+	}
+
+	$dbh->disconnect;
+	$stomp->disconnect;
+}
+
+sub handle_message {
+	my ($message, $dbh) = @_;
+
+	my $time = time;
+        my $response;
+
+        eval {
+                $response = from_json ($message);
+        };
+
+	my $results = $$response{results};
+	my $chain = $$response{chain};
+	my $id = $$response{id};
+	my $producer = $$response{producer};
+
+	my $dispatch_time = $$response{dispatch_time};
+	my $receive_time = $$response{receive_time};
+	my $processed_time = $$response{processed_time};
+	my $complete_time = $time;
+	my $timeout = $$response{timeout};
+
+	if ($timeout) {
+		my $modified_records = $dbh->do ("update producer_$chain set dispatched_at = ? where id = ? and dispatched_at = $dispatch_time", {}, undef, $id);
+		my $flag = ($modified_records eq '0E0') ? 'OLD TIMEOUT' : 'TIMEOUT';
+		my @deltas = time_deltas ($dispatch_time, $receive_time, $processed_time, $complete_time);
+		write_timestamp_log ("[receiver $chain] received $flag for producer=<$producer> times=<" . join (' | ', @deltas) . '>');
+		return;
+	}
+
+	$dbh->do ("update producer_$chain set checked_at = ?, results_data = ? where id = ?", {}, $processed_time, to_json ($results), $id);
+
+	my @deltas = time_deltas ($dispatch_time, $receive_time, $processed_time, $complete_time);
+	write_timestamp_log ("[receiver $chain] received producer=<$producer> times=<" . join (' | ', @deltas) . '>');
+}
+
+sub time_deltas {
+	my (@times) = @_;
+
+	my @deltas;
+
+	my $t = shift (@times);
+	while (@times) {
+		my $delta = $times[0] - $t;
+		push (@deltas, $delta);
+		$t = shift (@times);
+	}
+
+	return @deltas;
+}
+
+sub run_stats_counter {
+	my $dbh = do_connect_mysql ('bpvalidate');
+
+	my %stats_query;
+	foreach my $chain (sort keys %$chains) {
+		$stats_query{$chain} = generate_stats_query ($chain);
+	}
+
+	while (1) {
+		exit if (getppid() == 1);
+
+		foreach my $chain (sort keys %$chains) {
+			update_stats ($chain, $stats_query{$chain}, $dbh);
+		}
+
+		sleep (60);
+	}
+}
+
+sub dispatch_chain {
+	my ($chain) = @_;
+
+	my $stomp = do_connect_stomp ('bpvalidate');
+	my $dbh = do_connect_mysql ('bpvalidate');
+	my $wait_time = 30;
+	my $max_producers_per_round = 20;
+	my $dispatch_expire_time = 120;
+	my $regproducer_check_time = 3600; # how old reproducer data can be while we still check
+	my $re_check_time = 25 * 60; # how often to re-validate producer
+	my $re_dispatch_time = 600; # allow enough time for the dispatch_expire_time + the time it takes to run the actual checks
+	my $versionsfile = "$configdir/versions_$chain.csv";
+	my $versions = read_csv_hash ($versionsfile, 'hash');
+
+	while (1) {
+		exit if (getppid() == 1);
+
+		my $start_time = time;
+		my $count = 0;
+		my $data = $dbh->selectall_hashref ("select * from producer_$chain", 'producer');
+
+		foreach my $producer (sort {($$data{$a}{checked_at} || 0) <=> ($$data{$b}{checked_at} || 0)} keys %$data) {
+			my $entry = $$data{$producer};
+			my $time = time;
+			my $id = $$data{$producer}{id};
+			my $expire_time = $time + $dispatch_expire_time;
+			my $regproducer_delta = $time - ($$entry{regproducer_at} || 0);
+			my $checked_delta = $time - ($$entry{checked_at} || 0);
+			my $dispatch_delta = $time - ($$entry{dispatched_at} || 0);
+			my $rank = $$entry{regproducer_rank};
+
+			if ($regproducer_delta > $regproducer_check_time) {
+				#write_timestamp_log ("[dispatch $chain] SKIP dispatch producer=<$producer> rank=<$rank> regproducer_delta=<$regproducer_delta s>");
+				next;
+			}
+
+			if ($checked_delta < $re_check_time) {
+				#write_timestamp_log ("[dispatch $chain] SKIP dispatch producer=<$producer> rank=<$rank> checked_delta=<$checked_delta s>");
+				next;
+			}
+
+			if ($dispatch_delta < $re_dispatch_time) {
+				#write_timestamp_log ("[dispatch $chain] SKIP dispatch producer=<$producer> rank=<$rank> dispatch_delta=<$dispatch_delta s>");
+				next;
+			}
+
+			last if ($count >= $max_producers_per_round);
+			$count++;
+
+			write_timestamp_log ("[dispatch $chain] dispatch producer=<$producer> rank=<$rank> checked_delta=<$checked_delta s> dispatch_delta=<$dispatch_delta s>");
+			$dbh->do ("update producer_$chain set dispatched_at = ? where id = ?", {}, $time, $id);
+
+			my $validator_data = {
+				globals => $$entry{globals},
+				properties => from_json ($$entry{regproducer_data}),
+				versions => $versions,
+				rank => $$entry{regproducer_rank},
+				vote_percent => $$entry{regproducer_vote_percent},
+				onchainbpjson_enabled => $$entry{onchainbpjson_enabled},
+				onchainbpjson_data => $$entry{onchainbpjson_data},
+				onchainblacklist_enabled => $$entry{onchainblacklist_enabled},
+				onchainblacklist_data => $$entry{onchainblacklist_data},
+				chain => $chain,
+				chain_properties => $$chains{$chain}
+			};
+
+			my $request;
+			$$request{chain} = $chain;
+			$$request{dispatch_time} = $time;
+			$$request{expire_time} = $expire_time;
+			$$request{id} = $$data{$producer}{id};
+			$$request{producer} = $producer;
+			$$request{data} = $validator_data;
+
+			my $body = to_json ($request);
+			utf8::encode ($body);
+			$stomp->send ({destination => '/queue/request', body => $body});
+			usleep (500000);
+		}
+
+		my $end_time = time;
+		my $process_time = $end_time - $start_time;
+		my $sleep_time = $wait_time - $process_time;
+		$sleep_time = 0 if ($sleep_time < 0);
+
+		write_timestamp_log ("[dispatch $chain] processed record=<$count>/max=<$max_producers_per_round> in time=<$process_time s> sleep=<$sleep_time s>");
+		sleep ($sleep_time);
+	}
+
+	$dbh->disconnect;
+	$stomp->disconnect;
+}
+
+sub update_chain {
+	my ($chain) = @_;
+
+	my $base_url = $$chains{$chain}{url};
+	my $ua = eosn_normal_ua ();
+	my $dbh = do_connect_mysql ('bpvalidate');
+	my $wait_time = 300;
+
+	write_timestamp_log ("[update $chain] read from url=<$base_url>");
+	
+	while (1) {
+		exit if (getppid() == 1);
+
+		write_timestamp_log ("[update $chain] processing");
+
+		my $start_time = time;
+
+		my $chain_data;
+		$$chain_data{chain} = $chain;
+		$$chain_data{base_url} = $$chains{$chain}{url};
+		$$chain_data{ua} = $ua;
+		$$chain_data{onchain} = {};
+		$$chain_data{query_limit} = 1000;
+		$$chain_data{max_producers} = $$chains{$chain}{max_producers} || die;
+		$$chain_data{dbh} = $dbh;
+
+		get_globals ($chain_data);
+		get_regproducer ($chain_data);
+		get_onchain_bpjson_list ($chain_data);
+		get_onchain_blacklist_list ($chain_data);
+		tabulate_votes ($chain_data);
+
+		my $records_updated = 0;
+		if ($$chain_data{errors}) {
+			write_timestamp_log ("[update $chain] skipped due to errors");
+		} else {
+			$records_updated = update_db ($chain_data);
+		}
+
+		my $end_time = time;
+		my $process_time = $end_time - $start_time;
+		my $sleep_time = $wait_time - $process_time;
+		$sleep_time = 0 if ($sleep_time < 0);
+
+		write_timestamp_log ("[update $chain] processed records=<$records_updated>/max=<$$chain_data{max_producers}> in time=<$process_time s> sleep=<$sleep_time s>");
+		sleep ($sleep_time);
+	}
+}
+
+sub get_globals {
+	my ($options) = @_;
+
+	my $chain = $$options{chain};
+	my $base_url = $$options{base_url};
+	my $ua = $$options{ua};
+	my $onchain = $$options{onchain};
+	my $query_limit = $$options{query_limit};
+
+	my $globals = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $query_limit, code => "eosio", scope => "eosio", table => "global");
+
+	if (! $globals) {
+		write_timestamp_log ("[update $chain] cannot get global list");
+		$$options{errors}++;
+	}
+	$globals = $$globals[0];
+
+	$$options{globals} = $globals;
+}
+
+sub get_regproducer {
+	my ($options) = @_;
+
+	my $chain = $$options{chain};
+	my $base_url = $$options{base_url};
+	my $ua = $$options{ua};
+	my $onchain = $$options{onchain};
+	#my $query_limit = $$options{query_limit};
+	my $query_limit = $$options{max_producers};
+
+	my $producer_list = get_table ($ua, $base_url . '/v1/chain/get_producers', limit => $query_limit);
+
+	if (! $producer_list) {
+		write_timestamp_log ("[update $chain] cannot get producer list");
+		$$options{errors}++;
+	}
+
+	$$options{producer_list} = $producer_list;
+}
+
+sub get_onchain_bpjson_list {
+	my ($options) = @_;
+
+	my $chain = $$options{chain};
+	my $base_url = $$options{base_url};
+	my $ua = $$options{ua};
+	my $onchain = $$options{onchain};
+	my $query_limit = $$options{query_limit};
+
+	my $onchain_bpjson_list = [];
+
+	if ($$chains{$chain}{class_bpjson}) {
+		my $code = $$chains{$chain}{test_bpjson_code};
+		my $scope = $$chains{$chain}{test_bpjson_scope};
+		my $table = $$chains{$chain}{test_bpjson_table};
+
+		$onchain_bpjson_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $query_limit, code => $code, scope => $scope, table => $table);
+
+		if (! $onchain_bpjson_list) {
+			write_timestamp_log ("[update $chain] cannot get onchainbpjson list");
+			$$options{errors}++;
+		}
+
+		foreach my $obj (@$onchain_bpjson_list) {
+			my $producer = $$obj{owner};
+			my $json = $$obj{json};
+			$$onchain{bpjson}{$producer} = $json;
+		}
+	}
+
+	$$options{onchain_bpjson_list} =$onchain_bpjson_list;
+}
+
+sub get_onchain_blacklist_list {
+	my ($options) = @_;
+
+	my $chain = $$options{chain};
+	my $base_url = $$options{base_url};
+	my $ua = $$options{ua};
+	my $onchain = $$options{onchain};
+	my $query_limit = $$options{query_limit};
+
+	my $onchain_blacklist_list = [];
+
+	if ($$chains{$chain}{class_blacklist}) {
+		$onchain_blacklist_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $query_limit, code => 'theblacklist', scope => 'theblacklist', table => 'producerhash');
+
+		if (! $onchain_blacklist_list) {
+			write_timestamp_log ("[update $chain] cannot get onchainblacklist list");
+			$$options{errors}++;
+		}
+
+		foreach my $obj (@$onchain_blacklist_list) {
+			my $user = $$obj{producer};
+			my $hash = $$obj{hash};
+			$$onchain{blacklist}{$user} = $hash;
+		}
+	}
+
+	$$options{onchain_blacklist_list} = $onchain_blacklist_list;
+}
+
+sub tabulate_votes {
+	my ($options) = @_;
+
+	my $chain = $$options{chain};
+	my $producer_list = $$options{producer_list};
+
+	my $vote_total = 0;
+	foreach my $entry (@{$producer_list}) {
+		next if (! $$entry{is_active});
+		$vote_total += $$entry{total_votes};
+	}
+	if ($vote_total == 0) {
+		write_timestamp_log ("[update $chain] total votes is zero");
+		$$options{errors}++;
+	}
+
+	$$options{vote_total} = $vote_total;
+}
+
+sub update_db {
+	my ($options) = @_;
+
+	my $chain = $$options{chain};
+	my $dbh = $$options{dbh};
+	my $onchain = $$options{onchain};
+	my $globals = $$options{globals};
+	my $producer_list = $$options{producer_list};
+	my $onchain_bpjson_list = $$options{onchain_bpjson_list};
+	my $onchain_blacklist_list = $$options{onchain_blacklist_list};
+	my $vote_total = $$options{vote_total};
+	my $rank = 0;
+	my $max_producers = $$chains{$chain}{max_producers};
+
+	my $data = $dbh->selectall_hashref ("select * from producer_$chain", 'producer');
+
+	foreach my $entry (@{$producer_list}) {
+		my $producer = $$entry{owner};
+		last if ($rank > $max_producers);
+		$rank++;
+
+		# write_timestamp_log ("[update $chain] update producer=<$producer> rank=<$rank>");
+
+		if (! $$data{$producer}) {
+			$dbh->do ("insert into producer_$chain (producer, regproducer_at) values (?, ?)", {}, $producer, 0);
+			my $id = $dbh->last_insert_id();
+			$$data{$producer}{id} = $id;
+		}
+
+		my $vote_percent = 0;
+		if ($$entry{is_active}) {
+			$vote_percent = $$entry{total_votes} / $vote_total * 100;
+		}
+
+		$dbh->do ("update producer_$chain set
+			regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, 
+			onchainbpjson_enabled = ?, onchainbpjson_data = ?,
+			onchainblacklist_enabled = ?, onchainblacklist_data = ?,
+			globals_data = ?
+			where id = ?",
+			{}, 
+			time, to_json ($entry), $rank, $vote_percent,
+			(scalar (@$onchain_bpjson_list) ? 1 : 0), $$onchain{bpjson}{$producer},
+			(scalar (@$onchain_blacklist_list) ? 1 : 0), $$onchain{blacklist}{$producer},
+			to_json ($globals),
+			$$data{$producer}{id}
+		);
+
+		usleep (500000);
+	}
+
+	# expire producers no longer in list with required rank
+	$dbh->do ("delete from producer_$chain where regproducer_at < ?", {}, time - (3600 * 12));
+
+	return $rank;
+}
+
+sub generate_stats_query {
+	my ($chain) = @_;
+
+	my @stats_query;
+	foreach my $key (keys %stats_config) {
+		my $query = $stats_config{$key}{query};
+		push (@stats_query, "$query as $key");
+	}
+		
+	my $sql = 'select ' . join (', ', @stats_query) . " from producer_$chain";
+#	print ">> $sql\n";
+	return $sql;
+}
+
+sub update_stats {
+	my ($chain, $stats_query, $dbh) = @_;
+
+	my $stats = $dbh->selectrow_hashref ($stats_query);
+	my $time = time;
+
+	my @message;
+	foreach my $key (sort {$stats_config{$a}{sort_order} <=> $stats_config{$b}{sort_order}} keys %stats_config) {
+		my $data = $$stats{$key};
+		next if (! defined $data);
+		if ($key =~ /^count/) {
+			if ($data > 0) {
+				push (@message, "$key=<$data>");
+			}
+		} else {
+			my $delta = int (time - $data);
+			push (@message, "$key=<$delta s>");
+		}
+	}
+
+	if (@message) {
+		write_timestamp_log ("[stats $chain] " . join (' ', @message));
+	}
+}

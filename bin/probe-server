@@ -1,0 +1,152 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use JSON;
+use EOSN::STOMP qw(do_connect_stomp);
+use EOSN::CommandUtil qw(write_timestamp_log);
+use EOSN::UA qw(eosn_cache_ua);
+use EOSN::SQL qw(do_connect_sqlite);
+use EOSN::Validator;
+
+binmode(STDOUT, ":utf8");
+
+# --------------------------------------------------------------------------
+# Main
+
+my $max_processes = 20;
+my @pids;
+
+write_timestamp_log ("starting max_processes=<$max_processes>");
+
+foreach my $thread_id (1 .. $max_processes) {
+	my $pid = fork;
+	if (! defined $pid) {
+		die "$0: could not fork";
+		next;
+	} elsif (! $pid) {
+		write_timestamp_log ("[$thread_id] start worker");
+		run_main_loop ($thread_id);
+		write_timestamp_log ("[$thread_id] end worker");
+	} else {
+		push (@pids, $pid);
+	}
+}
+
+wait ();
+
+write_timestamp_log ('stopping');
+
+foreach my $pid (@pids) {
+	write_timestamp_log ("kill pid=<$pid>");
+	kill ('TERM', $pid);
+}
+
+# --------------------------------------------------------------------------
+# Subroutines
+
+sub run_main_loop {
+	my ($thread_id) = @_;
+
+	my $stomp_response = do_connect_stomp ('bpvalidate');
+	my $stomp_request = do_connect_stomp ('bpvalidate');
+	my $dbh = do_connect_sqlite ('bpvalidate');
+
+	$stomp_request->subscribe ({
+		destination => '/queue/request',
+		'ack' => 'client',
+		'activemq.prefetchSize' => 1
+	});
+
+	while (1) {
+		exit if (getppid() == 1);
+
+		my $frame = $stomp_request->receive_frame ({timeout => 30});
+
+		if (! defined $frame) {
+			write_timestamp_log ("[$thread_id] no messages received");
+			next;
+		}
+
+		my $body = $frame->body;
+		utf8::decode ($body);
+		handle_message ($thread_id, $stomp_response, $body);
+
+		$stomp_request->ack ({
+			frame => $frame
+		});
+	}
+}
+
+sub handle_message {
+	my ($thread_id, $stomp_response, $message) = @_;
+
+	my $request;
+	eval {
+		$request = from_json ($message);
+	};
+
+	my $receive_time = time;
+
+	my $chain = $$request{chain};
+	if (! $chain) {
+		write_timestamp_log ("[$thread_id] message missing chain");
+		return;
+	}
+
+	my $producer = $$request{producer};
+	if (! $producer) {
+		write_timestamp_log ("[$thread_id] message missing producer");
+		return;
+	}
+
+	my $dispatch_time = $$request{dispatch_time};
+	if (! $dispatch_time) {
+		write_timestamp_log ("[$thread_id] message missing dispatch_time");
+		return;
+	}
+
+	my $expire_time = $$request{expire_time};
+	if (! $expire_time) {
+		write_timestamp_log ("[$thread_id] message missing expire_time");
+		return;
+	}
+
+	$$request{receive_time} = $receive_time;
+	my $dispatch_delta = $receive_time - $dispatch_time;
+	my $expire_delta = $expire_time - $receive_time;
+
+	write_timestamp_log ("[$thread_id] received chain=<$chain> producer=<$producer> dispatch_delta=<$dispatch_delta s> expire_delta=<$expire_delta s>");
+
+	if ($expire_delta < 0) {
+		# write_timestamp_log ("[$thread_id] message too old age=<$expire_delta s>");
+		$$request{timeout} = JSON::true;
+	} else {
+		handle_request ($thread_id, $request, $producer);
+	}
+
+	$$request{processed_time} = time;
+
+	my $body = to_json ($request);
+	utf8::encode ($body);
+	$stomp_response->send ({
+		destination => '/queue/response',
+		body => $body
+	});
+}
+
+sub handle_request {
+	my ($thread_id, $request, $producer) = @_;
+
+	my $data = $$request{data};
+	delete $$request{data};
+
+	$$data{log_prefix} = "[$thread_id/$producer]";
+	$$data{ua} = eosn_cache_ua ();
+	$$data{dbh} = do_connect_sqlite ('bpvalidate');
+
+#	return if ($producer ne 'eosswedenorg');
+
+	my $validator = new EOSN::Validator (%$data);
+	$$request{results} = $validator->validate;
+}

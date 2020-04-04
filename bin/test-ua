@@ -16,7 +16,7 @@ my %options;
 $options{api_url} = 'http://mainnet.eosn.io/v1/chain/validate_error_message';
 $options{post_data} = '{"json": true}';
 
-my $req = HTTP::Request->new('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
+my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 my $options;
 $$options{request_timeout} = 2;
 $$options{cache_timeout} = 600;

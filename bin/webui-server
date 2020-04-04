@@ -1,0 +1,232 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use JSON;
+use EOSN::CommandUtil qw(write_timestamp_log write_file_atomic);
+use File::Slurp qw(read_dir);
+use EOSN::SQL qw(do_connect_mysql);
+use Getopt::Long;
+use Time::HiRes qw(usleep);
+use EOSN::Report;
+use File::Touch qw(touch);
+
+binmode(STDOUT, ":utf8");
+
+# --------------------------------------------------------------------------
+# Config
+
+# --------------------------------------------------------------------------
+# Main
+
+get_report_options_website();
+my $confdir = confdir();
+my $outdir = outdir();
+
+write_timestamp_log ('starting');
+
+my @pids;
+my $delay = 10;
+
+fork_website_builder ();
+
+foreach my $chain (sort (chains())) {
+	fork_chain ($chain);
+	sleep ($delay);
+}
+
+wait ();
+
+write_timestamp_log ('stopping');
+
+foreach my $pid (@pids) {
+	write_timestamp_log ("kill pid=<$pid>");
+	kill ('TERM', $pid);
+}
+
+# --------------------------------------------------------------------------
+# Subroutines
+
+sub fork_chain {
+	my ($chain) = @_;
+
+	my $properties = chain_properties ($chain);
+	next if (! $$properties{active});
+
+	my $pid1 = fork;
+	if (! defined $pid1) {
+		die "$0: could not fork";
+		next;
+	} elsif (! $pid1) {
+		write_timestamp_log ("run update chain=<$chain>");
+		update_chain ($chain);
+		write_timestamp_log ("abnormal exit update chain=<$chain>");
+		die "$0: update chain=<$chain> exited abmormally";
+	} else {
+		push (@pids, $pid1);
+	}
+}
+
+sub fork_website_builder {
+	my $pid = fork;
+	if (! defined $pid) {
+		die "$0: could not fork";
+		next;
+	} elsif (! $pid) {
+		write_timestamp_log ("run website builder");
+		update_website ();
+		# do something
+		write_timestamp_log ("abnormal exit website builder");
+		die "$0: website builder exited abmormally";
+	} else {
+		push (@pids, $pid);
+	}
+}
+
+sub update_website {
+	my $wait_time = 30;
+
+	while (1) {
+		exit if (getppid() == 1);
+		my $start_time = time;
+
+		foreach my $lang (languages()) {
+			my $xfile = "$outdir/about/index.thtml.$lang";
+			touch ($xfile);
+		}
+
+		run_command ('[website]', 'webui-builder', "--out=$outdir", "--config=$confdir");
+
+		my $end_time = time;
+		my $process_time = $end_time - $start_time;
+		my $sleep_time = $wait_time - $process_time;
+		$sleep_time = 0 if ($sleep_time < 0);
+
+		write_timestamp_log ("[website] in time=<$process_time s> sleep=<$sleep_time s>");
+		sleep ($sleep_time);
+	}
+}
+
+sub update_chain {
+	my ($chain) = @_;
+	
+	my $wait_time = 120;
+
+	setup_chain ($chain);
+
+	while (1) {
+		exit if (getppid() == 1);
+		my $start_time = time;
+
+		write_results ($chain);
+		run_reports ($chain);
+		clean_dir ($chain, 'producer', "$outdir/$chain/producers");
+
+		my $end_time = time;
+		my $process_time = $end_time - $start_time;
+		my $sleep_time = $wait_time - $process_time;
+		$sleep_time = 0 if ($sleep_time < 0);
+
+		write_timestamp_log ("[$chain] in time=<$process_time s> sleep=<$sleep_time s>");
+		sleep ($sleep_time);
+	}
+}
+
+sub setup_chain {
+	my ($chain) = @_;
+
+	foreach my $dir ("$outdir/$chain", "$outdir/$chain/info", "$outdir/$chain/reports", "$outdir/$chain/producers") {
+		if (! -d $dir) {
+			write_timestamp_log ("create dir=<$dir>");
+			mkdir ($dir);
+		}
+	}
+
+	my $bpsjson = "$outdir/$chain/bps.json";
+	if (! -e $bpsjson) {
+		write_timestamp_log ("create initial output=<$bpsjson>");
+		write_file ($bpsjson, "{}");
+	}
+
+	do_copy ($chain, "$outdir/res/chain", "$outdir/$chain");
+	do_copy ($chain, "$outdir/res/chain/info", "$outdir/$chain/info");
+	do_copy ($chain, "$outdir/res/chain/reports", "$outdir/$chain/reports");
+}
+
+sub write_results {
+	my ($chain) = @_;
+
+	my $dbh = do_connect_mysql ('bpvalidate');
+	my $outfile = "$outdir/$chain/bps.json";
+	my @results;
+	my $data = $dbh->selectall_arrayref("select * from producer_$chain where not results_data is null order by producer", {Slice => {}});
+	foreach my $entry (@$data) {
+		push (@results, from_json ($$entry{results_data}));
+	}
+
+	my $final_result = to_json ({
+		meta => {generated_at => time2str("%C", time), maintainer => 'matthew@eosnation.io'},
+		producers => \@results
+	}, {
+		pretty => 0,
+		canonical => 1
+	});
+
+	write_file_atomic ($outfile, {binmode => ':utf8'}, $final_result . "\n");
+}
+
+sub run_reports {
+	my ($chain) = @_;
+
+	my $properties = chain_properties ($chain);
+
+	foreach my $property (keys %$properties) {
+		next if ($property !~ /^report_/);
+		next if (! $$properties{$property});
+		my $report = $property;
+		$report =~ s/_/-/g;
+		$report =~ s/^report/webui-report/;
+
+		run_command ("[$chain]", $report, "--chain=$chain", "--input=$outdir/$chain/bps.json", "--out=$outdir", "--config=$confdir");
+	}
+
+	run_command ("[$chain]", 'webui-report-producers', "--chain=$chain", "--input=$outdir/$chain/bps.json", "--out=$outdir", "--config=$confdir");
+}
+
+sub run_command {
+	my ($log_prefix, @command) = @_;
+
+	write_timestamp_log ($log_prefix . ' run command=<' . $command[0] . '>');
+	system (@command);
+}
+
+sub do_copy {
+	my ($chain, $from, $to) = @_;
+
+	my $dh;
+	opendir ($dh, $from) || die "$0: cannot open dir=<$from>: $!";
+	my @files = grep /\.thtml\./, readdir ($dh);
+	closedir ($dh);
+
+	foreach my $file (sort @files) {
+		#print ">> [$from/$file] [$to/$file]\n";
+		my $data = read_file ("$from/$file");
+		write_file ("$to/$file", "chain = $chain\n$data");
+	}
+}
+
+sub clean_dir {
+	my ($chain, $type, $dir) = @_;
+
+	next if (! -e $dir);
+	my @files = read_dir ($dir);
+
+	foreach my $file (@files) {
+		my $mtime = (stat "$dir/$file")[9];
+		my $age = time - $mtime;
+		if ($age > 3600 * 24) {
+			write_timestamp_log ("[$chain] remove old file type=<$type> file=<$dir/$file>");
+			unlink ("$dir/$file");
+		}
+	}
+}

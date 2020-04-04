@@ -1,0 +1,48 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::CommandUtil qw(write_timestamp_log);
+use EOSN::SQL qw(do_connect_mysql);
+use EOSN::FileUtil qw(read_csv_hash);
+use Getopt::Long;
+
+# --------------------------------------------------------------------------
+# Main
+
+my $configdir = undef;
+GetOptions ('config=s' => \$configdir) || exit 1;
+$configdir || die "$0: config dir not provided";
+
+my $chainsfile = "$configdir/chains.csv";
+if (! -e $chainsfile) {
+        die "$0: chains file not found: $chainsfile";
+}
+
+write_timestamp_log ('starting');
+
+my $chains = read_csv_hash ($chainsfile, 'name');
+my $dbh = do_connect_mysql ('bpvalidate');
+
+foreach my $chain (sort keys %$chains) {
+	write_timestamp_log ("table=<producer_$chain>");
+	my $prefix_producer = "alter table producer_$chain add column if not exists";
+	#$dbh->do ("drop table producer");
+	$dbh->do ("create table if not exists producer_$chain (id int(11) unsigned not null primary key auto_increment) character set utf8mb4");
+	$dbh->do ("$prefix_producer producer varchar(20)");
+	$dbh->do ("$prefix_producer regproducer_rank int(11) unsigned");
+	$dbh->do ("$prefix_producer regproducer_vote_percent float(10,2)");
+	$dbh->do ("$prefix_producer regproducer_data text");
+	$dbh->do ("$prefix_producer onchainbpjson_enabled tinyint(1) not null default 0");
+	$dbh->do ("$prefix_producer onchainbpjson_data text");
+	$dbh->do ("$prefix_producer onchainblacklist_enabled tinyint(1) not null default 0");
+	$dbh->do ("$prefix_producer onchainblacklist_data text");
+	$dbh->do ("$prefix_producer globals_data text");
+	$dbh->do ("$prefix_producer results_data mediumtext");
+	$dbh->do ("$prefix_producer regproducer_at int(11)");
+	$dbh->do ("$prefix_producer checked_at int(11)");
+	$dbh->do ("$prefix_producer dispatched_at int(11)");
+	$dbh->do ("create unique index if not exists i_producer on producer_$chain (producer)");
+}
+
+write_timestamp_log ('done');
