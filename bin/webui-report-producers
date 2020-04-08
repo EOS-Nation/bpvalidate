@@ -57,7 +57,7 @@ my @entries2;
 my @entries3;
 
 foreach my $entry (shuffle (@{$$data{producers}})) {
-	my $votep = $$entry{info}{vote_percent};
+	my $is_paid = $$entry{info}{is_paid};
 
 	my $check = 0;
 	my $msgsummary = $$entry{message_summary};
@@ -69,7 +69,7 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 
 	if ($check > 0) {
 		push (@entries1, $entry);
-	} elsif ($votep > 0.5) {
+	} elsif ($is_paid) {
 		push (@entries2, $entry);
 	} else {
 		push (@entries3, $entry);
@@ -82,7 +82,8 @@ foreach my $lang (languages) {
 	foreach my $entry (@entries1, @entries2, @entries3) {
 		my $producer = $$entry{regproducer}{owner};
 		my $rank = $$entry{info}{rank};
-		my $votep = $$entry{info}{vote_percent};
+		my $is_standby = $$entry{info}{is_standby};
+		my $is_top_21 = $$entry{info}{is_top_21};
 		my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
 		my $country = $$entry{info}{country_alpha2};
 
@@ -105,9 +106,9 @@ foreach my $lang (languages) {
 		}
 
 		my $selected = '';
-		if ($rank <= 21) {
+		if ($is_top_21) {
 			$selected = sev_html(kind => 'bp_top21', class => undef, lang => $lang);
-		} elsif ($votep > 0.5) {
+		} elsif ($is_standby) {
 			$selected = sev_html(kind => 'bp_standby', class => undef, lang => $lang);
 		} else {
 			$selected = sev_html(kind => 'bp_other', class => undef, lang => $lang);
@@ -146,16 +147,17 @@ foreach my $lang (languages) {
 	foreach my $entry (@entries1, @entries2, @entries3) {
 		my $producer = $$entry{regproducer}{owner};
 		my $rank = $$entry{info}{rank};
-		my $votep = $$entry{info}{vote_percent};
+		my $is_standby = $$entry{info}{is_standby};
+		my $is_top_21 = $$entry{info}{is_top_21};
 
 		my %results;
 		$results{name} = $producer;
 
-		if ($rank <= 21) {
+		if ($is_top_21) {
 			push (@{$results{tags}}, 'top21_y');
 			push (@{$results{tags}}, 'paid_n');
 			push (@{$results{tags}}, 'other_n');
-		} elsif ($votep > 0.5) {
+		} elsif ($is_standby) {
 			push (@{$results{tags}}, 'top21_n');
 			push (@{$results{tags}}, 'paid_y');
 			push (@{$results{tags}}, 'other_n');

@@ -205,14 +205,7 @@ sub run_validate {
 	my $location_check = $self->{chain_properties}{location_check} || die "$0: location_check is undefined in chains.csv";
 	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.csv";
 
-	$self->add_message (
-		kind => 'info',
-		detail => 'voting rank',
-		value => $self->{rank},
-		class => 'general'
-	);
-	$self->{results}{info}{rank} = $self->{rank};
-	$self->{results}{info}{vote_percent} = $self->{vote_percent};
+	$self->check_meta ();
 
 	if (! $is_active) {
 		$self->add_message (
@@ -431,6 +424,32 @@ sub run_validate {
 
 	$self->check_onchainbpjson;
 	$self->check_onchainblacklist;
+}
+
+sub check_meta {
+	my ($self) = @_;
+
+	$self->add_message (
+		kind => 'info',
+		detail => 'voting rank',
+		value => $self->{meta}{rank},
+		class => 'general'
+	);
+
+	my $position = 'candidate';
+	$position = 'top 21' if ($self->{meta}{is_top_21});
+	$position = 'paid standby' if ($self->{meta}{is_standby});
+
+	$self->add_message (
+		kind => 'info',
+		detail => 'position',
+		value => $position,
+		class => 'general'
+	);
+
+	foreach my $key (keys %{$self->{meta}}) {
+		$self->{results}{info}{$key} = $self->{meta}{$key};
+	}
 }
 
 sub check_onchainbpjson {

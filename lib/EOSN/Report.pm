@@ -563,12 +563,13 @@ sub is_important_bp {
 	my ($entry) = @_;
 
 	my $rank = $$entry{info}{rank};
-	my $votep = $$entry{info}{vote_percent};
+	my $is_standby = $$entry{info}{is_standby};
+	my $is_top_21 = $$entry{info}{is_top_21};
 
 	my $selected = 0;
-	if ($rank <= 21) {
+	if ($is_top_21) {
 		$selected = 1;
-	} elsif ($votep > 0.5) {
+	} elsif ($is_standby) {
 		$selected = 1;
 	}
 

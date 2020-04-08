@@ -284,9 +284,10 @@ sub dispatch_chain {
 			$count++;
 
 			my $request_data = from_json ($$entry{request_data});
-			my $rank = $$request_data{rank};
+			my $rank = $$request_data{meta}{rank};
+			my $is_paid = $$request_data{meta}{is_paid};
 
-			write_timestamp_log ("[dispatch $chain] dispatch producer=<$producer> rank=<$rank> checked_delta=<$checked_delta s> dispatch_delta=<$dispatch_delta s>");
+			write_timestamp_log ("[dispatch $chain] dispatch producer=<$producer> rank=<$rank> is_paid=<$is_paid> checked_delta=<$checked_delta s> dispatch_delta=<$dispatch_delta s>");
 			$dbh->do ("update producer_$chain set dispatched_at = ? where id = ?", {}, $time, $id);
 
 			my $request;
@@ -300,7 +301,7 @@ sub dispatch_chain {
 			my $body = to_json ($request);
 			utf8::encode ($body);
 			$stomp->send ({destination => '/queue/request', body => $body});
-			usleep (1);
+			sleep (1);
 		}
 
 		my $end_time = time;
@@ -350,6 +351,7 @@ sub update_chain {
 		get_onchain_bpjson_list ($chain_data);
 		get_onchain_blacklist_list ($chain_data);
 		tabulate_votes ($chain_data);
+		compute_rank ($chain_data);
 
 		my $records_updated = 0;
 		if ($$chain_data{errors}) {
@@ -489,6 +491,44 @@ sub tabulate_votes {
 	$$options{vote_total} = $vote_total;
 }
 
+sub compute_rank {
+	my ($options) = @_;
+
+	my $chain = $$options{chain};
+	my $globals = $$options{globals};
+	my $producer_list = $$options{producer_list};
+	my $vote_total = $$options{vote_total};
+	my $onchain = $$options{onchain};
+	my $rank = 0;
+
+	foreach my $entry (@{$producer_list}) {
+		my $producer = $$entry{owner};
+		$rank++;
+
+		my $vote_percent = 0;
+		my $per_vote_pay = 0;
+		if ($$entry{is_active}) {
+			$vote_percent = sprintf ("%.3f", $$entry{total_votes} / $vote_total * 100);
+			$per_vote_pay = $$globals{pervote_bucket} * $$entry{total_votes} / $$globals{total_producer_vote_weight};
+		}
+		if ($vote_percent <= 0.001) {
+			$vote_percent = 0;
+		}
+
+		my $is_paid = $per_vote_pay >= 1000000 ? 1 : 0;
+		my $is_top_21 = $rank <= 21 ? 1 : 0;
+		my $is_standby = ($is_paid && ! $is_top_21) ? 1 : 0;
+
+		# write_timestamp_log ("[update $chain] producer=<$producer> rank=<$rank> vote_percent=<$vote_percent> is_paid=<$is_paid> is_top_21=<$is_top_21> is_standby=<$is_standby>");
+
+		$$onchain{meta}{$producer}{rank} = $rank;
+		$$onchain{meta}{$producer}{vote_percent} = $vote_percent;
+		$$onchain{meta}{$producer}{is_paid} = $is_paid;
+		$$onchain{meta}{$producer}{is_top_21} = $is_top_21;
+		$$onchain{meta}{$producer}{is_standby} = $is_standby;
+	}
+}
+
 sub update_db {
 	my ($options) = @_;
 
@@ -500,16 +540,18 @@ sub update_db {
 	my $onchain_bpjson_list = $$options{onchain_bpjson_list};
 	my $onchain_blacklist_list = $$options{onchain_blacklist_list};
 	my $vote_total = $$options{vote_total};
-	my $rank = 0;
 	my $max_producers = $$chains{$chain}{max_producers};
 	my $versions = $$options{versions};
+	my $records_updated = 0;
 
 	my $data = $dbh->selectall_hashref ("select * from producer_$chain", 'producer');
 
 	foreach my $entry (@{$producer_list}) {
 		my $producer = $$entry{owner};
+		my $rank = $$onchain{meta}{$producer}{rank};
+
 		last if ($rank > $max_producers);
-		$rank++;
+		$records_updated = $rank;
 
 		# write_timestamp_log ("[update $chain] update producer=<$producer> rank=<$rank>");
 
@@ -519,15 +561,9 @@ sub update_db {
 			$$data{$producer}{id} = $id;
 		}
 
-		my $vote_percent = 0;
-		if ($$entry{is_active}) {
-			$vote_percent = $$entry{total_votes} / $vote_total * 100;
-		}
-
 		my %request_data = (
-			rank => $rank,
-			vote_percent => $vote_percent,
 			regproducer_data => $entry,
+			meta => $$onchain{meta}{$producer},
 			onchainbpjson_enabled => (scalar (@$onchain_bpjson_list) ? 1 : 0),
 			onchainbpjson_data => $$onchain{bpjson}{$producer},
 			onchainblacklist_enabled => (scalar (@$onchain_blacklist_list) ? 1 : 0),
@@ -552,7 +588,7 @@ sub update_db {
 	# expire producers no longer in list with required rank
 	$dbh->do ("delete from producer_$chain where regproducer_at < ?", {}, time - (3600 * 12));
 
-	return $rank;
+	return $records_updated;
 }
 
 sub generate_stats_query {
