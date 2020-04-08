@@ -178,6 +178,11 @@ sub handle_message {
 	my $id = $$response{id};
 	my $producer = $$response{producer};
 
+	if (! defined $chain || ! defined $id || ! defined $producer) {
+		write_timestamp_log ("[receiver $chain] invalid message for producer=<$producer>");
+		return;
+	}
+
 	my $dispatch_time = $$response{dispatch_time};
 	my $receive_time = $$response{receive_time};
 	my $processed_time = $$response{processed_time};
