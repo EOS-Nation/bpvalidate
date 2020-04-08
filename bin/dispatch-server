@@ -243,8 +243,6 @@ sub dispatch_chain {
 	my $regproducer_check_time = 3600; # how old reproducer data can be while we still check
 	my $re_check_time = 25 * 60; # how often to re-validate producer
 	my $re_dispatch_time = 600; # allow enough time for the dispatch_expire_time + the time it takes to run the actual checks
-	my $versionsfile = "$configdir/versions_$chain.csv";
-	my $versions = read_csv_hash ($versionsfile, 'hash');
 
 	while (1) {
 		exit if (getppid() == 1);
@@ -261,7 +259,6 @@ sub dispatch_chain {
 			my $regproducer_delta = $time - ($$entry{regproducer_at} || 0);
 			my $checked_delta = $time - ($$entry{checked_at} || 0);
 			my $dispatch_delta = $time - ($$entry{dispatched_at} || 0);
-			my $rank = $$entry{regproducer_rank};
 
 			if ($regproducer_delta > $regproducer_check_time) {
 				#write_timestamp_log ("[dispatch $chain] SKIP dispatch producer=<$producer> rank=<$rank> regproducer_delta=<$regproducer_delta s>");
@@ -281,22 +278,11 @@ sub dispatch_chain {
 			last if ($count >= $max_producers_per_round);
 			$count++;
 
+			my $request_data = from_json ($$entry{request_data});
+			my $rank = $$request_data{rank};
+
 			write_timestamp_log ("[dispatch $chain] dispatch producer=<$producer> rank=<$rank> checked_delta=<$checked_delta s> dispatch_delta=<$dispatch_delta s>");
 			$dbh->do ("update producer_$chain set dispatched_at = ? where id = ?", {}, $time, $id);
-
-			my $validator_data = {
-				globals => $$entry{globals},
-				properties => from_json ($$entry{regproducer_data}),
-				versions => $versions,
-				rank => $$entry{regproducer_rank},
-				vote_percent => $$entry{regproducer_vote_percent},
-				onchainbpjson_enabled => $$entry{onchainbpjson_enabled},
-				onchainbpjson_data => $$entry{onchainbpjson_data},
-				onchainblacklist_enabled => $$entry{onchainblacklist_enabled},
-				onchainblacklist_data => $$entry{onchainblacklist_data},
-				chain => $chain,
-				chain_properties => $$chains{$chain}
-			};
 
 			my $request;
 			$$request{chain} = $chain;
@@ -304,7 +290,7 @@ sub dispatch_chain {
 			$$request{expire_time} = $expire_time;
 			$$request{id} = $$data{$producer}{id};
 			$$request{producer} = $producer;
-			$$request{data} = $validator_data;
+			$$request{data} = $request_data;
 
 			my $body = to_json ($request);
 			utf8::encode ($body);
@@ -332,6 +318,8 @@ sub update_chain {
 	my $ua = eosn_normal_ua ();
 	my $dbh = do_connect_mysql ('bpvalidate');
 	my $wait_time = 300;
+	my $versionsfile = "$configdir/versions_$chain.csv";
+	my $versions = read_csv_hash ($versionsfile, 'hash');
 
 	write_timestamp_log ("[update $chain] read from url=<$base_url>");
 	
@@ -350,6 +338,7 @@ sub update_chain {
 		$$chain_data{query_limit} = 1000;
 		$$chain_data{max_producers} = $$chains{$chain}{max_producers} || die;
 		$$chain_data{dbh} = $dbh;
+		$$chain_data{versions} = $versions;
 
 		get_globals ($chain_data);
 		get_regproducer ($chain_data);
@@ -508,6 +497,7 @@ sub update_db {
 	my $vote_total = $$options{vote_total};
 	my $rank = 0;
 	my $max_producers = $$chains{$chain}{max_producers};
+	my $versions = $$options{versions};
 
 	my $data = $dbh->selectall_hashref ("select * from producer_$chain", 'producer');
 
@@ -529,17 +519,25 @@ sub update_db {
 			$vote_percent = $$entry{total_votes} / $vote_total * 100;
 		}
 
+		my %request_data = (
+			rank => $rank,
+			vote_percent => $vote_percent,
+			regproducer_data => $entry,
+			onchainbpjson_enabled => (scalar (@$onchain_bpjson_list) ? 1 : 0),
+			onchainbpjson_data => $$onchain{bpjson}{$producer},
+			onchainblacklist_enabled => (scalar (@$onchain_blacklist_list) ? 1 : 0),
+			onchainblacklist_data => $$onchain{blacklist}{$producer},
+			globals_data => $globals,
+			versions_data => $versions,
+			chain => $chain,
+			chain_properties => $$chains{$chain}
+		);
+
 		$dbh->do ("update producer_$chain set
-			regproducer_at = ?, regproducer_data = ?, regproducer_rank = ?, regproducer_vote_percent = ?, 
-			onchainbpjson_enabled = ?, onchainbpjson_data = ?,
-			onchainblacklist_enabled = ?, onchainblacklist_data = ?,
-			globals_data = ?
+			regproducer_at = ?, request_data = ?
 			where id = ?",
 			{}, 
-			time, to_json ($entry), $rank, $vote_percent,
-			(scalar (@$onchain_bpjson_list) ? 1 : 0), $$onchain{bpjson}{$producer},
-			(scalar (@$onchain_blacklist_list) ? 1 : 0), $$onchain{blacklist}{$producer},
-			to_json ($globals),
+			time, to_json (\%request_data),
 			$$data{$producer}{id}
 		);
 

@@ -46,6 +46,7 @@ $social{'wechat'} = undef;
 
 sub new {
 	my ($class) = shift;
+
 	my ($self) = {};
 	bless $self, $class;
 	return $self->initialize (@_);
@@ -53,10 +54,11 @@ sub new {
 
 sub DESTROY {
 	my ($self) = @_;
-	$self->{versions} = undef;
+
 	$self->{dbh} = undef;
 	$self->{ua} = undef;
-	$self->{properties} = undef;
+	$self->{regproducer_data} = undef;
+	$self->{versions_data} = undef;
 	$self->{messages} = undef;
 	$self->{urls} = undef;
 }
@@ -76,16 +78,6 @@ sub initialize {
 
 # --------------------------------------------------------------------------
 # Get/Set Public Methods
-
-sub properties {
-	my ($self, $properties) = @_;
-
-	if ($properties) {
-		$self->{properties} = $properties;
-	}
-
-	return $self->{properties};
-}
 
 sub messages {
 	my ($self, $messages) = @_;
@@ -127,16 +119,6 @@ sub dbh {
 	return $self->{dbh};
 }
 
-sub versions {
-	my ($self, $versions) = @_;
-
-	if ($versions) {
-		$self->{versions} = $versions;
-	}
-
-	return $self->{versions};
-}
-
 sub log_prefix {
 	my ($self, $log_prefix) = @_;
 
@@ -153,7 +135,7 @@ sub log_prefix {
 sub name {
 	my ($self) = @_;
 
-	return $self->{properties}{owner};
+	return $self->{regproducer_data}{owner};
 }
 
 # --------------------------------------------------------------------------
@@ -162,7 +144,7 @@ sub name {
 sub validate {
 	my ($self) = @_;
 
-	$self->{results}{regproducer} = $self->{properties};
+	$self->{results}{regproducer} = $self->{regproducer_data};
 
 	my $start_time = time;
 	$self->run_validate;
@@ -214,10 +196,10 @@ sub summarize_messages {
 sub run_validate {
 	my ($self) = @_;
 
-	my $url = $self->{properties}{url};
-	my $is_active = $self->{properties}{is_active};
-	my $location = $self->{properties}{location};
-	my $key = $self->{properties}{producer_key};
+	my $url = $self->{regproducer_data}{url};
+	my $is_active = $self->{regproducer_data}{is_active};
+	my $location = $self->{regproducer_data}{location};
+	my $key = $self->{regproducer_data}{producer_key};
 	my $chain = $self->{chain};
 	my $bpjson_filename = $self->{chain_properties}{filename} || die "$0: filename is undefined in chains.csv";
 	my $location_check = $self->{chain_properties}{location_check} || die "$0: location_check is undefined in chains.csv";
@@ -575,9 +557,10 @@ sub check_org_location {
 
 sub check_org_misc {
 	my ($self) = @_;
+
 	my $json = $self->{results}{input};
-	my $name = $self->{properties}{owner};
-	my $key = $self->{properties}{producer_key};
+	my $name = $self->{regproducer_data}{owner};
+	my $key = $self->{regproducer_data}{producer_key};
 
 	$self->validate_string (
 		string => $$json{org}{candidate_name},
@@ -1876,7 +1859,7 @@ sub validate_basic_api_extra_check {
 
 	my %info;
 	my $errors;
-	my $versions = $self->versions;
+	my $versions = $self->{versions_data};
 
 # cookies should not be used for session routing, so this check is not required
 #	my $server_header = $res->header('Server');
@@ -2089,7 +2072,7 @@ sub validate_hyperion_api_extra_check {
 
 	my %info;
 	my $errors;
-	my $versions = $self->versions;
+	my $versions = $self->{versions_data};
 
 	if (! $self->test_hyperion_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
@@ -2125,7 +2108,7 @@ sub validate_history_api_extra_check {
 
 	my %info;
 	my $errors;
-	my $versions = $self->versions;
+	my $versions = $self->{versions_data};
 
 	if (! $self->test_history_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;

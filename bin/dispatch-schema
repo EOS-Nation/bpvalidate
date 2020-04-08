@@ -30,14 +30,7 @@ foreach my $chain (sort keys %$chains) {
 	#$dbh->do ("drop table producer");
 	$dbh->do ("create table if not exists producer_$chain (id int(11) unsigned not null primary key auto_increment) character set utf8mb4");
 	$dbh->do ("$prefix_producer producer varchar(20)");
-	$dbh->do ("$prefix_producer regproducer_rank int(11) unsigned");
-	$dbh->do ("$prefix_producer regproducer_vote_percent float(10,2)");
-	$dbh->do ("$prefix_producer regproducer_data text");
-	$dbh->do ("$prefix_producer onchainbpjson_enabled tinyint(1) not null default 0");
-	$dbh->do ("$prefix_producer onchainbpjson_data text");
-	$dbh->do ("$prefix_producer onchainblacklist_enabled tinyint(1) not null default 0");
-	$dbh->do ("$prefix_producer onchainblacklist_data text");
-	$dbh->do ("$prefix_producer globals_data text");
+	$dbh->do ("$prefix_producer request_data mediumtext");
 	$dbh->do ("$prefix_producer results_data mediumtext");
 	$dbh->do ("$prefix_producer regproducer_at int(11)");
 	$dbh->do ("$prefix_producer checked_at int(11)");
