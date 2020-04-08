@@ -120,6 +120,7 @@ sub handle_message {
 
 	if ($expire_delta < 0) {
 		# write_timestamp_log ("[$thread_id] message too old age=<$expire_delta s>");
+		delete $$request{data};
 		$$request{timeout} = JSON::true;
 	} else {
 		handle_request ($thread_id, $request, $producer);
