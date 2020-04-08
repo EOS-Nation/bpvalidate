@@ -300,7 +300,7 @@ sub dispatch_chain {
 			my $body = to_json ($request);
 			utf8::encode ($body);
 			$stomp->send ({destination => '/queue/request', body => $body});
-			usleep (500000);
+			usleep (1);
 		}
 
 		my $end_time = time;
