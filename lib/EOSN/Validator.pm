@@ -225,6 +225,7 @@ sub run_validate {
 	}
 
 	$self->test_regproducer_key (key => $key, class => 'regproducer', request_timeout => 10, cache_timeout => 300);
+	$self->test_regproducer_claim_rewards (key => $key, class => 'regproducer');
 
 	if ($location_check eq 'country') {
 		my $country = $self->validate_country_n (country => $location, class => 'regproducer');
@@ -3290,6 +3291,48 @@ sub test_regproducer_key {
 	$self->add_message (
 		kind => 'ok',
 		detail => 'regproducer signing key test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_regproducer_claim_rewards {
+	my ($self, %options) = @_;
+
+	my $unpaid_blocks = $self->{regproducer_data}{unpaid_blocks};
+	my $last_claim_time = str2time ($self->{regproducer_data}{last_claim_time} . ' UTC');
+
+	if ($unpaid_blocks == 0) {
+		$self->add_message (
+			kind => 'ok',
+			detail => 'claim rewards: no unpaid blocks',
+			%options
+		);
+		return 1;
+	}
+
+	if (time - $last_claim_time < 24 * 3600) {
+		$self->add_message (
+			kind => 'ok',
+			detail => 'claim rewards: last claim time',
+			value_time => time2str ("%C", $last_claim_time),
+			%options
+		);
+		return 1;
+	} else {
+		$self->add_message (
+			kind => 'err',
+			detail => 'claim rewards: last claim time',
+			value_time => time2str ("%C", $last_claim_time),
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'regproducer claim rewards test passed',
 		%options
 	);
 
