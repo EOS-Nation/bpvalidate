@@ -2784,9 +2784,9 @@ sub test_hyperion_health {
 	$xoptions{see1} = 'https://t.me/EOSHyperion';
 
 	my $errors = 0;
-#	$self->check_hyperion_health_version ($json, %xoptions) || $errors++;
+	$self->check_hyperion_health_version ($json, %xoptions) || $errors++;
 	$self->check_hyperion_health_host ($json, %xoptions) || $errors++;
-#	$self->check_hyperion_health_query_time_ms ($json, %xoptions) || $errors++;
+	$self->check_hyperion_health_query_time_ms ($json, %xoptions) || $errors++;
 	$self->check_hyperion_health_features ($json, %xoptions) || $errors++;
 	$self->check_hyperion_health_health ($json, %xoptions) || $errors++;
 
@@ -2806,7 +2806,7 @@ sub check_hyperion_health_version {
 
 	if (! $$json{version}) {
 		$self->add_message (
-			kind => 'warn',
+			kind => 'info',  #xxx
 			detail => 'missing hyperion version',
 			%options
 		);
@@ -2827,7 +2827,7 @@ sub check_hyperion_health_host {
 
 	if (! $$json{host}) {
 		$self->add_message (
-			kind => 'warn',
+			kind => 'info', #xxx
 			detail => 'missing hyperion host',
 			%options
 		);
@@ -2836,7 +2836,7 @@ sub check_hyperion_health_host {
 
 	if (index ($options{api_url}, $$json{host}) == -1) {
 		$self->add_message (
-			kind => 'warn',
+			kind => 'info', #xxx
 			detail => 'url and hyperion host do not match',
 			value => $$json{host},
 			%options
@@ -2858,7 +2858,7 @@ sub check_hyperion_health_query_time_ms {
 
 	if (! $$json{query_time_ms}) {
 		$self->add_message (
-			kind => 'warn',
+			kind => 'info', #xxx
 			detail => 'missing hyperion query_time_ms',
 			%options
 		);
@@ -2867,7 +2867,7 @@ sub check_hyperion_health_query_time_ms {
 
 	if ($$json{query_time_ms} > 200) {
 		$self->add_message (
-			kind => 'err',
+			kind => 'info', #xxx
 			detail => 'query time is too slow',
 			value => $$json{query_time_ms},
 			threshold => 200,
@@ -2890,7 +2890,7 @@ sub check_hyperion_health_features {
 
 	if (! $$json{features}) {
 		$self->add_message (
-			kind => 'warn',
+			kind => 'info', #xxx
 			detail => 'missing hyperion features',
 			%options
 		);
@@ -2929,7 +2929,7 @@ sub check_hyperion_health_features {
 			);
 		} else {
 			$self->add_message (
-				kind => 'warn',
+				kind => 'info', #xxx
 				detail => 'feature disabled that should be enabled',
 				feature => $check,
 				%options
@@ -2954,7 +2954,7 @@ sub check_hyperion_health_health {
 
 	if (! $$json{health}) {
 		$self->add_message (
-			kind => 'warn',
+			kind => 'info', #xxx
 			detail => 'missing hyperion health',
 			%options
 		);
@@ -2963,7 +2963,7 @@ sub check_hyperion_health_health {
 
 	if (! scalar (@{$$json{health}})) {
 		$self->add_message (
-			kind => 'err',
+			kind => 'info', #xxx
 			detail => 'invalid JSON response for hyperion health',
 			%options
 		);
@@ -2981,7 +2981,7 @@ sub check_hyperion_health_health {
 
 		if ($status ne 'OK') {
 			$self->add_message (
-				kind => 'err',
+				kind => 'info', #xxx
 				detail => 'service error for hyperion health',
 				value => $status,
 				feature => $service,
@@ -2994,7 +2994,7 @@ sub check_hyperion_health_health {
 	my $active_shards = $services{Elasticsearch}{service_data}{active_shards} || '0%';
 	if ($active_shards ne '100.0%') {
 		$self->add_message (
-			kind => 'err',
+			kind => 'info', #xxx
 			detail => 'Elastic Search active_shards error for hyperion health',
 			value => $active_shards,
 			feature => 'Elasticsearch',
@@ -3006,7 +3006,7 @@ sub check_hyperion_health_health {
 	my $offset = $services{NodeosRPC}{service_data}{time_offset};
 	if ((! defined $offset) || ($offset < 0) || ($offset > 2000)) {
 		$self->add_message (
-			kind => 'err',
+			kind => 'info', #xxx
 			detail => 'Elastic Search time_offset error for hyperion health',
 			value => $offset,
 			feature => 'NodeosRPC',
