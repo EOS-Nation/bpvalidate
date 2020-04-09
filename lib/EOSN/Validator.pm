@@ -151,7 +151,7 @@ sub validate {
 	my $end_time = time;
 	$self->summarize_messages;
 
-	my $update_time = time2str("%C", time);
+	my $update_time = time2str ("%C", time);
 
 	$self->prefix_message (
 		kind => 'info',
@@ -201,9 +201,7 @@ sub run_validate {
 	my $location = $self->{regproducer_data}{location};
 	my $key = $self->{regproducer_data}{producer_key};
 	my $chain = $self->{chain};
-	my $bpjson_filename = $self->{chain_properties}{filename} || die "$0: filename is undefined in chains.csv";
 	my $location_check = $self->{chain_properties}{location_check} || die "$0: location_check is undefined in chains.csv";
-	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.csv";
 
 	$self->check_meta ();
 
@@ -333,7 +331,50 @@ sub run_validate {
 	my $xurl = $url;
 	$xurl =~ s#/$##;
 
-	# ----------- chains
+	# ----------- bp.json
+
+	my $bpjson_filename = $self->check_bpjson_filename ($xurl);
+	my $json = $self->validate_url (
+		url => "$xurl/$bpjson_filename",
+		field => 'BP info JSON URL',
+		class => 'org',
+		content_type => 'json',
+		cors_origin => 'should',
+		cors_headers => 'either',
+		dupe => 'err',
+		add_to_list => 'resources/bpjson',
+		request_timeout => 10,
+		cache_timeout => 300
+	);
+	return undef if (! $json);
+
+	$self->{results}{input} = $json;
+
+	if (! ref $$json{org}) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'not a object',
+			field => 'org',
+			class => 'org'
+		);
+	} else {
+		$self->check_org_misc;
+		$self->check_org_location;
+		$self->check_org_branding;
+		$self->check_org_social;
+	}
+
+	$self->check_nodes;
+
+	$self->check_onchainbpjson;
+	$self->check_onchainblacklist;
+}
+
+sub check_bpjson_filename {
+	my ($self, $xurl) = @_;
+
+	my $bpjson_filename = $self->{chain_properties}{filename} || die "$0: filename is undefined in chains.csv";
+	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.csv";
 
 	my $chains_json = $self->validate_url (
 		url => "$xurl/chains.json",
@@ -349,6 +390,7 @@ sub run_validate {
 		request_timeout => 10,
 		cache_timeout => 300
 	);
+
 	if ($chains_json) {
 		my $count = scalar (keys %{$$chains_json{chains}});
 		if ($count) {
@@ -388,42 +430,7 @@ sub run_validate {
 		#print ">>> NO CHAINS JSON\n";
 	}
 
-	# ----------- bp.json
-
-	my $json = $self->validate_url (
-		url => "$xurl/$bpjson_filename",
-		field => 'BP info JSON URL',
-		class => 'org',
-		content_type => 'json',
-		cors_origin => 'should',
-		cors_headers => 'either',
-		dupe => 'err',
-		add_to_list => 'resources/bpjson',
-		request_timeout => 10,
-		cache_timeout => 300
-	);
-	return undef if (! $json);
-
-	$self->{results}{input} = $json;
-
-	if (! ref $$json{org}) {
-		$self->add_message (
-			kind => 'err',
-			detail => 'not a object',
-			field => 'org',
-			class => 'org'
-		);
-	} else {
-		$self->check_org_misc;
-		$self->check_org_location;
-		$self->check_org_branding;
-		$self->check_org_social;
-	}
-
-	$self->check_nodes;
-
-	$self->check_onchainbpjson;
-	$self->check_onchainblacklist;
+	return $bpjson_filename;
 }
 
 sub check_meta {
