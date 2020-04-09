@@ -17,6 +17,9 @@ binmode(STDOUT, ":utf8");
 # Config
 
 my %stats_config;
+$stats_config{max_regproducer_at} = {query => 'min(regproducer_at)', sort_order => 1};
+$stats_config{avg_regproducer_at} = {query => 'avg(regproducer_at)', sort_order => 2};
+$stats_config{min_regproducer_at} = {query => 'max(regproducer_at)', sort_order => 3};
 $stats_config{max_checked_at} = {query => 'min(checked_at)', sort_order => 1};
 $stats_config{avg_checked_at} = {query => 'avg(checked_at)', sort_order => 2};
 $stats_config{min_checked_at} = {query => 'max(checked_at)', sort_order => 3};
@@ -350,13 +353,13 @@ sub update_chain {
 		get_regproducer ($chain_data);
 		get_onchain_bpjson_list ($chain_data);
 		get_onchain_blacklist_list ($chain_data);
-		tabulate_votes ($chain_data);
-		compute_rank ($chain_data);
 
 		my $records_updated = 0;
 		if ($$chain_data{errors}) {
 			write_timestamp_log ("[update $chain] skipped due to errors");
 		} else {
+			tabulate_votes ($chain_data);
+			compute_rank ($chain_data);
 			$records_updated = update_db ($chain_data);
 		}
 
