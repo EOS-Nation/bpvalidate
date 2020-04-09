@@ -426,6 +426,7 @@ sub generate_message {
 
 	my $count = $$options{count};
 	my $value = $$options{value};
+	my $value_time = $$options{value_time};
 	my $suggested_value = $$options{suggested_value};
 	my $request_timeout = $$options{request_timeout};
 	my $cache_timeout = $$options{cache_timeout};
@@ -485,6 +486,7 @@ sub generate_message {
 	$detail .= format_message_entry ('msg_threshold', $threshold, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_count', $count, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_value', $value, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_value_time', datetime($value_time, $lang), 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_suggested_to_use_value', $suggested_value, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_field', $field, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_contract', $contract, 0, $content_type, $lang);

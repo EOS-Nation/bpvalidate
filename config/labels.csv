@@ -90,6 +90,7 @@ time_s,s,s,초
 msg_threshold,threshold,阈值,한정치 
 msg_count,count,计数,계수
 msg_value,value,数值,수치 
+msg_value_time,value,数值,수치
 msg_suggested_to_use_value,suggested to use value,建议使用数值,수치 이용 제안
 msg_field,field,域,필드 
 msg_contract,contract,合约,컨트랙트 
