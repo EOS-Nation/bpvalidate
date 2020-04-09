@@ -1,0 +1,69 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use JSON;
+use EOSN::CommandUtil qw(write_timestamp_log);
+use EOSN::STOMP qw(do_connect_stomp);
+use EOSN::SQL qw(do_connect_mysql);
+use Getopt::Long;
+
+binmode(STDOUT, ":utf8");
+
+# --------------------------------------------------------------------------
+# Main
+
+my $chain = undef;
+my $producer = undef;
+GetOptions ('chain=s' => \$chain, 'producer=s' => \$producer) || exit 1;
+$chain || die "$0: chain not provided";
+$producer || die "$0: producer not provided";
+
+dispatch_producer ($chain, $producer);
+
+# --------------------------------------------------------------------------
+# Subroutines
+
+sub dispatch_producer {
+	my ($chain, $producer) = @_;
+
+	my $stomp = do_connect_stomp ('bpvalidate');
+	my $dbh = do_connect_mysql ('bpvalidate');
+	my $wait_time = 30;
+	my $max_producers_per_round = 20;
+	my $dispatch_expire_time = 120;
+
+	my $data = $dbh->selectall_hashref ("select * from producer_$chain where producer = " . $dbh->quote($producer), 'producer');
+
+	foreach my $producer (sort {($$data{$a}{checked_at} || 0) <=> ($$data{$b}{checked_at} || 0)} keys %$data) {
+		my $entry = $$data{$producer};
+		my $time = time;
+		my $id = $$data{$producer}{id};
+		my $expire_time = $time + $dispatch_expire_time;
+		my $regproducer_delta = $time - ($$entry{regproducer_at} || 0);
+		my $checked_delta = $time - ($$entry{checked_at} || 0);
+		my $dispatch_delta = $time - ($$entry{dispatched_at} || 0);
+
+		my $request_data = from_json ($$entry{request_data});
+		my $rank = $$request_data{meta}{rank};
+		my $is_paid = $$request_data{meta}{is_paid};
+
+		write_timestamp_log ("[dispatch $chain] dispatch producer=<$producer> rank=<$rank> is_paid=<$is_paid> checked_delta=<$checked_delta s> dispatch_delta=<$dispatch_delta s>");
+		$dbh->do ("update producer_$chain set dispatched_at = ? where id = ?", {}, $time, $id);
+
+		my $request;
+		$$request{chain} = $chain;
+		$$request{dispatch_time} = $time;
+		$$request{expire_time} = $expire_time;
+		$$request{id} = $$data{$producer}{id};
+		$$request{producer} = $producer;
+		$$request{data} = $request_data;
+
+		my $body = to_json ($request);
+		utf8::encode ($body);
+		$stomp->send ({destination => '/queue/request', body => $body});
+	}
+
+	$dbh->disconnect;
+	$stomp->disconnect;
+}
