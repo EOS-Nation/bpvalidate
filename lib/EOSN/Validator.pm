@@ -861,7 +861,7 @@ sub check_nodes {
 		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
 			$found_api_endpoint++;
 			my $result = $self->validate_basic_api (
-				class => 'endpoint',
+				class => 'api_endpoint',
 				api_url => $$node{api_endpoint},
 				field => "node[$node_number].api_endpoint",
 				ssl => 'off',
@@ -897,7 +897,7 @@ sub check_nodes {
 		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
 			$found_ssl_endpoint++;
 			my $result = $self->validate_basic_api (
-				class => 'endpoint',
+				class => 'api_endpoint',
 				api_url => $$node{ssl_endpoint},
 				field => "node[$node_number].ssl_endpoint",
 				ssl => 'on',
@@ -933,7 +933,7 @@ sub check_nodes {
 		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
 			$found_p2p_endpoint++;
 			if ($self->validate_connection (
-					class => 'endpoint',
+					class => 'p2p_endpoint',
 					peer => $$node{p2p_endpoint},
 					field => "node[$node_number].p2p_endpoint",
 					connection_type => 'p2p',
@@ -954,7 +954,7 @@ sub check_nodes {
 					kind => 'warn',
 					detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']",
 					field => "node[$node_number].is_producer",
-					class => 'endpoint'
+					class => 'org'
 				);
 				$node_type = 'producer';
 			} else {
@@ -962,7 +962,7 @@ sub check_nodes {
 					kind => 'info',
 					detail => "is_producer is deprecated and can be removed",
 					field => "node[$node_number].is_producer",
-					class => 'endpoint'
+					class => 'org'
 				);
 			}
 		}
@@ -976,7 +976,7 @@ sub check_nodes {
 				kind => 'warn',
 				detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query', 'seed']",
 				field => "node[$node_number]",
-				class => 'endpoint'
+				class => 'org'
 			);
 		} elsif ($node_type eq 'producer') {
 			$count_node_type_producer++;
@@ -985,7 +985,7 @@ sub check_nodes {
 					kind => 'warn',
 					detail => 'endpoints provided (producer should be private)',
 					field => "node[$node_number]",
-					class => 'endpoint'
+					class => 'org'
 				);
 			}
 		} elsif ($node_type eq 'seed') {
@@ -993,10 +993,10 @@ sub check_nodes {
 			if (! $valid_p2p_endpoint && $count_node_type_seed == 1) {
 				$self->add_message (
 					kind => 'warn',
-					detail => 'no valid peer endpoints provided',
+					detail => 'no valid p2p endpoints provided',
 					node_type => $node_type,
 					field => "node[$node_number]",
-					class => 'endpoint'
+					class => 'p2p_endpoint'
 				);
 			}
 			if ($valid_api_endpoint || $valid_ssl_endpoint) {
@@ -1005,7 +1005,7 @@ sub check_nodes {
 					detail => 'extranious API endpoints provided',
 					node_type => $node_type,
 					field => "node[$node_number]",
-					class => 'endpoint'
+					class => 'api_endpoint'
 				);
 			}
 		} elsif ($node_type eq 'query') {
@@ -1013,18 +1013,18 @@ sub check_nodes {
 				kind => 'err',
 				detail => 'use node_type=query is deprecated; use node_type=full instead',
 				see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
-				class => 'endpoint'
+				class => 'org'
 			);
 		} elsif ($node_type eq 'full') {
 			$count_node_type_full++;
 			if ($valid_p2p_endpoint) {
 				$self->add_message (
 					kind => 'warn',
-					detail => 'extranious peer endpoints provided',
+					detail => 'extranious p2p endpoints provided',
 					see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
 					node_type => $node_type,
 					field => "node[$node_number]",
-					class => 'endpoint'
+					class => 'p2p_endpoint'
 				);
 			}
 			if (! $valid_api_endpoint && ! $valid_ssl_endpoint && $count_node_type_full == 1) {
@@ -1033,7 +1033,7 @@ sub check_nodes {
 					detail => 'no valid API endpoints provided',
 					node_type => $node_type,
 					field => "node[$node_number]",
-					class => 'endpoint'
+					class => 'api_endpoint'
 				);
 			}
 		} else {
@@ -1041,14 +1041,14 @@ sub check_nodes {
 				kind => 'err',
 				detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query', 'seed']",
 				field => "node[$node_number].node_type",
-				class => 'endpoint'
+				class => 'org'
 			);
 			if (! $found_api_endpoint && ! $found_ssl_endpoint && ! $found_p2p_endpoint) {
 				$self->add_message (
 					kind => 'warn',
 					detail => 'no valid endpoints provided (useless section)',
 					field => "node[$node_number]",
-					class => 'endpoint'
+					class => 'org'
 				);
 			}
 		}
@@ -1067,14 +1067,14 @@ sub check_nodes {
 			kind => 'err',
 			detail => 'no full nodes provided',
 			see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
-			class => 'endpoint'
+			class => 'org'
 		);
 	} else {
 		$self->add_message (
 			kind => 'ok',
 			detail => 'full node(s) provided',
 			count => $count_node_type_full,
-			class => 'endpoint'
+			class => 'org'
 		);
 	}
 	if (! $count_node_type_seed) {
@@ -1082,14 +1082,14 @@ sub check_nodes {
 			kind => 'err',
 			detail => 'no seed nodes provided',
 			see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
-			class => 'endpoint'
+			class => 'org'
 		);
 	} else {
 		$self->add_message (
 			kind => 'ok',
 			detail => 'seed node(s) provided',
 			count => $count_node_type_seed,
-			class => 'endpoint'
+			class => 'org'
 		);
 	}
 	if (! $count_node_type_producer) {
@@ -1097,14 +1097,14 @@ sub check_nodes {
 			kind => 'err',
 			detail => 'no producer nodes provided',
 			see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
-			class => 'endpoint'
+			class => 'org'
 		);
 	} else {
 		$self->add_message (
 			kind => 'ok',
 			detail => 'producer node(s) provided',
 			count => $count_node_type_producer,
-			class => 'endpoint'
+			class => 'org'
 		);
 	}
 
@@ -1112,26 +1112,26 @@ sub check_nodes {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no HTTP or HTTPS API endpoints provided in any node',
-			class => 'endpoint'
+			class => 'api_endpoint'
 		);
 	} elsif (! $total_valid_api_endpoint && ! $total_valid_ssl_endpoint) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no valid HTTP or HTTPS API endpoints provided in any node; see above messages',
-			class => 'endpoint'
+			class => 'api_endpoint'
 		);
 	} elsif (! $total_valid_ssl_endpoint) {
 		$self->add_message (
 			kind => 'warn',
 			detail => 'no valid HTTPS API endpoints provided in any node',
-			class => 'endpoint'
+			class => 'api_endpoint'
 		);
 	} elsif (! $total_valid_api_endpoint) {
 		# similar check is implemented on https://eosreport.franceos.fr/
 		# $self->add_message (
 		#	kind => 'warn',
 		#	detail => 'no valid HTTP API endpoints provided in any node',
-		#	class => 'endpoint'
+		#	class => 'api_endpoint'
 		#);
 	}
 
@@ -1139,13 +1139,13 @@ sub check_nodes {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no P2P endpoints provided in any node',
-			class => 'endpoint'
+			class => 'p2p_endpoint'
 		);
 	} elsif (! $total_valid_p2p_endpoint) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no valid P2P endpoints provided in any node; see above messages',
-			class => 'endpoint'
+			class => 'p2p_endpoint'
 		);
 	}
 }

@@ -94,7 +94,7 @@ sub chain_properties {
 }
 
 sub classes {
-	my @classes_available = (qw (regproducer org endpoint blacklist bpjson history hyperion chains ipv6));
+	my @classes_available = (qw (regproducer org api_endpoint p2p_endpoint bpjson history hyperion chains blacklist ipv6));
 	my @classes_configured = ();
 
 	foreach my $class (@classes_available) {

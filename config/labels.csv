@@ -3,7 +3,8 @@ format_datetime,%Y-%m-%d %R %Z,%Y年%m月%d日 %R %Z,%Y년 %m월 %d일 %R %Z
 class_general,General Info,基本信息,기본정보
 class_regproducer,Regproducer,注册出块节点,Regproducer
 class_org,Organization,机构,기관
-class_endpoint,Endpoints,终端,앤드포인트
+class_api_endpoint,API
+class_p2p_endpoint,P2P
 class_blacklist,Blacklist,黑名单,블랙리스트
 class_bpjson,bp.json On-Chain,链上bp.json,bp.json 온체인
 class_history,History,历史,히스토리
@@ -13,7 +14,8 @@ class_ipv6,IPv6,IPv6协议,IPv6
 class_general_l,General Info Check,基本信息 验证,기본정보 검증
 class_regproducer_l,Regproducer Check,注册出块节点 验证,Regproducer Check 검증
 class_org_l,Organization Check,机构 验证,기관 검증
-class_endpoint_l,Endpoints Check,终端 验证,앤드포인트 검증
+class_api_endpoint_l,API Endpoints Check
+class_p2p_endpoint_l,P2P Endpoints Check
 class_history_l,History Check,历史 验证,히스토리 검증
 class_hyperion_l,Hyperion Check,Hyperion 验证,히페리온 검증
 class_blacklist_l,Blacklist Check,黑名单 验证,블랙리스트 검증
