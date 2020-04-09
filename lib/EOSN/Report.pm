@@ -424,6 +424,8 @@ sub generate_message {
 	my $content_type = $params{content_type} || die;
 	my $lang = $params{lang} || die;
 
+	my $service = $$options{service};
+	my $feature = $$options{feature};
 	my $count = $$options{count};
 	my $value = $$options{value};
 	my $value_time = $$options{value_time};
@@ -483,6 +485,8 @@ sub generate_message {
 
 	# ---------- output
 
+	$detail .= format_message_entry ('msg_service', $service, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_feature', $feature, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_threshold', $threshold, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_count', $count, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_value', $value, 0, $content_type, $lang);
