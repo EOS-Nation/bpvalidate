@@ -2101,6 +2101,9 @@ sub validate_hyperion_api_extra_check {
 	my $errors;
 	my $versions = $self->{versions_data};
 
+	if (! $self->test_hyperion_health (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+		$errors++;
+	}
 	if (! $self->test_hyperion_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
@@ -2737,6 +2740,286 @@ sub test_abi_serializer {
 	$self->add_message (
 		kind => 'ok',
 		detail => 'abi serializer test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_hyperion_health {
+	my ($self, %options) = @_;
+
+	my $base_url = $options{api_url};
+
+	$options{api_url} = $base_url . '/v2/health';
+	$options{log_prefix} = $self->log_prefix;
+
+	my $req = HTTP::Request->new ('GET', $options{api_url});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message (
+			kind => 'crit',
+			detail => 'error retriving health',
+			value => $status_message,
+			explanation => 'check hyperion configuration',
+			response_host => $response_host,
+			see1 => 'https://t.me/EOSHyperion',
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options) || return undef;
+
+	my %xoptions = %options;
+	$xoptions{explanation} = 'check hyperion configuration';
+	$xoptions{see1} = 'https://t.me/EOSHyperion';
+
+	my $errors = 0;
+#	$self->check_hyperion_health_version ($json, %xoptions) || $errors++;
+	$self->check_hyperion_health_host ($json, %xoptions) || $errors++;
+#	$self->check_hyperion_health_query_time_ms ($json, %xoptions) || $errors++;
+	$self->check_hyperion_health_features ($json, %xoptions) || $errors++;
+	$self->check_hyperion_health_health ($json, %xoptions) || $errors++;
+
+	return undef if ($errors);
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'health hyperion test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub check_hyperion_health_version {
+	my ($self, $json, %options) = @_;
+
+	if (! $$json{version}) {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'missing hyperion version',
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'health hyperion version test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub check_hyperion_health_host {
+	my ($self, $json, %options) = @_;
+
+	if (! $$json{host}) {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'missing hyperion host',
+			%options
+		);
+		return undef;
+	}
+
+	if (index ($options{api_url}, $$json{host}) == -1) {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'url and hyperion host do not match',
+			value => $$json{host},
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'health hyperion host test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub check_hyperion_health_query_time_ms {
+	my ($self, $json, %options) = @_;
+
+	if (! $$json{query_time_ms}) {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'missing hyperion query_time_ms',
+			%options
+		);
+		return undef;
+	}
+
+	if ($$json{query_time_ms} > 200) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'query time is too slow',
+			value => $$json{query_time_ms},
+			threshold => 200,
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'health hyperion query_time_ms test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub check_hyperion_health_features {
+	my ($self, $json, %options) = @_;
+
+	if (! $$json{features}) {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'missing hyperion features',
+			%options
+		);
+		return undef;
+	}
+
+	# to add: tables/userres tables/delband
+
+	my @checks = (
+		'streaming/enable',
+		'streaming/traces',
+		'streaming/deltas',
+		'tables/proposals',
+		'tables/accounts',
+		'tables/voters',
+		'index_deltas',
+		'index_all_deltas'
+	);
+
+	my $errors = 0;
+	foreach my $check (@checks) {
+		my $value = undef;
+		if ($check =~ m#/#) {
+			my ($a, $b) = split (m#/#, $check);
+			$value = $$json{features}{$a}{$b};
+		} else {
+			$value = $$json{features}{$check};
+		}
+
+		if ($value) {
+			$self->add_message (
+				kind => 'ok',
+				detail => 'feature enabled',
+				feature => $check,
+				%options
+			);
+		} else {
+			$self->add_message (
+				kind => 'warn',
+				detail => 'feature disabled that should be enabled',
+				feature => $check,
+				%options
+			);
+			$errors++;
+		}
+	}
+
+	return if ($errors);
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'health hyperion features test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub check_hyperion_health_health {
+	my ($self, $json, %options) = @_;
+
+	if (! $$json{health}) {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'missing hyperion health',
+			%options
+		);
+		return undef;
+	}
+
+	if (! scalar (@{$$json{health}})) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'invalid JSON response for hyperion health',
+			%options
+		);
+		return undef;
+	}
+
+	my %services;
+	my $errors = 0;
+
+	foreach my $entry (@{$$json{health}}) {
+		my $service = $$entry{service};
+		my $status = $$entry{status};
+
+		$services{$service} = $entry;
+
+		if ($status ne 'OK') {
+			$self->add_message (
+				kind => 'err',
+				detail => 'service error for hyperion health',
+				value => $status,
+				feature => $service,
+				%options
+			);
+			$errors++;
+		}
+	}
+
+	my $active_shards = $services{Elasticsearch}{service_data}{active_shards} || '0%';
+	if ($active_shards ne '100.0%') {
+		$self->add_message (
+			kind => 'err',
+			detail => 'Elastic Search active_shards error for hyperion health',
+			value => $active_shards,
+			feature => 'Elasticsearch',
+			%options
+		);
+		$errors++;
+	}
+
+	my $offset = $services{NodeosRPC}{service_data}{time_offset};
+	if ((! defined $offset) || ($offset < 0) || ($offset > 2000)) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'Elastic Search time_offset error for hyperion health',
+			value => $offset,
+			feature => 'NodeosRPC',
+			%options
+		);
+		$errors++;
+	}
+
+	return if ($errors);
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'health hyperion health test passed',
 		%options
 	);
 
