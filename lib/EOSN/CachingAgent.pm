@@ -105,7 +105,7 @@ sub request {
 	# ---------- update the database
 
 	if ($$cache{id}) {
-		$update->execute (time, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content, $$cache{ROWID});
+		$update->execute (time, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content, $$cache{id});
 	} else {
 		$insert->execute ($md5, time, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content);
 	}
