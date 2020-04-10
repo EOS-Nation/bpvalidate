@@ -1166,7 +1166,7 @@ sub validate_email {
 	my $string = $options{string};
 	my ($name, $host) = split (/@/, $string);
 
-	$self->validate_mx($host, $options{field}, $options{class}) || return;
+	$self->validate_mx ($host, %options) || return;
 }
 
 sub validate_string {
@@ -1285,7 +1285,7 @@ sub validate_url {
 	my ($host, $port) = split (/:/, $host_port, 2);
 
 	if (defined $port) {
-		if (! $self->validate_port($port, $field, $class)) {
+		if (! $self->validate_port ($port, %options)) {
 			return undef;
 		}
 	}
@@ -1330,9 +1330,10 @@ sub validate_url {
 		);
 	}
 
-	if (! $self->validate_ip_dns($host, $field, $class)) {
+	my @hosts = $self->validate_ip_dns ($host, %options);
+	if (! @hosts) {
 		return undef;
-	}	
+	}
 
 	if ($ssl eq 'either') {
 		if ($xurl !~ m#^https://#) {
@@ -1654,12 +1655,12 @@ sub validate_connection {
 		($host, $port) = split (/:/, $peer);
 	}
 
-	$port = $self->validate_port ($port, $field, $class);
+	$port = $self->validate_port ($port, %options);
 	if (! $port) {
 		return undef;
 	}
 
-	my @hosts = $self->validate_ip_dns ($host, $field, $class);
+	my @hosts = $self->validate_ip_dns ($host, %options);
 	if (! @hosts) {
 		return undef;
 	}
@@ -2164,7 +2165,10 @@ sub validate_history_api_extra_check {
 }
 
 sub validate_port {
-	my ($self, $port, $field, $class) = @_;
+	my ($self, $port, %options) = @_;
+
+	my $field = $options{field};
+	my $class = $options{class};
 
 	if (! defined $port) {
 		$self->add_message (
@@ -2200,7 +2204,10 @@ sub validate_port {
 }
 
 sub validate_ip_dns {
-	my ($self, $host, $field, $class) = @_;
+	my ($self, $host, %options) = @_;
+
+	my $field = $options{field};
+	my $class = $options{class};
 
 	if (($host =~ /^[\d\.]+$/) || ($host =~ /^[\d\:]+$/)) {
 		$self->add_message (
@@ -2210,14 +2217,17 @@ sub validate_ip_dns {
 			class => $class,
 			host => $host
 		);
-		return $self->validate_ip($host, $field, $class);
+		return $self->validate_ip ($host, %options);
 	} else {
-		return $self->validate_dns([$host], $field, $class);
+		return $self->validate_dns ([$host], %options);
 	}
 }
 
 sub validate_ip {
-	my ($self, $ip, $field, $class) = @_;
+	my ($self, $ip, %options) = @_;
+
+	my $field = $options{field};
+	my $class = $options{class};
 
 	if (! is_public_ip($ip)) {
 		$self->add_message (
@@ -2234,17 +2244,20 @@ sub validate_ip {
 }
 
 sub validate_dns {
-	my ($self, $addresses, $field, $class) = @_;
+	my ($self, $addresses, %options) = @_;
+
+	my $field = $options{field};
+	my $class = $options{class};
 
 	# IPV6 checks are disabled for now
-	# just allow these lintes when you want to test IPv6... right now IPv4 address is required everywhere
+	# just allow these lines when you want to test IPv6... right now IPv4 address is required everywhere
 
 	my $res = new Net::DNS::Resolver;
 	$res->tcp_timeout(10);
 	my @results;
 
 	foreach my $address (@$addresses) {
-		my $reply6 = $res->query($address, "AAAA");
+		my $reply6 = $res->query ($address, "AAAA");
 
 		if ($reply6) {
 			foreach my $rr (grep {$_->type eq 'AAAA'} $reply6->answer) {
@@ -2260,7 +2273,7 @@ sub validate_dns {
 #			);
 		}
 
-		my $reply4 = $res->query($address, "A");
+		my $reply4 = $res->query ($address, "A");
 		if ($reply4) {
 			foreach my $rr (grep {$_->type eq 'A'} $reply4->answer) {
 				push (@results, $rr->address);
@@ -2290,13 +2303,16 @@ sub validate_dns {
 }
 
 sub validate_mx {
-	my ($self, $address, $field, $class) = @_;
+	my ($self, $address, %options) = @_;
+
+	my $field = $options{field};
+	my $class = $options{class};
 
 	my $res = new Net::DNS::Resolver;
-	$res->tcp_timeout(10);
+	$res->tcp_timeout (10);
 	my @query;
 
-	my $reply = $res->query($address, "MX");
+	my $reply = $res->query ($address, "MX");
 	if ($reply) {
 		foreach my $rr (grep {$_->type eq 'MX'} $reply->answer) {
 			push (@query, $rr->exchange);
@@ -2312,7 +2328,7 @@ sub validate_mx {
 		return undef;
 	}
 
-	return $self->validate_dns(\@query, $field, $class);
+	return $self->validate_dns (\@query, %options);
 }
 
 sub validate_location {
