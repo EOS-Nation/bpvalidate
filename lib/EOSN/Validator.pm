@@ -1674,6 +1674,7 @@ sub validate_connection {
 	}
 
 	if ($connection_type eq 'p2p') {
+		sleep (10);  # wait for previous connection to cleanup;
 		$self->do_validate_p2p ($host, $port, %options);
 	} else {
 		$self->add_to_list(host => $peer, %options) if ($options{add_to_list});
@@ -1686,7 +1687,7 @@ sub do_validate_p2p {
 	my ($self, $host, $port, %options) = @_;
 
 	my $url = $self->{chain_properties}{url};
-	my $content = `p2ptest -a $url -h $host -p $port -b 29`;
+	my $content = `p2ptest -a $url -h $host -p $port -b 100`;
 
 	my $result = $self->get_json ($content, %options);
 	return undef if (! $result);
