@@ -2692,7 +2692,7 @@ sub test_abi_serializer {
 	my $number_of_transactions = $self->{chain_properties}{big_block_transactions};
 
 	if (! $big_block || ! $number_of_transactions) {
-		warn "Cannot run test_abi_serializer because big_block or number_of_transactions is undefined in chains.csv; test disabled\n";
+		$self->write_timestamp_log ("Cannot run test_abi_serializer because big_block or number_of_transactions is undefined in chains.csv; test disabled");
 		return 1;
 	}
 
@@ -3109,6 +3109,18 @@ sub test_hyperion_actions {
 	}
 
 	my $block_time = $$json{actions}[0]{'@timestamp'};
+
+	if (! defined $block_time) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'hyperion error: block_time is missing from last action',
+			value => $block_time,
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
 	my $time = str2time($block_time . ' UTC');
 	my $delta = abs(time - $time);
 	if ($delta > 300) {
@@ -3289,7 +3301,7 @@ sub test_history_actions {
 	my $block_time = '2000-01-01';
 	foreach my $action (@actions) {
 		if (! defined $$action{block_time}) {
-			warn "$0: action block time not defined";
+			$self->write_timestamp_log ("action block time not defined");
 			next;
 		}
 		$block_time = maxstr ($$action{block_time}, $block_time);
@@ -3543,7 +3555,7 @@ sub test_regproducer_key {
 	$options{log_prefix} = $self->log_prefix;
 
 	if (! $options{api_url}) {
-		warn "Cannot run test_regproducer_key because key_accounts_url is undefined in chains.csv; test disabled\n";
+		$self->write_timestamp_log ("Cannot run test_regproducer_key because key_accounts_url is undefined in chains.csv; test disabled");
 		return 1;
 	}
 
@@ -3556,7 +3568,7 @@ sub test_regproducer_key {
 
 	if (! $res->is_success) {
 		# API endpoint is unavilable, so we can't run this test.  Assume ok
-		warn "Cannot run test_regproducer_key due to endpoint error url=<$options{api_url}> status=<$status_code $status_message> data=<$options{post_data}>; remainder of test disabled\n";
+		$self->write_timestamp_log ("Cannot run test_regproducer_key due to endpoint error url=<$options{api_url}> status=<$status_code $status_message> data=<$options{post_data}>; remainder of test disabled");
 		return 1;
 	}
 
