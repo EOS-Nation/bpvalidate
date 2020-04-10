@@ -1334,6 +1334,7 @@ sub validate_url {
 	if (! @hosts) {
 		return undef;
 	}
+	$options{hosts} = \@hosts;
 
 	if ($ssl eq 'either') {
 		if ($xurl !~ m#^https://#) {
@@ -1664,6 +1665,7 @@ sub validate_connection {
 	if (! @hosts) {
 		return undef;
 	}
+	$options{hosts} = \@hosts;
 
 	my $errors = 0;
 	foreach my $xhost (@hosts) {
@@ -2229,7 +2231,7 @@ sub validate_ip {
 	my $field = $options{field};
 	my $class = $options{class};
 
-	if (! is_public_ip($ip)) {
+	if (! is_public_ip ($ip)) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'not a valid ip address',
@@ -2253,7 +2255,7 @@ sub validate_dns {
 	# just allow these lines when you want to test IPv6... right now IPv4 address is required everywhere
 
 	my $res = new Net::DNS::Resolver;
-	$res->tcp_timeout(10);
+	$res->tcp_timeout (10);
 	my @results;
 
 	foreach my $address (@$addresses) {
@@ -2261,7 +2263,7 @@ sub validate_dns {
 
 		if ($reply6) {
 			foreach my $rr (grep {$_->type eq 'AAAA'} $reply6->answer) {
-#IPV6				push (@results, $rr->address);
+#IPV6				push (@results, $self->validate_ip ($rr->address, %options));
 			}
 		} else {
 #IPV6			$self->add_message (
@@ -2276,7 +2278,7 @@ sub validate_dns {
 		my $reply4 = $res->query ($address, "A");
 		if ($reply4) {
 			foreach my $rr (grep {$_->type eq 'A'} $reply4->answer) {
-				push (@results, $rr->address);
+				push (@results, $self->validate_ip ($rr->address, %options));
 			}
 		} else {
 #IPV6			$self->add_message (
@@ -3713,6 +3715,9 @@ sub add_to_list {
 	}
 	if ($options{node_type}) {
 		$data{node_type} = $options{node_type};
+	}
+	if ($options{hosts}) {
+		$data{hosts} = $options{hosts};
 	}
 
 	push (@{$self->{results}{output}{$section}{$list}}, \%data);
