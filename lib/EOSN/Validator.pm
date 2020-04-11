@@ -1335,6 +1335,9 @@ sub validate_url {
 			detail => 'trailing slash is not required',
 			%options
 		);
+
+		# take off the trailing slash from the url
+		$xurl =~ s#/$##;
 	}
 
 	my @hosts = $self->validate_ip_dns ($host, %options);
