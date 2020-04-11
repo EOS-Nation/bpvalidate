@@ -1670,7 +1670,7 @@ sub validate_connection {
 
 	my $errors = 0;
 	foreach my $xhost (@hosts) {
-		$errors++ if (! $self->do_validate_connection ($xhost, $port, %options));
+		$errors++ if (! $self->do_validate_connection ($$xhost{ip_address}, $port, %options));
 	}
 
 	if ($errors) {
