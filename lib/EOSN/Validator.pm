@@ -2062,8 +2062,11 @@ sub validate_basic_api_extra_check {
 		$errors++;
 	}
 
+	# use the response_time from the http request so not including
+	# processing delays from any prior validation steps
+
 	my $time = str2time($$result{head_block_time} . ' UTC');
-	my $delta = abs(time - $time);
+	my $delta = abs($$options{response_time} - $time);
 	
 	if ($delta > 10) {
 		my $val = Time::Seconds->new($delta);
@@ -3993,6 +3996,8 @@ sub run_request {
 			%$options
 		);
 	}
+
+	$$options{response_time} = time;
 
 	return $res;
 }
