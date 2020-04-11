@@ -21,7 +21,7 @@ $columns{url}{response_headers} = "mediumtext";
 $columns{url}{response_content} = "longblob";
 
 $columns{whois}{checked_at} = "int(11)";
-$columns{whois}{ip_address} = "varchar(15)";
+$columns{whois}{ip_address} = "varchar(39)";
 $columns{whois}{response_content} = "longblob";
 
 my $dbh = do_connect_sqlite('bpvalidate');
@@ -33,7 +33,6 @@ foreach my $table (sort keys %columns) {
 
 	foreach my $column (sort keys %{$columns{$table}}) {
 		next if (exists $$columns_exist{$column});
-		print ">> $table $column\n";
 		my $spec = $columns{$table}{$column};
 		$dbh->do ("alter table $table add column $column $spec");
 	}
