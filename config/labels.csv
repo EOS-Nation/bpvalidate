@@ -80,6 +80,7 @@ chain_bos,BOS,BOS,BOS
 chain_wax,WAX,WAX,WAX
 chain_meetone,MeetOne,MeetOne,MeetOne
 chain_telos,Telos,Telos,Telos
+chain_covax,Covax,Covax,Covax
 chain_jungle,Jungle Testnet,Jungle测试网,정글 테스트넷
 chain_kylin,Kylin Testnet,Kylin测试网,Kylin 테스트넷
 chain_bostest,BOS Testnet,BOS测试网,BOS 테스트넷
