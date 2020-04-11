@@ -480,6 +480,7 @@ sub check_onchainbpjson {
 			kind => 'crit',
 			detail => 'bp.json has not been provided on-chain',
 			see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information',
+			see2 => 'https://github.com/EOS-Nation/bpvalidate/tree/master/util',
 			%message_options
 		);
 		return;
@@ -501,8 +502,8 @@ sub check_onchainbpjson {
 		$self->add_message (
 			kind => 'err',
 			detail => 'bp.json on-chain does not match the one provided in regproducer URL',
-			see2 => 'https://github.com/EOS-Nation/bpvalidate/blob/master/util/',
 			see1 => 'https://steemit.com/eos/@greymass/an-eos-smart-contract-for-block-producer-information',
+			see2 => 'https://github.com/EOS-Nation/bpvalidate/blob/master/util',
 			diff => diff(\$chain_text, \$file_text),
 			%message_options
 		);
