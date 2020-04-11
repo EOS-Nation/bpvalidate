@@ -1571,6 +1571,7 @@ sub validate_url {
 					detail => 'obsolete version of TLS is still supported',
 					value => $protocol,
 					see1 => 'https://www.digicert.com/blog/depreciating-tls-1-0-and-1-1/',
+					see2 => 'https://libre-software.net/tls-nginx/',
 					%options
 				);
 			}
