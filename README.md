@@ -28,7 +28,22 @@ mariadb:
 webui:
 - install libraries from https://github.com/EOS-Nation/perl-lib
 - get png-small icons from https://github.com/EOS-Nation/chain-icons and put in /var/www/chains
+- download fontawesome and place in /var/www/fontawesome (or edit res/template.html and replace fontawesome references to the fontawesome CDN)
 - run: apt install apache2
+- create /etc/apache/sites-enabled/bpvalidate.conf to point at html directory
+```
+<VirtualHost *:80>
+  ...
+  DocumentRoot /var/www/bpvalidate
+  <Directory /var/www/bpvalidate>
+    Options +MultiViews
+    AddLanguage en .en
+    AddLanguage zh .zh
+    AddLanguage ko .ko
+    LanguagePriority en zh ko
+  </Directory>
+</VirtualHost>
+```
 
 dispatch:
 - install libraries from https://github.com/EOS-Nation/perl-lib
