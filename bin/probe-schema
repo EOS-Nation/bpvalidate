@@ -24,6 +24,11 @@ $columns{whois}{checked_at} = "int(11)";
 $columns{whois}{ip_address} = "varchar(39)";
 $columns{whois}{response_content} = "longblob";
 
+$columns{tls}{checked_at} = "int(11)";
+$columns{tls}{ip_address} = "varchar(39)";
+$columns{tls}{port} = "varchar(6)";
+$columns{tls}{response_content} = "longblob";
+
 my $dbh = do_connect_sqlite('bpvalidate');
 
 foreach my $table (sort keys %columns) {
@@ -40,3 +45,4 @@ foreach my $table (sort keys %columns) {
 
 $dbh->do ("create unique index if not exists i_md5 on url (md5)");
 $dbh->do ("create unique index if not exists i_ip_address on whois (ip_address)");
+$dbh->do ("create unique index if not exists i_ip_address_port on tls (ip_address, port)");

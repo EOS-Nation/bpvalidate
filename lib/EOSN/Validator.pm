@@ -17,6 +17,8 @@ use Text::Diff;
 use Time::HiRes qw(time);
 use EOSN::CommandUtil;
 use Net::Whois::IP qw(whoisip_query);
+use IPC::Run qw(run);
+use XML::LibXML;
 
 our %content_types;
 $content_types{json} = ['application/json'];
@@ -910,6 +912,7 @@ sub check_nodes {
 				api_url => $$node{ssl_endpoint},
 				field => "node[$node_number].ssl_endpoint",
 				ssl => 'on',
+				modern_tls_version => 1,
 				add_to_list => 'nodes/api_https',
 				node_type => $node_type,
 				location => $location
@@ -922,6 +925,7 @@ sub check_nodes {
 					history_type => $$node{history_type},
 					field => "node[$node_number].ssl_endpoint",
 					ssl => 'on',
+					modern_tls_version => 1,
 					add_to_list => 'nodes/history_https',
 					node_type => $node_type,
 					location => $location
@@ -932,6 +936,7 @@ sub check_nodes {
 					history_type => $$node{history_type},
 					field => "node[$node_number].ssl_endpoint",
 					ssl => 'on',
+					modern_tls_version => 1,
 					add_to_list => 'nodes/hyperion_https',
 					node_type => $node_type,
 					location => $location
@@ -1202,6 +1207,7 @@ sub validate_url {
 	my $cors_headers = $options{cors_headers} || 'either'; #either, on, off, should
 	my $url_ext = $options{url_ext} || '';
 	my $non_standard_port = $options{non_standard_port}; # true/false
+	my $modern_tls_version = $options{modern_tls_version}; # true/false
 	my $dupe = $options{dupe} || confess "dupe checking not specified"; # err or warn or crit or skip
 	my $failure_code = $options{failure_code} || 'crit'; # any valid options for 'kind'
 
@@ -1550,6 +1556,26 @@ sub validate_url {
 		}
 	}
 
+	if ($options{modern_tls_version}) {
+		my $test_port = $port || 443;
+		foreach my $host (@{$options{hosts}}) {
+			my $tls_info = $self->get_tls ($$host{ip_address}, $test_port);
+			foreach my $protocol (@$tls_info) {
+				next if ($protocol eq 'TLSv1.2');
+				next if ($protocol eq 'TLSv1.3');
+				$self->add_message (
+					kind => 'warn',
+					detail => 'obsolete version of TLS is still supported',
+					value => $protocol,
+					see1 => 'https://www.digicert.com/blog/depreciating-tls-1-0-and-1-1/',
+					%options
+				);
+			}
+
+			$$host{tls_versions} = $tls_info;
+		}
+	}
+
 	my $content = $res->content;
 
 	if ($response_url ne ($xurl . $url_ext)) {
@@ -1620,6 +1646,63 @@ sub validate_url {
 	$self->add_to_list(info => $info, result => $json, %options) if ($options{add_to_list});
 
 	return $return;
+}
+
+sub get_tls {
+	my ($self, $ip_address, $port) = @_;
+
+	my $cache_timeout = 60 * 60 * 24;
+
+	# --------- prepare the database
+
+	my $dbh = $self->dbh;
+	my $fetch = $dbh->prepare_cached ("select * from tls where ip_address = ? and port = ?");
+	my $insert = $dbh->prepare_cached ("insert into tls (checked_at, ip_address, port, response_content) values (?, ?, ?, ?)");
+	my $update = $dbh->prepare_cached ("update tls set checked_at = ?, response_content = ? where id = ?");
+
+	# --------- check if the query has been executed recently
+
+	$fetch->execute ($ip_address, $port);
+	my $cache = $fetch->fetchrow_hashref;
+	$fetch->finish;
+
+	if ($$cache{checked_at} && ($$cache{checked_at} > time - $cache_timeout)) {
+		return from_json ($$cache{response_content});
+	}
+
+	# ---------- run the request
+
+	my $tls_xml = '';
+	run (['nmap', '-oX', '-', '--script', 'ssl-enum-ciphers', '-p', $port, $ip_address], '>', \$tls_xml);
+	my $doc = XML::LibXML->load_xml (string => $tls_xml);
+	my $root = $doc->documentElement;
+
+	my @tls_enabled;
+
+	foreach my $host ($root->getChildrenByLocalName('host')) {
+		foreach my $ports ($host->getChildrenByLocalName('ports')) {
+			foreach my $port ($ports->getChildrenByLocalName('port')) {
+				foreach my $script ($port->getChildrenByLocalName('script')) {
+					foreach my $tls ($script->getChildrenByLocalName('table')) {
+						push (@tls_enabled, $tls->getAttribute('key'));
+					}
+				}
+			}
+		}
+	}
+
+	# ---------- update the database
+
+	if ($$cache{id}) {
+		$update->execute (time, to_json (\@tls_enabled), $$cache{id});
+	} else {
+		$insert->execute (time, $ip_address, $port, to_json (\@tls_enabled));
+	}
+
+	# make sure we don't run too many requests too fast
+	sleep 20;
+
+	return \@tls_enabled;
 }
 
 sub validate_connection {

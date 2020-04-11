@@ -14,7 +14,7 @@ Installation Instructions (for ubuntu/debian):
 rabbitmq:
 - run: apt install rabbitmq-server
 - run: rabbitmq-plugins enable rabbitmq_management
-- run: rabbitmq-plugins enable abbitmq_stomp
+- run: rabbitmq-plugins enable rabbitmq_stomp
 - run: rabbitmqctl add_vhost bpvalidate
 - run: rabbitmqctl add_user bpvalidate bpvalidate
 - run: rabbitmqctl set_permissions -p bpvalidate bpvalidate '.*' '.*' '.*'
@@ -32,8 +32,9 @@ webui:
 
 dispatch:
 - install libraries from https://github.com/EOS-Nation/perl-lib
-- run: apt install libtext-csv-perl libjson-perl libdbd-mysql-perl libdata-validate-perl libtext-diff-perl liblocale-codes-perl libnet-stomp-perl
+- run: apt install libtext-csv-perl libjson-perl libdbd-mysql-perl libdata-validate-perl liblocale-codes-perl libnet-stomp-perl
 
 probe:
 - install libraries from https://github.com/EOS-Nation/perl-lib
-- run: apt install libdbd-sqlite3-perl libnet-stomp-perl libdata-validate-ip-perl libjson-perl liblwpx-paranoidagent-perl libnet-whois-ip-perl
+- isntall p2ptest from https://github.com/EOS-Nation/eosio-protocol
+- run: apt install libdbd-sqlite3-perl libnet-stomp-perl libdata-validate-ip-perl libjson-perl liblwpx-paranoidagent-perl libnet-whois-ip-perl libtext-diff-perl libipc-run-perl libxml-libxml-perl nmap
