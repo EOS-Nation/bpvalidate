@@ -31,10 +31,11 @@ foreach my $lang (languages()) {
 				my $important_bp = is_important_bp ($entry);
 
 				foreach my $node (@{$$entry{output}{nodes}{$kind}}) {
+					my $orgs = whois_org ($node);
 					push (@section, {
 						producer => $producer,
-						sprintf => "%s",
-						data => [$$node{address}]
+						sprintf => "%50s, %s",
+						data => [$$node{address}, $orgs]
 					});
 				}
 			}

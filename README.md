@@ -36,5 +36,4 @@ dispatch:
 
 probe:
 - install libraries from https://github.com/EOS-Nation/perl-lib
-- run: apt install libdbd-sqlite3-perl libnet-stomp-perl libdata-validate-ip-perl libjson-perl liblwpx-paranoidagent-perl
-
+- run: apt install libdbd-sqlite3-perl libnet-stomp-perl libdata-validate-ip-perl libjson-perl liblwpx-paranoidagent-perl libnet-whois-ip-perl

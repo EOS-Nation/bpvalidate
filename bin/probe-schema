@@ -8,28 +8,36 @@ use EOSN::SQL qw(do_connect_sqlite);
 # Main
 
 my %columns;
-$columns{md5} = "varchar(32)";
-$columns{checked_at} = "int(11)";
-$columns{elapsed_time} = "float(10,2)";
-$columns{request_method} = "varchar(10)";
-$columns{request_url} = "text";
-$columns{request_headers} = "mediumtext";
-$columns{request_content} = "mediumtext";
-$columns{response_code} = "smallint unsigned";
-$columns{response_message} = "varchar(255)";
-$columns{response_headers} = "mediumtext";
-$columns{response_content} = "longblob";
+$columns{url}{md5} = "varchar(32)";
+$columns{url}{checked_at} = "int(11)";
+$columns{url}{elapsed_time} = "float(10,2)";
+$columns{url}{request_method} = "varchar(10)";
+$columns{url}{request_url} = "text";
+$columns{url}{request_headers} = "mediumtext";
+$columns{url}{request_content} = "mediumtext";
+$columns{url}{response_code} = "smallint unsigned";
+$columns{url}{response_message} = "varchar(255)";
+$columns{url}{response_headers} = "mediumtext";
+$columns{url}{response_content} = "longblob";
+
+$columns{whois}{checked_at} = "int(11)";
+$columns{whois}{ip_address} = "varchar(15)";
+$columns{whois}{response_content} = "longblob";
 
 my $dbh = do_connect_sqlite('bpvalidate');
 
-$dbh->do ("create table if not exists url (id integer primary key autoincrement)");
+foreach my $table (sort keys %columns) {
+	$dbh->do ("create table if not exists $table (id integer primary key autoincrement)");
 
-my $columns_exist = $dbh->selectall_hashref("PRAGMA table_info(url)", 'name');
+	my $columns_exist = $dbh->selectall_hashref("PRAGMA table_info($table)", 'name');
 
-foreach my $column (sort keys %columns) {
-	next if (exists $$columns_exist{$column});
-	my $spec = $columns{$column};
-	$dbh->do ("alter table url add column $column $spec");
+	foreach my $column (sort keys %{$columns{$table}}) {
+		next if (exists $$columns_exist{$column});
+		print ">> $table $column\n";
+		my $spec = $columns{$table}{$column};
+		$dbh->do ("alter table $table add column $column $spec");
+	}
 }
 
 $dbh->do ("create unique index if not exists i_md5 on url (md5)");
+$dbh->do ("create unique index if not exists i_ip_address on whois (ip_address)");

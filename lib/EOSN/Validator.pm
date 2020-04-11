@@ -16,6 +16,7 @@ use Time::Seconds;
 use Text::Diff;
 use Time::HiRes qw(time);
 use EOSN::CommandUtil;
+use Net::Whois::IP qw(whoisip_query);
 
 our %content_types;
 $content_types{json} = ['application/json'];
@@ -2211,6 +2212,8 @@ sub validate_ip_dns {
 	my $field = $options{field};
 	my $class = $options{class};
 
+	my @hosts;
+
 	if (($host =~ /^[\d\.]+$/) || ($host =~ /^[\d\:]+$/)) {
 		$self->add_message (
 			kind => 'warn',
@@ -2219,10 +2222,62 @@ sub validate_ip_dns {
 			class => $class,
 			host => $host
 		);
-		return $self->validate_ip ($host, %options);
+		push (@hosts, $self->validate_ip ($host, %options));
 	} else {
-		return $self->validate_dns ([$host], %options);
+		push (@hosts, $self->validate_dns ([$host], %options));
 	}
+
+	my @results;
+
+	foreach my $ip_address (@hosts) {
+		my $whois = $self->get_whois ($ip_address);
+		my $org = $$whois{OrgName} || $$whois{'org-name'} || $$whois{netname};
+		my $country = $$whois{Country} || $$whois{'country'};
+
+		push (@results, {ip_address => $ip_address, organization => $org, country => $country});
+	}
+
+	return @results;
+}
+
+sub get_whois {
+	my ($self, $ip_address) = @_;
+
+	my $cache_timeout = 60 * 60 * 24 * 14;
+
+	# --------- prepare the database
+
+	my $dbh = $self->dbh;
+	my $fetch = $dbh->prepare_cached ("select * from whois where ip_address = ?");
+	my $insert = $dbh->prepare_cached ("insert into whois (checked_at, ip_address, response_content) values (?, ?, ?)");
+	my $update = $dbh->prepare_cached ("update whois set checked_at = ?, response_content = ? where id = ?");
+
+	# --------- check if the query has been executed recently
+
+	$fetch->execute ($ip_address);
+	my $cache = $fetch->fetchrow_hashref;
+	$fetch->finish;
+
+	if ($$cache{checked_at} && ($$cache{checked_at} > time - $cache_timeout)) {
+		return from_json ($$cache{response_content});
+	}
+
+	# ---------- run the request
+
+	my $whois = whoisip_query ($ip_address);
+
+	# ---------- update the database
+
+	if ($$cache{id}) {
+		$update->execute (time, to_json ($whois), $$cache{id});
+	} else {
+		$insert->execute (time, $ip_address, to_json ($whois));
+	}
+
+	# make sure we don't run too many requests too fast
+	sleep 20;
+
+	return $whois;
 }
 
 sub validate_ip {
@@ -3469,7 +3524,7 @@ sub test_net_api {
 	my $response_url = $res->request->uri;
 	my $response_host = $res->header('host');
 	my $content = $res->content;
-        my $response_content_type = $res->content_type;
+	my $response_content_type = $res->content_type;
 
 	$self->check_response_errors (response => $res, %options);
 
@@ -3505,7 +3560,7 @@ sub test_producer_api {
 	my $response_url = $res->request->uri;
 	my $response_host = $res->header('host');
 	my $content = $res->content;
-        my $response_content_type = $res->content_type;
+	my $response_content_type = $res->content_type;
 
 	$self->check_response_errors (response => $res, %options);
 
@@ -3541,7 +3596,7 @@ sub test_db_size_api {
 	my $response_url = $res->request->uri;
 	my $response_host = $res->header('host');
 	my $content = $res->content;
-        my $response_content_type = $res->content_type;
+	my $response_content_type = $res->content_type;
 
 	$self->check_response_errors (response => $res, %options);
 

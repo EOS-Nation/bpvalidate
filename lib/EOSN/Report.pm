@@ -597,4 +597,18 @@ sub bp_logo {
 	return $logo;
 }
 
+sub whois_org {
+	my ($node) = @_;
+
+	my %orgs;
+
+	foreach my $host (@{$$node{hosts}}) {
+		my $org = $$host{organization};
+		next if (! $org);
+		$orgs{$org} = 1;
+	}
+
+	return join ('; ', sort keys %orgs);
+}
+
 1;
