@@ -156,24 +156,24 @@ foreach my $lang (languages) {
 		$results{name} = $producer;
 
 		if ($is_top_21) {
-			push (@{$results{tags}}, 'top21_y');
-			push (@{$results{tags}}, 'paid_n');
-			push (@{$results{tags}}, 'other_n');
+			push (@{$results{tags}}, 'top21=y');
+			push (@{$results{tags}}, 'paid=n');
+			push (@{$results{tags}}, 'other=n');
 		} elsif ($is_standby) {
-			push (@{$results{tags}}, 'top21_n');
-			push (@{$results{tags}}, 'paid_y');
-			push (@{$results{tags}}, 'other_n');
+			push (@{$results{tags}}, 'top21=n');
+			push (@{$results{tags}}, 'paid=y');
+			push (@{$results{tags}}, 'other=n');
 		} else {
-			push (@{$results{tags}}, 'top21_n');
-			push (@{$results{tags}}, 'paid_n');
-			push (@{$results{tags}}, 'other_y');
+			push (@{$results{tags}}, 'top21=n');
+			push (@{$results{tags}}, 'paid=n');
+			push (@{$results{tags}}, 'other=y');
 		}
 
 		foreach my $key (@classes) {
 			if (exists $$entry{message_summary}{$key} && (($$entry{message_summary}{$key} eq 'ok') || ($$entry{message_summary}{$key} eq 'info'))) {
-					push (@{$results{tags}}, $key . '_y');
+					push (@{$results{tags}}, $key . '=y');
 				} else {
-					push (@{$results{tags}}, $key . '_n');
+					push (@{$results{tags}}, $key . '=n');
 				}
 		}
 
@@ -218,9 +218,9 @@ sub checkbox {
 	my $string = '';
 	$string .= "<div class=\"filtergroup\">\n";
 	$string .= "$label<br>\n";
-	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}_y\" onClick=\"runFilters()\"> " . label('filter_yes', $lang) . "</label>\n";
-	$string .= " <label class=\"radio\"><input class=\"filterx\" type=\"radio\" name=\"$name\" checked onClick=\"runFilters()\"> " . label('filter_na', $lang) ."</label>\n";
-	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}_n\" onClick=\"runFilters()\"> " . label('filter_no', $lang) . "</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}=y\" onClick=\"clickFilter()\"> " . label('filter_yes', $lang) . "</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filterx\" type=\"radio\" name=\"$name\" checked onClick=\"clickFilter()\"> " . label('filter_na', $lang) ."</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}=n\" onClick=\"clickFilter()\"> " . label('filter_no', $lang) . "</label>\n";
 	$string .= "</div>\n";
 	return $string;
 }
