@@ -2992,7 +2992,7 @@ sub check_hyperion_health_host {
 
 	if (! $$json{host}) {
 		$self->add_message (
-			kind => 'info', #xxx
+			kind => 'warn', #xxx
 			detail => 'missing hyperion host',
 			%options
 		);
@@ -3001,7 +3001,7 @@ sub check_hyperion_health_host {
 
 	if (index ($options{api_url}, $$json{host}) == -1) {
 		$self->add_message (
-			kind => 'info', #xxx
+			kind => 'warn',
 			detail => 'url and hyperion host do not match',
 			value => $$json{host},
 			%options
