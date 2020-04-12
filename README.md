@@ -34,9 +34,12 @@ webui:
 ```
 <VirtualHost *:80>
   ...
+  AddDefaultCharset UTF-8
+  ErrorDocument 403 /errors/403.html
+  ErrorDocument 404 /errors/404.html
   DocumentRoot /var/www/bpvalidate
   <Directory /var/www/bpvalidate>
-    Options +MultiViews
+    Options +MultiViews -Indexes
     AddLanguage en .en
     AddLanguage zh .zh
     AddLanguage ko .ko
