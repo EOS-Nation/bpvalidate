@@ -3719,6 +3719,7 @@ sub test_regproducer_key {
 	$options{api_url} = $self->{chain_properties}{key_accounts_url};
 	$options{post_data} = '{"json": true, "public_key": "' . $key . '"}';
 	$options{log_prefix} = $self->log_prefix;
+	$options{suppress_timeout_message} = 1;
 
 	if (! $options{api_url}) {
 		$self->write_timestamp_log ("Cannot run test_regproducer_key because key_accounts_url is undefined in chains.csv; test disabled");
@@ -3996,7 +3997,7 @@ sub run_request {
 
 	my $res = $self->ua->request ($req);
 
-	if ($$options{elapsed_time} > $$options{request_timeout}) {
+	if (($$options{elapsed_time} > $$options{request_timeout}) && (! $$options{suppress_timeout_message})) {
 		$self->add_message (
 			kind => 'err',
 			detail => 'response took longer than expected',
