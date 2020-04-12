@@ -1779,7 +1779,8 @@ sub do_validate_p2p {
 	my ($self, $host, $port, %options) = @_;
 
 	my $url = $self->{chain_properties}{url};
-	my $content = `p2ptest -a $url -h $host -p $port -b 100`;
+	my $content = '';
+	run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 100], '>', \$content);
 
 	my $result = $self->get_json ($content, %options);
 	return undef if (! $result);
@@ -2011,7 +2012,8 @@ sub validate_basic_api_extra_check {
 
 	if ($ssl eq 'on') {
 		# LWP doesn't seem to support HTTP2, so make an extra call
-		my $check_http2 = `curl '$url$url_ext' --verbose --max-time 3 --stderr -`;
+		my $check_http2 = '';
+		run (['curl', "$url$url_ext", '--verbose', '--max-time', 3, '--stderr', '-'], '>', \$check_http2);
 		if ($check_http2 =~ m#HTTP/2 200#) {
 			$$options{add_to_list} .= '2';
 		} else {
