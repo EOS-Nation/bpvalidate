@@ -4,7 +4,7 @@ h1 = 403 Forbidden
 <div class="container">
   <div class="notification is-link">
     <p class="content"><b>%title_site%</b></p>
-    <p class="content">Sorry, you are not allowed to access this page.</p>
-    <p class="content">Please start again from the <a href="/">homepage</a>.</p>
+    <p class="content">对不起，您不能访问此页面。</p>
+    <p class="content">请重新开始从 <a href="/">主页</a>。</p>
   </div>
 </div>
