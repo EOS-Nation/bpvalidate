@@ -3,7 +3,7 @@
 use utf8;
 use strict;
 use JSON;
-use EOSN::CommandUtil qw(write_timestamp_log);
+use EOSN::CommandUtil qw(write_timestamp_log write_file_atomic);
 use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::SQL qw(do_connect_mysql);
 use EOSN::FileUtil qw(write_file read_csv_hash);
@@ -631,4 +631,6 @@ sub update_stats {
 	if (@message) {
 		write_timestamp_log ("[stats $chain] " . join (' ', @message));
 	}
+
+	write_file_atomic ('/run/bpvalidate/dispatch_stats.json', to_json($stats));
 }
