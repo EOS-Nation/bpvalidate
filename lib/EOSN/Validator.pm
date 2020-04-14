@@ -1906,37 +1906,6 @@ sub validate_basic_api {
 	);
 }
 
-sub validate_hyperion_api {
-	my ($self, %options) = @_;
-
-	my $api_url = $options{api_url};
-	my $history_type = $options{history_type};
-	my $field = $options{field};
-	my $class = $options{class} || confess "class not provided";
-
-#	if ($history_type && $history_type ne 'hyperion') {
-#		return;
-#	}
-
-	return $self->validate_url (
-		api_url => $api_url,
-		field => $field,
-		class => $class,
-		url_ext => '/v1/chain/get_info',
-		content_type => 'json',
-		cors_origin => 'on',
-		cors_headers => 'on',
-		non_standard_port => 1,
-		extra_check => 'validate_hyperion_api_extra_check',
-		add_result_to_list => 'response',
-		add_info_to_list => 'info',
-		dupe => 'info',
-		request_timeout => 2,
-		cache_timeout => 300,
-		%options
-	);
-}
-
 sub validate_history_api {
 	my ($self, %options) = @_;
 
@@ -1959,6 +1928,37 @@ sub validate_history_api {
 		cors_headers => 'on',
 		non_standard_port => 1,
 		extra_check => 'validate_history_api_extra_check',
+		add_result_to_list => 'response',
+		add_info_to_list => 'info',
+		dupe => 'info',
+		request_timeout => 2,
+		cache_timeout => 300,
+		%options
+	);
+}
+
+sub validate_hyperion_api {
+	my ($self, %options) = @_;
+
+	my $api_url = $options{api_url};
+	my $history_type = $options{history_type};
+	my $field = $options{field};
+	my $class = $options{class} || confess "class not provided";
+
+#	if ($history_type && $history_type ne 'hyperion') {
+#		return;
+#	}
+
+	return $self->validate_url (
+		api_url => $api_url,
+		field => $field,
+		class => $class,
+		url_ext => '/v1/chain/get_info',
+		content_type => 'json',
+		cors_origin => 'on',
+		cors_headers => 'on',
+		non_standard_port => 1,
+		extra_check => 'validate_hyperion_api_extra_check',
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
 		dupe => 'info',
@@ -2185,7 +2185,7 @@ sub validate_basic_api_extra_check {
 	return \%info;
 }
 
-sub validate_hyperion_api_extra_check {
+sub validate_history_api_extra_check {
 	my ($self, $result, $res, $options) = @_;
 
 	my $url = $$options{api_url};
@@ -2197,18 +2197,14 @@ sub validate_hyperion_api_extra_check {
 
 	my %info;
 	my $errors;
-	my $versions = $self->{versions_data};
 
-	if (! $self->test_hyperion_health (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_hyperion_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_hyperion_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
-		$errors++;
-	}
-	if (! $self->test_hyperion_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2224,7 +2220,7 @@ sub validate_hyperion_api_extra_check {
 	return \%info;
 }
 
-sub validate_history_api_extra_check {
+sub validate_hyperion_api_extra_check {
 	my ($self, $result, $res, $options) = @_;
 
 	my $url = $$options{api_url};
@@ -2236,15 +2232,17 @@ sub validate_history_api_extra_check {
 
 	my %info;
 	my $errors;
-	my $versions = $self->{versions_data};
 
-	if (! $self->test_history_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_health (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+		$errors++;
+	}
+	if (! $self->test_hyperion_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
 		$errors++;
 	}
 
@@ -2913,6 +2911,200 @@ sub test_abi_serializer {
 	return 1;
 }
 
+sub test_history_transaction {
+	my ($self, %options) = @_;
+
+	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv\n";
+	$options{api_url} .= '/v1/history/get_transaction';
+	$options{log_prefix} = $self->log_prefix;
+	$options{post_data} = '{"json": true, "id": "' . $transaction . '"}';
+
+	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message (
+			kind => 'crit',
+			detail => 'error retriving transaction history',
+			value => $status_message,
+			explanation => 'edit config.ini to turn on history and replay all blocks',
+			response_host => $response_host,
+			see1 => 'http://t.me/eosfullnodes',
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'get_transaction history test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_history_actions {
+	my ($self, %options) = @_;
+
+	$options{api_url} .= '/v1/history/get_actions';
+	$options{post_data} = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
+	$options{log_prefix} = $self->log_prefix;
+
+	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message (
+			kind => 'crit',
+			detail => 'error retriving actions history',
+			value => $status_message,
+			response_host => $response_host,
+			explanation => 'edit config.ini to turn on history and replay all blocks',
+			see1 => 'http://t.me/eosfullnodes',
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options) || return undef;
+	if (! scalar (@{$$json{actions}})) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'no actions included in the response',
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	my $last_irreversible_block = $$json{last_irreversible_block};
+	my $history_type = undef;
+	if ($last_irreversible_block) {
+		$self->add_message (
+			kind => 'ok',
+			response_host => $response_host,
+			detail => 'detect traditional history node',
+			%options
+		);
+		$history_type = 'traditional';
+	} else {
+		$self->add_message (
+			kind => 'ok',
+			response_host => $response_host,
+			detail => 'detect mongo history node',
+			%options
+		);
+		$history_type = 'mongo';
+	}
+	$options{info}{history_type} = $history_type;
+
+	my @actions = @{$$json{actions}};
+	my $block_time = '2000-01-01';
+	foreach my $action (@actions) {
+		if (! defined $$action{block_time}) {
+			$self->write_timestamp_log ("action block time not defined");
+			next;
+		}
+		$block_time = maxstr ($$action{block_time}, $block_time);
+	}
+
+	my $time = str2time($block_time . ' UTC');
+	my $delta = abs(time - $time);
+	if ($delta > 3600 * 2) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past',
+			value => $block_time,
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'get_actions history test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_history_key_accounts {
+	my ($self, %options) = @_;
+
+	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
+	$options{api_url} .= '/v1/history/get_key_accounts';
+	$options{post_data} = '{"json": true, "public_key": "' . $public_key . '"}';
+	$options{log_prefix} = $self->log_prefix;
+
+	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message (
+			kind => 'crit',
+			detail => 'error retriving key_accounts history',
+			value => $status_message,
+			response_host => $response_host,
+			explanation => 'edit config.ini to turn on history and replay all blocks',
+			see1 => 'http://t.me/eosfullnodes',
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options) || return undef;
+	if (ref $json eq 'ARRAY') {
+		$self->add_message (
+			kind => 'err',
+			detail => 'invalid JSON response (array)',
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+	if ((! $$json{account_names}) || (! scalar (@{$$json{account_names}}))) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'invalid JSON response',
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'get_key_accounts history test passed',
+		%options
+	);
+
+	return 1;
+}
+
 sub test_hyperion_health {
 	my ($self, %options) = @_;
 
@@ -3065,14 +3257,14 @@ sub check_hyperion_health_features {
 		return undef;
 	}
 
-	# to add: tables/userres tables/delband
-
 	my @checks = (
 		'streaming/enable',
 		'streaming/traces',
 		'streaming/deltas',
 		'tables/proposals',
 		'tables/accounts',
+		'tables/userres',
+		'tables/delband',
 		'tables/voters',
 		'index_deltas',
 		'index_all_deltas'
@@ -3356,200 +3548,6 @@ sub test_hyperion_key_accounts {
 	$self->add_message (
 		kind => 'ok',
 		detail => 'get_key_accounts hyperion test passed',
-		%options
-	);
-
-	return 1;
-}
-
-sub test_history_transaction {
-	my ($self, %options) = @_;
-
-	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv\n";
-	$options{api_url} .= '/v1/history/get_transaction';
-	$options{log_prefix} = $self->log_prefix;
-	$options{post_data} = '{"json": true, "id": "' . $transaction . '"}';
-
-	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
-	my $res = $self->run_request ($req, \%options);
-	my $status_code = $res->code;
-	my $status_message = $res->status_line;
-	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
-	my $content = $res->content;
-
-	$self->check_response_errors (response => $res, %options);
-
-	if (! $res->is_success) {
-		$self->add_message (
-			kind => 'crit',
-			detail => 'error retriving transaction history',
-			value => $status_message,
-			explanation => 'edit config.ini to turn on history and replay all blocks',
-			response_host => $response_host,
-			see1 => 'http://t.me/eosfullnodes',
-			%options
-		);
-		return undef;
-	}
-
-	$self->add_message (
-		kind => 'ok',
-		detail => 'get_transaction history test passed',
-		%options
-	);
-
-	return 1;
-}
-
-sub test_history_actions {
-	my ($self, %options) = @_;
-
-	$options{api_url} .= '/v1/history/get_actions';
-	$options{post_data} = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
-	$options{log_prefix} = $self->log_prefix;
-
-	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
-	my $res = $self->run_request ($req, \%options);
-	my $status_code = $res->code;
-	my $status_message = $res->status_line;
-	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
-	my $content = $res->content;
-
-	$self->check_response_errors (response => $res, %options);
-
-	if (! $res->is_success) {
-		$self->add_message (
-			kind => 'crit',
-			detail => 'error retriving actions history',
-			value => $status_message,
-			response_host => $response_host,
-			explanation => 'edit config.ini to turn on history and replay all blocks',
-			see1 => 'http://t.me/eosfullnodes',
-			%options
-		);
-		return undef;
-	}
-
-	my $json = $self->get_json ($content, %options) || return undef;
-	if (! scalar (@{$$json{actions}})) {
-		$self->add_message (
-			kind => 'err',
-			detail => 'no actions included in the response',
-			response_host => $response_host,
-			%options
-		);
-		return undef;
-	}
-
-	my $last_irreversible_block = $$json{last_irreversible_block};
-	my $history_type = undef;
-	if ($last_irreversible_block) {
-		$self->add_message (
-			kind => 'ok',
-			response_host => $response_host,
-			detail => 'detect traditional history node',
-			%options
-		);
-		$history_type = 'traditional';
-	} else {
-		$self->add_message (
-			kind => 'ok',
-			response_host => $response_host,
-			detail => 'detect mongo history node',
-			%options
-		);
-		$history_type = 'mongo';
-	}
-	$options{info}{history_type} = $history_type;
-
-	my @actions = @{$$json{actions}};
-	my $block_time = '2000-01-01';
-	foreach my $action (@actions) {
-		if (! defined $$action{block_time}) {
-			$self->write_timestamp_log ("action block time not defined");
-			next;
-		}
-		$block_time = maxstr ($$action{block_time}, $block_time);
-	}
-
-	my $time = str2time($block_time . ' UTC');
-	my $delta = abs(time - $time);
-	if ($delta > 3600 * 2) {
-		$self->add_message (
-			kind => 'err',
-			detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past',
-			value => $block_time,
-			response_host => $response_host,
-			%options
-		);
-		return undef;
-	}
-
-	$self->add_message (
-		kind => 'ok',
-		detail => 'get_actions history test passed',
-		%options
-	);
-
-	return 1;
-}
-
-sub test_history_key_accounts {
-	my ($self, %options) = @_;
-
-	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
-	$options{api_url} .= '/v1/history/get_key_accounts';
-	$options{post_data} = '{"json": true, "public_key": "' . $public_key . '"}';
-	$options{log_prefix} = $self->log_prefix;
-
-	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
-	my $res = $self->run_request ($req, \%options);
-	my $status_code = $res->code;
-	my $status_message = $res->status_line;
-	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
-	my $content = $res->content;
-
-	$self->check_response_errors (response => $res, %options);
-
-	if (! $res->is_success) {
-		$self->add_message (
-			kind => 'crit',
-			detail => 'error retriving key_accounts history',
-			value => $status_message,
-			response_host => $response_host,
-			explanation => 'edit config.ini to turn on history and replay all blocks',
-			see1 => 'http://t.me/eosfullnodes',
-			%options
-		);
-		return undef;
-	}
-
-	my $json = $self->get_json ($content, %options) || return undef;
-	if (ref $json eq 'ARRAY') {
-		$self->add_message (
-			kind => 'err',
-			detail => 'invalid JSON response (array)',
-			response_host => $response_host,
-			%options
-		);
-		return undef;
-	}
-	if ((! $$json{account_names}) || (! scalar (@{$$json{account_names}}))) {
-		$self->add_message (
-			kind => 'err',
-			detail => 'invalid JSON response',
-			response_host => $response_host,
-			%options
-		);
-		return undef;
-	}
-
-	$self->add_message (
-		kind => 'ok',
-		detail => 'get_key_accounts history test passed',
 		%options
 	);
 
