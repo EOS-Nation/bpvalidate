@@ -1,10 +1,10 @@
 title = 403 Forbidden: %title_site%
 h1 = 403 Forbidden
 
-<div class="컨테이너">
-  <div class="알림 링크">
-    <p class="컨탠츠"><b>%title_site%</b></p>
-    <p class="컨탠츠">죄송합니다. 페이지에 대한 엑세스 권한이 없습니다.</p>
-    <p class="컨탠츠"><a href="/">homepage</a>.</p> 부터 다시 시작해주세요.
+<div class="container">
+  <div class="notification is-link">
+    <p class="content"><b>%title_site%</b></p>
+    <p class="content">죄송합니다. 페이지에 대한 엑세스 권한이 없습니다.</p>
+    <p class="content"><a href="/">homepage 부터 다시 시작해주세요.</a>.</p> 
   </div>
 </div>
