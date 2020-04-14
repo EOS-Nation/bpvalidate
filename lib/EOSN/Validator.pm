@@ -909,7 +909,7 @@ sub test_aloha_last_missed_round {
 			kind => 'ok',
 			detail => 'last missed block production round',
 			value => 'never',
-			see1 => "https://www.alohaeos.com/tools/benchmarks#networkId=$aloha_id&timeframeId=8",
+			see1 => "https://www.alohaeos.com/tools/reliability/#networkId=$aloha_id&timeframeId=8",
 			class => 'regproducer'
 		);
 	}
