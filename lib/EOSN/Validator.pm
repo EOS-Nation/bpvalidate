@@ -19,6 +19,7 @@ use EOSN::CommandUtil;
 use Net::Whois::IP qw(whoisip_query);
 use IPC::Run qw(run);
 use XML::LibXML;
+use Digest::MD5 qw(md5_hex);
 
 our %content_types;
 $content_types{json} = ['application/json'];
@@ -1582,13 +1583,13 @@ sub validate_url {
 		}
 	}
 
-	if (($options{modern_tls_version}) && ($xurl =~ /^https:/)) {
+	if (($options{modern_tls_version}) && ($xurl =~ m#^https://#)) {
 		my $tls_errors = 0;
 		my $tls_extra_info = {};
 		my $test_port = $port || 443;
 
 		foreach my $host (@{$options{hosts}}) {
-			my $tls_info = $self->get_tls ($$host{ip_address}, $test_port, $tls_extra_info);
+			my $tls_info = $self->get_tls ($xurl, $$host{ip_address}, $test_port, $tls_extra_info);
 			$$host{tls_versions} = $tls_info;
 
 			foreach my $protocol (@$tls_info) {
@@ -1693,20 +1694,24 @@ sub validate_url {
 }
 
 sub get_tls {
-	my ($self, $ip_address, $port, $info) = @_;
+	my ($self, $url, $ip_address, $port, $info) = @_;
 
 	my $cache_timeout = 60 * 60 * 24;
+	$url =~ s#^(https://.*?)/.*$#$1#; # just need the name part of the url
 
 	# --------- prepare the database
 
 	my $dbh = $self->dbh;
-	my $fetch = $dbh->prepare_cached ("select * from tls where ip_address = ? and port = ?");
-	my $insert = $dbh->prepare_cached ("insert into tls (checked_at, ip_address, port, response_content) values (?, ?, ?, ?)");
+	my $fetch = $dbh->prepare_cached ("select * from tls where md5 = ?");
+	my $insert = $dbh->prepare_cached ("insert into tls (md5, checked_at, url, ip_address, port, response_content) values (?, ?, ?, ?, ?, ?)");
 	my $update = $dbh->prepare_cached ("update tls set checked_at = ?, response_content = ? where id = ?");
 
 	# --------- check if the query has been executed recently
 
-	$fetch->execute ($ip_address, $port);
+	my $request_string = join ('*', $url, $ip_address, $port);
+	my $md5 = md5_hex ($request_string);
+
+	$fetch->execute ($md5);
 	my $cache = $fetch->fetchrow_hashref;
 	$fetch->finish;
 
@@ -1746,7 +1751,7 @@ sub get_tls {
 	if ($$cache{id}) {
 		$update->execute ($clock, to_json (\@tls_enabled), $$cache{id});
 	} else {
-		$insert->execute ($clock, $ip_address, $port, to_json (\@tls_enabled));
+		$insert->execute ($md5, $clock, $url, $ip_address, $port, to_json (\@tls_enabled));
 	}
 
 	# make sure we don't run too many requests too fast
