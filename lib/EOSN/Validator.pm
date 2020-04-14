@@ -903,6 +903,16 @@ sub check_nodes {
 					node_type => $node_type,
 					location => $location
 				);
+				my $result_wallet = $self->validate_wallet_api (
+					class => 'wallet',
+					api_url => $$node{api_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$node_number].api_endpoint",
+					ssl => 'off',
+					add_to_list => 'nodes/wallet_http',
+					node_type => $node_type,
+					location => $location
+				);
 			}
 		}
 
@@ -939,6 +949,17 @@ sub check_nodes {
 					ssl => 'on',
 					modern_tls_version => 1,
 					add_to_list => 'nodes/hyperion_https',
+					node_type => $node_type,
+					location => $location
+				);
+				my $result_wallet = $self->validate_wallet_api (
+					class => 'wallet',
+					api_url => $$node{ssl_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$node_number].ssl_endpoint",
+					ssl => 'on',
+					modern_tls_version => 1,
+					add_to_list => 'nodes/wallet_https',
 					node_type => $node_type,
 					location => $location
 				);
@@ -1909,6 +1930,8 @@ sub validate_basic_api {
 sub validate_history_api {
 	my ($self, %options) = @_;
 
+	return if (! $self->{chain_properties}{class_history});
+
 	my $api_url = $options{api_url};
 	my $history_type = $options{history_type};
 	my $field = $options{field};
@@ -1940,6 +1963,8 @@ sub validate_history_api {
 sub validate_hyperion_api {
 	my ($self, %options) = @_;
 
+	return if (! $self->{chain_properties}{class_hyperion});
+
 	my $api_url = $options{api_url};
 	my $history_type = $options{history_type};
 	my $field = $options{field};
@@ -1959,6 +1984,35 @@ sub validate_hyperion_api {
 		cors_headers => 'on',
 		non_standard_port => 1,
 		extra_check => 'validate_hyperion_api_extra_check',
+		add_result_to_list => 'response',
+		add_info_to_list => 'info',
+		dupe => 'info',
+		request_timeout => 2,
+		cache_timeout => 300,
+		%options
+	);
+}
+
+sub validate_wallet_api {
+	my ($self, %options) = @_;
+
+	return if (! $self->{chain_properties}{class_wallet});
+
+	my $api_url = $options{api_url};
+	my $history_type = $options{history_type};
+	my $field = $options{field};
+	my $class = $options{class} || confess "class not provided";
+
+	return $self->validate_url (
+		api_url => $api_url,
+		field => $field,
+		class => $class,
+		url_ext => '/v1/chain/get_info',
+		content_type => 'json',
+		cors_origin => 'on',
+		cors_headers => 'on',
+		non_standard_port => 1,
+		extra_check => 'validate_wallet_api_extra_check',
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
 		dupe => 'info',
@@ -2249,6 +2303,37 @@ sub validate_hyperion_api_extra_check {
 	if ($info{history_type}) {
 		my $new_value = 'history_' . $info{history_type} . '_';
 		$$options{add_to_list} =~ s/history_/$new_value/;
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	return \%info;
+}
+
+sub validate_wallet_api_extra_check {
+	my ($self, $result, $res, $options) = @_;
+
+	my $url = $$options{api_url};
+	my $field = $$options{field};
+	my $class = $$options{class};
+	my $node_type = $$options{node_type};
+	my $ssl = $$options{ssl} || 'either'; # either, on, off
+	my $url_ext = $$options{url_ext} || '';
+
+	my %info;
+	my $errors;
+
+	# This should move into the validate_basic_api_extra_check() function
+	# and remove the wallet extra checks.
+	# All public APIs should have this feature enabled.
+
+	if (! $self->test_wallet_account (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+		$errors++;
+	}
+	if (! $self->test_wallet_key (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+		$errors++;
 	}
 
 	if ($errors) {
@@ -3548,6 +3633,108 @@ sub test_hyperion_key_accounts {
 	$self->add_message (
 		kind => 'ok',
 		detail => 'get_key_accounts hyperion test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_wallet_account {
+	my ($self, %options) = @_;
+
+	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.csv";
+	$options{api_url} .= '/v1/chain/get_accounts_by_authorizers';
+	$options{post_data} = '{"accounts": ["' . $test_account . '"]}';
+	$options{log_prefix} = $self->log_prefix;
+
+	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message (
+			kind => 'crit',
+			detail => 'error retriving from get_accounts_by_authorizers by account',
+			value => $status_message,
+			response_host => $response_host,
+			explanation => 'edit config.ini and set enable-account-queries = true',
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options) || return undef;
+
+	if (! scalar (@{$$json{accounts}})) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'no accounts returned from get_accounts_by_authorizers by account',
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'get_accounts_by_authorizers by account test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_wallet_key {
+	my ($self, %options) = @_;
+
+	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
+	$options{api_url} .= '/v1/chain/get_accounts_by_authorizers';
+	$options{post_data} = '{"keys": ["' . $public_key . '"]}';
+	$options{log_prefix} = $self->log_prefix;
+
+	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header('host');
+	my $content = $res->content;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message (
+			kind => 'crit',
+			detail => 'error retriving from get_accounts_by_authorizers by key',
+			value => $status_message,
+			response_host => $response_host,
+			explanation => 'edit config.ini and set enable-account-queries = true',
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options) || return undef;
+
+	if (! scalar (@{$$json{accounts}})) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'no accounts returned from get_accounts_by_authorizers by key',
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'get_accounts_by_authorizers by key test passed',
 		%options
 	);
 

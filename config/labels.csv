@@ -9,6 +9,7 @@ class_blacklist,Blacklist,黑名单,블랙리스트
 class_bpjson,bp.json On-Chain,链上bp.json,bp.json 온체인
 class_history,History,历史,히스토리
 class_hyperion,Hyperion,Hyperion,히페리온 
+class_wallet,Wallet
 class_chains,Chains.json,Chains.json,Chains.json
 class_ipv6,IPv6,IPv6协议,IPv6
 class_general_l,General Info Check,基本信息 验证,기본정보 검증
@@ -18,6 +19,7 @@ class_api_endpoint_l,API Endpoints Check
 class_p2p_endpoint_l,P2P Endpoints Check
 class_history_l,History Check,历史 验证,히스토리 검증
 class_hyperion_l,Hyperion Check,Hyperion 验证,히페리온 검증
+class_wallet_l,Wallet Check
 class_blacklist_l,Blacklist Check,黑名单 验证,블랙리스트 검증
 class_bpjson_l,bp.json On-Chain Check,链上bp.json 验证,bp.json 온체인 검증
 class_chains_l,Chains.json Check,Chains.json 验证,Chains.json 검증
@@ -32,6 +34,7 @@ check_bonus_blacklist,OK,OK,OK
 check_bonus_bpjson,OK,OK,OK  
 check_bonus_history,OK,OK,OK  
 check_bonus_hyperion,OK,OK,OK  
+check_bonus_wallet,OK,OK,OK  
 check_bonus_chains,OK,OK,OK  
 check_bonus_ipv6,OK,OK,OK  
 bp_top21,Top 21 BP,前21名BP,탑 21BP
