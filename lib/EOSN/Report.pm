@@ -435,7 +435,7 @@ sub generate_message {
 	my $request_timeout = $$options{request_timeout};
 	my $cache_timeout = $$options{cache_timeout};
 	my $elapsed_time = $$options{elapsed_time};
-	my $check_time = $$options{check_time};
+	my $check_time = $$options{tls_check_time} || $$options{check_time};
 	my $kind = $$options{kind} || confess "missing kind";
 	my $detail = $$options{detail} || confess "missing detail";
 	my $threshold = $$options{threshold};

@@ -329,7 +329,8 @@ sub run_validate {
 		dupe => 'skip',
 		add_to_list => 'resources/regproducer_url',
 		request_timeout => 10,
-		cache_timeout => 300
+		cache_timeout => 300,
+		modern_tls_version => 1
 	);
 
 	my $xurl = $url;
@@ -1581,24 +1582,39 @@ sub validate_url {
 		}
 	}
 
-	if ($options{modern_tls_version}) {
+	if (($options{modern_tls_version}) && ($xurl =~ /^https:/)) {
+		my $tls_errors = 0;
+		my $tls_extra_info = {};
 		my $test_port = $port || 443;
+
 		foreach my $host (@{$options{hosts}}) {
-			my $tls_info = $self->get_tls ($$host{ip_address}, $test_port);
+			my $tls_info = $self->get_tls ($$host{ip_address}, $test_port, $tls_extra_info);
+			$$host{tls_versions} = $tls_info;
+
 			foreach my $protocol (@$tls_info) {
 				next if ($protocol eq 'TLSv1.2');
 				next if ($protocol eq 'TLSv1.3');
+
+				$tls_errors++;
 				$self->add_message (
 					kind => 'warn',
 					detail => 'obsolete version of TLS is still supported',
 					value => $protocol,
 					see1 => 'https://www.digicert.com/blog/depreciating-tls-1-0-and-1-1/',
 					see2 => 'https://libre-software.net/tls-nginx/',
+					tls_check_time => $$tls_extra_info{tls_check_time},
 					%options
 				);
 			}
+		}
 
-			$$host{tls_versions} = $tls_info;
+		if (! $tls_errors) {
+			$self->add_message (
+				kind => 'ok',
+				detail => 'TLS support is ok',
+				tls_check_time => $$tls_extra_info{tls_check_time},
+				%options
+			);
 		}
 	}
 
@@ -1675,7 +1691,7 @@ sub validate_url {
 }
 
 sub get_tls {
-	my ($self, $ip_address, $port) = @_;
+	my ($self, $ip_address, $port, $info) = @_;
 
 	my $cache_timeout = 60 * 60 * 24;
 
@@ -1693,10 +1709,14 @@ sub get_tls {
 	$fetch->finish;
 
 	if ($$cache{checked_at} && ($$cache{checked_at} > time - $cache_timeout)) {
+		$$info{tls_check_time} = time2str ("%C", $$cache{checked_at});
 		return from_json ($$cache{response_content});
 	}
 
 	# ---------- run the request
+
+	my $clock = time;
+	$$info{tls_check_time} = time2str ("%C", $clock);
 
 	my $tls_xml = '';
 	run (['nmap', '-oX', '-', '--script', 'ssl-enum-ciphers', '-p', $port, $ip_address], '>', \$tls_xml);
@@ -1720,9 +1740,9 @@ sub get_tls {
 	# ---------- update the database
 
 	if ($$cache{id}) {
-		$update->execute (time, to_json (\@tls_enabled), $$cache{id});
+		$update->execute ($clock, to_json (\@tls_enabled), $$cache{id});
 	} else {
-		$insert->execute (time, $ip_address, $port, to_json (\@tls_enabled));
+		$insert->execute ($clock, $ip_address, $port, to_json (\@tls_enabled));
 	}
 
 	# make sure we don't run too many requests too fast
@@ -2440,14 +2460,15 @@ sub get_whois {
 
 	# ---------- run the request
 
+	my $clock = time;
 	my $whois = whoisip_query ($ip_address);
 
 	# ---------- update the database
 
 	if ($$cache{id}) {
-		$update->execute (time, to_json ($whois), $$cache{id});
+		$update->execute ($clock, to_json ($whois), $$cache{id});
 	} else {
-		$insert->execute (time, $ip_address, to_json ($whois));
+		$insert->execute ($clock, $ip_address, to_json ($whois));
 	}
 
 	# make sure we don't run too many requests too fast
