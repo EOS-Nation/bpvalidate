@@ -185,13 +185,13 @@ sub generate_report_txt {
 	my $report = $options{report};
 	my $outfile = $options{outfile};
 	my $chain = $options{chain} || confess "missing chain";
-	my $title = $options{title} || label("title_$outfile", $lang);
+	my $title = $options{title} || label ("title_$outfile", $lang);
 	my @out;
 
 	push (@out, "# $title\n");
-	push (@out, "# " . label('txt_chain', $lang) . ' ' . label('chain_' . $chain, $lang) . "\n");
-	push (@out, "# " . label('txt_update', $lang) . ' ' . datetime($$data{meta}{generated_at}, $lang) . "\n");
-	push (@out, "# " . label('txt_about', $lang) . "\n");
+	push (@out, "# " . label ('txt_chain', $lang) . ' ' . label ('chain_' . $chain, $lang) . "\n");
+	push (@out, "# " . label ('txt_update', $lang) . ' ' . datetime ($$data{meta}{generated_at}, $lang) . "\n");
+	push (@out, "# " . label ('txt_about', $lang) . "\n");
 	push (@out, "\n");
 	foreach my $section (@$report) {
 		my $name = $$section{name};
@@ -236,15 +236,15 @@ sub generate_report_json {
 	my $report = $options{report};
 	my $outfile = $options{outfile};
 	my $chain = $options{chain} || confess "missing chain";
-	my $title = $options{title} || label("title_$outfile", $lang);
+	my $title = $options{title} || label ("title_$outfile", $lang);
 	my %out;
 
 	$out{meta}{title}{value} = $title;
-	$out{meta}{network}{label} = label('txt_chain', $lang);
-	$out{meta}{network}{value} = label('chain_' . $chain, $lang);
-	$out{meta}{update}{label} = label('txt_update', $lang);
-	$out{meta}{update}{value} = datetime($$data{meta}{generated_at}, $lang);
-	$out{meta}{details}{value} = label('txt_about', $lang);
+	$out{meta}{network}{label} = label ('txt_chain', $lang);
+	$out{meta}{network}{value} = label ('chain_' . $chain, $lang);
+	$out{meta}{update}{label} = label ('txt_update', $lang);
+	$out{meta}{update}{value} = datetime ($$data{meta}{generated_at}, $lang);
+	$out{meta}{details}{value} = label ('txt_about', $lang);
 
 	foreach my $section (@$report) {
 		my $name = $$section{name};
@@ -293,10 +293,10 @@ sub generate_report_thtml {
 	my @out;
 
 	if ($text) {
-		push (@out, "<p><a href=\"../$outfile.txt\">" . label('label_text_version', $lang) . "</a></p>");
+		push (@out, "<p><a href=\"../$outfile.txt\">" . label ('label_text_version', $lang) . "</a></p>");
 	}
 	if ($json) {
-		push (@out, "<p><a href=\"../$outfile.json\">" . label('label_json_version', $lang) . "</a></p>");
+		push (@out, "<p><a href=\"../$outfile.json\">" . label ('label_json_version', $lang) . "</a></p>");
 	}
 	if ($text || $json) {
 		push (@out, "<br>\n");
@@ -339,7 +339,7 @@ sub generate_report_thtml {
 						my $classx = $$data[$class - 1];
 						$value = sev_html(kind => $value, class => $classx, lang => $lang);
 					} elsif ($class && $i == $class) {
-						$value = label("class_$value", $lang);
+						$value = label ("class_$value", $lang);
 					} elsif ($href && $i == $href) {
 						$value = "<a href=\"$value\">$value</a>";
 					} elsif ($noescape && $i == $noescape) {
@@ -377,7 +377,7 @@ sub write_report_thtml {
 	my $content = $options{content};
 	my $outfile = $options{outfile};
 	my $chain = $options{chain} || confess "missing chain";
-	my $title = $options{title} || label("title_$outfile", $lang);
+	my $title = $options{title} || label ("title_$outfile", $lang);
 	my @out;
 
 	push (@out, "chain = $chain\n");
@@ -403,11 +403,11 @@ sub sev_html {
 	}
 
 	if ($class) {
-		my $title_class = label("class_$class", $lang);
-		my $title = label("check_$kind", $lang);
+		my $title_class = label ("class_$class", $lang);
+		my $title = label ("check_$kind", $lang);
 		$html =~ s/ / title="$title_class: $title" /;
 	} else {
-		my $title = label("$kind", $lang);
+		my $title = label ("$kind", $lang);
 		$html =~ s/ / title="$title" /;
 	}
 	
@@ -468,7 +468,7 @@ sub generate_message {
 		$response_url = undef if ($url eq $response_url);
 	}
 
-	$request_timeout .= ' ' . label('time_s', $lang) if ($request_timeout);
+	$request_timeout .= ' ' . label ('time_s', $lang) if ($request_timeout);
 
 	if ($cache_timeout) {
 		$cache_timeout = undef if ($cache_timeout < 1800);
@@ -476,10 +476,10 @@ sub generate_message {
 	if ($cache_timeout) {
 		if ($cache_timeout > 3600) {
 			$cache_timeout = int ($cache_timeout / 3600);
-			$cache_timeout .= ' ' . label('time_h', $lang);
+			$cache_timeout .= ' ' . label ('time_h', $lang);
 		} else {
 			$cache_timeout = int ($cache_timeout / 60);
-			$cache_timeout .= ' ' . label('time_m', $lang);
+			$cache_timeout .= ' ' . label ('time_m', $lang);
 		}
 	}
 
@@ -492,7 +492,7 @@ sub generate_message {
 	$detail .= format_message_entry ('msg_threshold', $threshold, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_count', $count, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_value', $value, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_value_time', datetime($value_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_value_time', datetime ($value_time, $lang), 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_suggested_to_use_value', $suggested_value, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_field', $field, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_contract', $contract, 0, $content_type, $lang);
@@ -509,12 +509,12 @@ sub generate_message {
 	$detail .= format_message_entry ('msg_port', $port, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_elapsed_time', $elapsed_time, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_timeout', $request_timeout, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_validated_at', datetime($check_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_validated_at', datetime ($check_time, $lang), 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_validated_every', $cache_timeout, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_explanation', $explanation, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_see', $see1, 1, $content_type, $lang);
 	$detail .= format_message_entry ('msg_see', $see2, 1, $content_type, $lang);
-	$detail .= format_message_entry ('msg_last_updated_at', datetime($last_update_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_last_updated_at', datetime ($last_update_time, $lang), 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_diff', $diff, 2, $content_type, $lang);
 
 	return $detail;
@@ -534,12 +534,12 @@ sub format_message_entry {
 		} else {
 			$value = encode_entities ($value);
 		}
-		return ', ' . label($key, $lang) . '=&lt;' . $value . '&gt;';
+		return ', ' . label ($key, $lang) . '=&lt;' . $value . '&gt;';
 	} else {
 		if ($is_url == 2) {
 			return "";
 		} else {
-			return ', ' . label($key, $lang) . '=<' . $value .'>';
+			return ', ' . label ($key, $lang) . '=<' . $value .'>';
 		}
 	}
 }
@@ -564,7 +564,7 @@ sub datetime {
 	return '' if (! defined $value);
 
 	my $unixtime = str2time($value);
-	return time2str(label('format_datetime', $lang), $unixtime, 'UTC');
+	return time2str (label ('format_datetime', $lang), $unixtime, 'UTC');
 }
 
 sub is_important_bp {
