@@ -98,17 +98,16 @@ sub request {
 	$$options{check_time} = time2str("%C", $clock);
 	write_timestamp_log ($log_prefix . sprintf ("r %.2f %3d %4s %s %s", $elapsed_time, $res->code, $req->method, $req->uri, $req->content));
 
-	# ---------- wait if needed to avoid overloading remote systems
-
-	sleep ($sleep) if ($sleep);
-
 	# ---------- update the database
 
 	if ($$cache{id}) {
-		$update->execute (time, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content, $$cache{id});
+		$update->execute ($clock, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content, $$cache{id});
 	} else {
-		$insert->execute ($md5, time, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content);
+		$insert->execute ($md5, $clock, $elapsed_time, $req->method, $req->url, to_json([$req->headers->flatten]), $req->content, $res->code, $res->message, to_json([$res->headers->flatten]), $res->content);
 	}
+
+	# make sure we don't run too many requests too fast
+	sleep ($sleep) if ($sleep);
 
 	return $res;
 }
