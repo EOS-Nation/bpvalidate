@@ -1603,6 +1603,7 @@ sub validate_url {
 					see1 => 'https://www.digicert.com/blog/depreciating-tls-1-0-and-1-1/',
 					see2 => 'https://libre-software.net/tls-nginx/',
 					tls_check_time => $$tls_extra_info{tls_check_time},
+					tls_cache_timeout => $$tls_extra_info{tls_cache_timeout},
 					%options
 				);
 			}
@@ -1613,6 +1614,7 @@ sub validate_url {
 				kind => 'ok',
 				detail => 'TLS support is ok',
 				tls_check_time => $$tls_extra_info{tls_check_time},
+				tls_cache_timeout => $$tls_extra_info{tls_cache_timeout},
 				%options
 			);
 		}
@@ -1709,6 +1711,7 @@ sub get_tls {
 	$fetch->finish;
 
 	if ($$cache{checked_at} && ($$cache{checked_at} > time - $cache_timeout)) {
+		$$info{tls_cache_timeout} = $cache_timeout;
 		$$info{tls_check_time} = time2str ("%C", $$cache{checked_at});
 		return from_json ($$cache{response_content});
 	}
@@ -1716,6 +1719,7 @@ sub get_tls {
 	# ---------- run the request
 
 	my $clock = time;
+	$$info{tls_cache_timeout} = $cache_timeout;
 	$$info{tls_check_time} = time2str ("%C", $clock);
 
 	my $tls_xml = '';

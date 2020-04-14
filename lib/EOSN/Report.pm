@@ -433,7 +433,7 @@ sub generate_message {
 	my $value_time = $$options{value_time};
 	my $suggested_value = $$options{suggested_value};
 	my $request_timeout = $$options{request_timeout};
-	my $cache_timeout = $$options{cache_timeout};
+	my $cache_timeout = $$options{tls_cache_timeout} || $$options{cache_timeout};
 	my $elapsed_time = $$options{elapsed_time};
 	my $check_time = $$options{tls_check_time} || $$options{check_time};
 	my $kind = $$options{kind} || confess "missing kind";
