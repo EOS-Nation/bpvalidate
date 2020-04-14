@@ -370,8 +370,8 @@ sub run_validate {
 		$self->check_org_social;
 	}
 
+	$self->check_aloha;
 	$self->check_nodes;
-
 	$self->check_onchainbpjson;
 	$self->check_onchainblacklist;
 }
@@ -824,6 +824,97 @@ sub check_org_social {
 			class => 'org'
 		);
 	}
+}
+
+sub check_aloha {
+	my ($self) = @_;
+
+	return if (! $self->{chain_properties}{aloha_id});
+
+	my $aloha_id = $self->{chain_properties}{aloha_id};
+
+	my %options;
+	$options{url} = 'https://www.alohaeos.com/api/v1/producer/get';
+	$options{post_data} = join ('&', "network_id=$aloha_id", "account=" . $self->name);
+	$options{suppress_timeout_message} = 1;
+	$options{request_timeout} = 20;
+	$options{cache_timeout} = 300;
+
+	my $req = HTTP::Request->new ('POST', $options{url}, ['Content-Type' => 'application/x-www-form-urlencoded'], $options{post_data});
+	$req->header("Referer", 'https://validate.eosnation.io');
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_content_type = $res->content_type;
+	my $content = $res->content;
+
+	if (! $res->is_success) {
+		$self->write_timestamp_log ("aloha error $options{url} $options{post_data} => $status_message $content");
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options);
+	if (! $json) {
+		$self->write_timestamp_log ("aloha error $options{url} $options{post_data} => invalid json $content");
+		return undef;
+	}
+
+	if (! $$json{producer}) {
+		$self->write_timestamp_log ("aloha error $options{url} $options{post_data} => no account $content");
+		return undef;
+	}
+
+	my $errors = 0;
+
+	$self->test_aloha_last_missed_round ($json) || $errors++;
+
+	return undef if ($errors);
+	return 1;
+}
+
+sub test_aloha_last_missed_round {
+	my ($self, $json) = @_;
+
+	my $aloha_id = $self->{chain_properties}{aloha_id};
+
+	if ($$json{producer}{last_missed_round}) {
+		my $last_round_time = str2time ($$json{producer}{last_missed_round} . ' UTC');
+		my $kind = 'ok';
+		my $last_missed_round = undef;
+
+		if (! $last_round_time) {
+			$self->write_timestamp_log ("aloha error cannot parse time: $$json{producer}{last_missed_round}");
+			return undef;
+		}
+		if (time - $last_round_time < 60 * 60 * 24 * 30) {
+			$kind = 'warn';
+		}
+
+		$last_missed_round = time2str ("%C", $last_round_time);
+		$self->{results}{info}{last_missed_round} = $last_round_time;
+		$self->write_timestamp_log ("aloha last missed round: $last_missed_round");
+
+		$self->add_message (
+			kind => $kind,
+			detail => 'last missed block production round',
+			value_time => $last_missed_round,
+			see1 => "https://www.alohaeos.com/tools/benchmarks#networkId=$aloha_id&timeframeId=8",
+			class => 'regproducer'
+		);
+	} else {
+		$self->{results}{info}{last_missed_round} = undef;
+
+		$self->add_message (
+			kind => 'ok',
+			detail => 'last missed block production round',
+			value => 'never',
+			see1 => "https://www.alohaeos.com/tools/benchmarks#networkId=$aloha_id&timeframeId=8",
+			class => 'regproducer'
+		);
+	}
+
+	return 1;
 }
 
 sub check_nodes {
