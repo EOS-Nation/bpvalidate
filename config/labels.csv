@@ -51,7 +51,7 @@ title_producers/producer,Report for %producer%,%producer% 报告,%producer% 보�
 title_producers/index,Producer Scorecard,出块节点计分卡,프로듀서 스코어 카드
 title_reports/resources,Resources Report,资源报告,자원 보고
 title_reports/api_versions,API Versions Report,API版本报告,API 버전 보고
-title_reports/p2p_speed,P2P Speed Report
+title_reports/p2p_speed,P2P Speed Report,,
 title_reports/blacklist,Blacklist Report,黑名单报告,블랙리스트 보고
 title_producers,Report for %producer_name_html%,%producer_name_html%报告,%producer_name_html% 보고
 label_text_version,text version,文字内容版本,텍스트 버전 보고
