@@ -15,8 +15,8 @@ class_ipv6,IPv6,IPv6协议,IPv6
 class_general_l,General Info Check,基本信息 验证,기본정보 검증
 class_regproducer_l,Regproducer Check,注册出块节点 验证,Regproducer Check 검증
 class_org_l,Organization Check,机构 验证,기관 검증
-class_api_endpoint_l,API Endpoints Check
-class_p2p_endpoint_l,P2P Endpoints Check
+class_api_endpoint_l,API Endpoints Check,,
+class_p2p_endpoint_l,P2P Endpoints Check,,
 class_history_l,History Check,历史 验证,히스토리 검증
 class_hyperion_l,Hyperion Check,Hyperion 验证,히페리온 검증
 class_wallet_l,Wallet Check,,
