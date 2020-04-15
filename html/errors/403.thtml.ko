@@ -5,6 +5,6 @@ h1 = 403 Forbidden
   <div class="notification is-link">
     <p class="content"><b>%title_site%</b></p>
     <p class="content">죄송합니다. 페이지에 대한 엑세스 권한이 없습니다.</p>
-    <p class="content"><a href="/">homepage 부터 다시 시작해주세요.</a>.</p> 
+    <p class="content"><a href="/">홈페이지부터 다시 시작해주세요.</a>.</p> 
   </div>
 </div>
