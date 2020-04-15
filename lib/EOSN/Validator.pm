@@ -12,7 +12,6 @@ use Net::DNS;
 use Date::Format qw(time2str);
 use Date::Parse qw(str2time);
 use Carp qw(confess);
-use Time::Seconds;
 use Text::Diff;
 use Time::HiRes qw(time);
 use EOSN::CommandUtil;
@@ -2250,20 +2249,11 @@ sub validate_basic_api_extra_check {
 	my $delta = abs($$options{response_time} - $time);
 	
 	if ($delta > 10) {
-		my $val = Time::Seconds->new($delta);
-		my $deltas = $val->pretty;
-		#$self->add_message (
-		#	kind => 'crit',
-		#	detail => "last block is not up-to-date with timestamp=<$$result{head_block_time}> delta=<$deltas>",
-		#	url => $url,
-		#	field => $field,
-		#	class => $class,
-		#	node_type => $node_type
-		#);
 		$self->add_message (
 			kind => 'crit',
 			detail => 'last block is not up-to-date',
 			value => $$result{head_block_time},
+			delta_time => $delta,
 			url => $url,
 			field => $field,
 			class => $class,

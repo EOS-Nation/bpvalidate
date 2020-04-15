@@ -432,6 +432,7 @@ sub generate_message {
 	my $value = $$options{value};
 	my $value_time = $$options{value_time};
 	my $suggested_value = $$options{suggested_value};
+	my $delta_time = $$options{delta_time};
 	my $request_timeout = $$options{request_timeout};
 	my $cache_timeout = $$options{tls_cache_timeout} || $$options{cache_timeout};
 	my $elapsed_time = $$options{elapsed_time};
@@ -483,7 +484,8 @@ sub generate_message {
 		}
 	}
 
-	$elapsed_time .= ' s' if ($elapsed_time);
+	$elapsed_time .= ' ' . label ('time_s', $lang) if ($elapsed_time);
+	$delta_time .= ' ' . label ('time_s', $lang) if ($delta_time);
 
 	# ---------- output
 
@@ -494,6 +496,7 @@ sub generate_message {
 	$detail .= format_message_entry ('msg_value', $value, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_value_time', datetime ($value_time, $lang), 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_suggested_to_use_value', $suggested_value, 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_delta_time', $delta_time, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_field', $field, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_contract', $contract, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_having_node_type', $node_type, 0, $content_type, $lang);
