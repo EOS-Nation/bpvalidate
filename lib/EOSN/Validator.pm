@@ -4072,7 +4072,7 @@ sub test_regproducer_claim_rewards {
 		return 1;
 	}
 
-	if (time - $last_claim_time < 24 * 3600) {
+	if (time - $last_claim_time < (24 * 3600) + 30) {
 		$self->add_message (
 			kind => 'ok',
 			detail => 'claim rewards: last claim time',
