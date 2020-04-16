@@ -3421,7 +3421,7 @@ sub check_hyperion_health_query_time_ms {
 		return undef;
 	}
 
-	if ($$json{query_time_ms} > 200) {
+	if ($$json{query_time_ms} >= 400) {
 		$self->add_message (
 			kind => 'info', #xxx
 			detail => 'query time is too slow',
