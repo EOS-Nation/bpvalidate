@@ -898,7 +898,7 @@ sub test_aloha_last_missed_round {
 			kind => $kind,
 			detail => 'last missed block production round',
 			value_time => $last_missed_round,
-			see1 => "https://www.alohaeos.com/tools/benchmarks#networkId=$aloha_id&timeframeId=8",
+			see1 => "https://www.alohaeos.com/tools/reliability/#networkId=$aloha_id&timeframeId=8",
 			class => 'regproducer'
 		);
 	} else {
