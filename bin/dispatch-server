@@ -44,15 +44,15 @@ if (! -e $chainsfile) {
 
 write_timestamp_log ('starting');
 
+fork_message_receiver ();
+fork_stats_counter ();
+
 my $chains = read_csv_hash ($chainsfile, 'name');
 my @pids;
 
 foreach my $chain (sort keys %$chains) {
 	fork_children ($chain);
 }
-
-fork_message_receiver ();
-fork_stats_counter ();
 
 wait ();
 
@@ -144,12 +144,12 @@ sub run_message_receiver {
 	my $dbh = do_connect_mysql ('bpvalidate');
 
 	while (1) {
-		exit if (getppid() == 1);
+		exit if (getppid () == 1);
 
 		my $frame = $stomp->receive_frame ({timeout => 30});
 		if (! defined $frame) {
 			write_timestamp_log ('[receiver] no messages received');
-			$dbh->ping();
+			$dbh->ping;
 			next; # will reconnect automatically
 		}
 
@@ -230,7 +230,8 @@ sub run_stats_counter {
 	}
 
 	while (1) {
-		exit if (getppid() == 1);
+		exit if (getppid () == 1);
+		exit if (! $dbh->ping);
 
 		foreach my $chain (sort keys %$chains) {
 			update_stats ($chain, $stats_query{$chain}, $dbh);
@@ -253,7 +254,8 @@ sub dispatch_chain {
 	my $re_dispatch_time = 600; # allow enough time for the dispatch_expire_time + the time it takes to run the actual checks
 
 	while (1) {
-		exit if (getppid() == 1);
+		exit if (getppid () == 1);
+		exit if (! $dbh->ping);
 
 		my $start_time = time;
 		my $count = 0;
@@ -333,7 +335,8 @@ sub update_chain {
 	write_timestamp_log ("[update $chain] read from url=<$base_url>");
 	
 	while (1) {
-		exit if (getppid() == 1);
+		exit if (getppid () == 1);
+		exit if (! $dbh->ping);
 
 		write_timestamp_log ("[update $chain] processing");
 
