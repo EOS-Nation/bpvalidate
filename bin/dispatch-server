@@ -44,15 +44,15 @@ if (! -e $chainsfile) {
 
 write_timestamp_log ('starting');
 
-fork_message_receiver ();
-fork_stats_counter ();
-
 my $chains = read_csv_hash ($chainsfile, 'name');
 my @pids;
 
 foreach my $chain (sort keys %$chains) {
 	fork_children ($chain);
 }
+
+fork_message_receiver ();
+fork_stats_counter ();
 
 wait ();
 
