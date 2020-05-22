@@ -3083,6 +3083,16 @@ sub test_abi_serializer {
 	my $json = $self->get_json ($content, %options) || return undef;
 
 	my $transactions = $$json{transactions};
+	if (ref $transactions ne 'ARRAY') {
+		$self->add_message (
+			kind => 'err',
+			detail => 'invalid JSON response (not array)',
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
 	my $transaction_count = @$transactions;
 
 	if ($transaction_count != $number_of_transactions) {
