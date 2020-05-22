@@ -2052,13 +2052,8 @@ sub validate_history_api {
 	return if (! $self->{chain_properties}{class_history});
 
 	my $api_url = $options{api_url};
-	my $history_type = $options{history_type};
 	my $field = $options{field};
 	my $class = $options{class} || confess "class not provided";
-
-#	if ($history_type && $history_type !~ /^(traditional|mongo)$/) {
-#		return;
-#	}
 
 	return $self->validate_url (
 		api_url => $api_url,
@@ -2085,13 +2080,8 @@ sub validate_hyperion_api {
 	return if (! $self->{chain_properties}{class_hyperion});
 
 	my $api_url = $options{api_url};
-	my $history_type = $options{history_type};
 	my $field = $options{field};
 	my $class = $options{class} || confess "class not provided";
-
-#	if ($history_type && $history_type ne 'hyperion') {
-#		return;
-#	}
 
 	return $self->validate_url (
 		api_url => $api_url,
@@ -2118,7 +2108,6 @@ sub validate_wallet_api {
 	return if (! $self->{chain_properties}{class_wallet});
 
 	my $api_url = $options{api_url};
-	my $history_type = $options{history_type};
 	my $field = $options{field};
 	my $class = $options{class} || confess "class not provided";
 
@@ -3160,8 +3149,9 @@ sub test_history_transaction {
 sub test_history_actions {
 	my ($self, %options) = @_;
 
+	my $number_of_actions = 100;
 	$options{api_url} .= '/v1/history/get_actions';
-	$options{post_data} = '{"json": true, "pos":-1, "offset":-120, "account_name": "eosio.token"}';
+	$options{post_data} = '{"json": true, "pos":-1, "offset":-' . $number_of_actions. ', "account_name": "eosio.token"}';
 	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
@@ -3180,7 +3170,7 @@ sub test_history_actions {
 			detail => 'error retriving actions history',
 			value => $status_message,
 			response_host => $response_host,
-			explanation => 'edit config.ini to turn on history and replay all blocks',
+			explanation => 'v1 history not detected',
 			see1 => 'http://t.me/eosfullnodes',
 			%options
 		);
@@ -3188,36 +3178,57 @@ sub test_history_actions {
 	}
 
 	my $json = $self->get_json ($content, %options) || return undef;
-	if (! scalar (@{$$json{actions}})) {
+
+	my $actions = $$json{actions};
+	if (ref $actions ne 'ARRAY') {
 		$self->add_message (
 			kind => 'err',
-			detail => 'no actions included in the response',
+			detail => 'invalid JSON response (not array)',
 			response_host => $response_host,
 			%options
 		);
 		return undef;
 	}
 
-	my $last_irreversible_block = $$json{last_irreversible_block};
-	my $history_type = undef;
-	if ($last_irreversible_block) {
+	my $action_count = @$actions;
+	if ($action_count != $number_of_actions) {
 		$self->add_message (
-			kind => 'ok',
+			kind => 'err',
+			detail => 'action request does not contain correct number of actions',
+			suggested_value => $number_of_actions,
+			value => $action_count,
 			response_host => $response_host,
-			detail => 'detect traditional history node',
 			%options
 		);
-		$history_type = 'traditional';
-	} else {
-		$self->add_message (
-			kind => 'ok',
-			response_host => $response_host,
-			detail => 'detect mongo history node',
-			%options
-		);
-		$history_type = 'mongo';
+		return undef;
 	}
-	$options{info}{history_type} = $history_type;
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'action request contains correct number of actions',
+		suggested_value => $number_of_actions,
+		value => $action_count,
+		response_host => $response_host,
+		%options
+	);
+
+	my $last_irreversible_block = $$json{last_irreversible_block};
+	if (! $last_irreversible_block) {
+		$self->add_message (
+			kind => 'err',
+			response_host => $response_host,
+			detail => 'last_irreversible_block not provided',
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'action request contains last_irreversible_block',
+		response_host => $response_host,
+		%options
+	);
 
 	my @actions = @{$$json{actions}};
 	my $block_time = '2000-01-01';
@@ -3229,7 +3240,7 @@ sub test_history_actions {
 		$block_time = maxstr ($$action{block_time}, $block_time);
 	}
 
-	my $time = str2time($block_time . ' UTC');
+	my $time = str2time ($block_time . ' UTC');
 	my $delta = abs(time - $time);
 	if ($delta > 3600 * 2) {
 		$self->add_message (
@@ -3244,9 +3255,18 @@ sub test_history_actions {
 
 	$self->add_message (
 		kind => 'ok',
+		detail => 'action request contains recent eosio.ram action',
+		response_host => $response_host,
+		%options
+	);
+
+	$self->add_message (
+		kind => 'ok',
 		detail => 'get_actions history test passed',
 		%options
 	);
+
+	$options{info}{history_type} = 'traditional';
 
 	return 1;
 }
