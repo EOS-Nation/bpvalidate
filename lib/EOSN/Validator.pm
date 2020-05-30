@@ -2218,7 +2218,6 @@ sub validate_basic_api_extra_check {
 		$errors++;
 	}
 
-
 	if (! $$result{head_block_time}) {
 		$self->add_message (
 			kind => 'crit',
@@ -2234,15 +2233,15 @@ sub validate_basic_api_extra_check {
 	# use the response_time from the http request so not including
 	# processing delays from any prior validation steps
 
-	my $time = str2time($$result{head_block_time} . ' UTC');
-	my $delta = abs($$options{response_time} - $time);
+	my $time = str2time ($$result{head_block_time} . ' UTC');
+	my $delta = abs ($$options{response_time} - $time);
 	
 	if ($delta > 10) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'last block is not up-to-date',
 			value => $$result{head_block_time},
-			delta_time => $delta,
+			delta_time => sprintf ("%.1f", $delta),
 			url => $url,
 			field => $field,
 			class => $class,
@@ -3241,12 +3240,13 @@ sub test_history_actions {
 	}
 
 	my $time = str2time ($block_time . ' UTC');
-	my $delta = abs(time - $time);
+	my $delta = abs (time - $time);
 	if ($delta > 3600 * 2) {
 		$self->add_message (
 			kind => 'err',
 			detail => 'history not up-to-date: eosio.ram action is more than 2 hours in the past',
 			value => $block_time,
+			delta_time => sprintf ("%.1f", $delta),
 			response_host => $response_host,
 			%options
 		);
@@ -3706,13 +3706,14 @@ sub test_hyperion_actions {
 		return undef;
 	}
 
-	my $time = str2time($block_time . ' UTC');
-	my $delta = abs(time - $time);
+	my $time = str2time ($block_time . ' UTC');
+	my $delta = abs (time - $time);
 	if ($delta > 300) {
 		$self->add_message (
 			kind => 'err',
 			detail => 'hyperion not up-to-date: last action is more than 5 minutes in the past',
 			value => $block_time,
+			delta_time => sprintf ("%.1f", $delta),
 			response_host => $response_host,
 			%options
 		);
