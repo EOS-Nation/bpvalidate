@@ -3489,11 +3489,14 @@ sub check_hyperion_health_features {
 		'streaming/deltas',
 		'tables/proposals',
 		'tables/accounts',
-		'tables/userres',
-		'tables/delband',
 		'tables/voters',
 		'index_deltas',
-		'index_all_deltas'
+		'index_transfer_memo',
+		'index_all_deltas',
+		'deferred_trx',
+		'failed_trx',
+		'resource_limits',
+		'resource_usage'
 	);
 
 	my $errors = 0;
