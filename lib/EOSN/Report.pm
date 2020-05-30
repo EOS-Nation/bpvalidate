@@ -484,8 +484,8 @@ sub generate_message {
 		}
 	}
 
-	$elapsed_time .= ' ' . label ('time_s', $lang) if ($elapsed_time);
-	$delta_time .= ' ' . label ('time_s', $lang) if ($delta_time);
+	$elapsed_time = format_elapsed_time ($elapsed_time, $lang);
+	$delta_time = format_elapsed_time ($delta_time, $lang);
 
 	# ---------- output
 
@@ -521,6 +521,29 @@ sub generate_message {
 	$detail .= format_message_entry ('msg_diff', $diff, 2, $content_type, $lang);
 
 	return $detail;
+}
+
+sub format_elapsed_time {
+	my ($time, $lang) = @_;
+
+	# $time is in seconds
+	return undef if (! defined $time);
+
+	use integer;
+	my $h = $time / 3600;
+	my $m = $time / 60 % 60;
+	my $s = $time % 60;
+
+	if ($time > 3600) {
+		return $h . ' ' . label ('time_h', $lang) .  ' '
+			. $m . ' ' . label ('time_m', $lang) .  ' '
+			. $s . ' ' . label ('time_s', $lang);
+	} elsif ($time > 60) {
+		return $m . ' ' . label ('time_m', $lang) .  ' '
+			. $s . ' ' . label ('time_s', $lang);
+	} else {
+		return $time . ' ' . label ('time_s', $lang);
+	}
 }
 
 sub format_message_entry {
