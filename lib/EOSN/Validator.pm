@@ -3584,7 +3584,7 @@ sub check_hyperion_health_health {
 	if ($active_shards ne '100.0%') {
 		$self->add_message (
 			kind => 'info', #xxx
-			detail => 'Elastic Search active_shards error for hyperion health',
+			detail => 'elastic search active_shards error for hyperion health',
 			value => $active_shards,
 			feature => 'Elasticsearch',
 			%options
@@ -3593,10 +3593,10 @@ sub check_hyperion_health_health {
 	}
 
 	my $offset = $services{NodeosRPC}{service_data}{time_offset};
-	if ((! defined $offset) || ($offset < 0) || ($offset > 2000)) {
+	if ((! defined $offset) || ($offset < -500) || ($offset > 2000)) {
 		$self->add_message (
 			kind => 'info', #xxx
-			detail => 'Elastic Search time_offset error for hyperion health',
+			detail => 'elastic search time_offset error for hyperion health',
 			value => $offset,
 			feature => 'NodeosRPC',
 			%options
