@@ -37,11 +37,15 @@ foreach my $lang (languages()) {
 					foreach my $node (@{$$entry{output}{nodes}{$node_type}}) {
 						my $key = $$node{node_type} || 'zzunknown';
 						my $orgs = whois_org ($node);
+						my $countries = whois_country ($node);
+						my $flags = whois_flag ($node);
+						my $link = "<a href=\"$$node{address}\">$$node{address}</a>";
 						next if ($key ne $kind);
 						push (@section, {
 							producer => $producer,
-							sprintf => "%9s, %50s, %s",
-							data => [$node_type, $$node{address}, $orgs]
+							sprintf => "%25s, %50s, %5s, %s",
+							data => [$node_type, $$node{address}, $countries, $orgs],
+							html_data => [undef, $link, $flags, undef]
 						});
 					}
 				}

@@ -319,11 +319,8 @@ sub generate_report_thtml {
 		foreach my $line (@$rows) {
 			my $sprintf = $$line{sprintf};
 			my $data = $$line{data};
+			my $html_data = $$line{html_data};
 			my $producer = $$line{producer};
-			my $icons = $$line{icons};
-			my $class = $$line{class};
-			my $href = $$line{href};
-			my $noescape = $$line{noescape};
 			my $formatted = '';
 			if ($columns) {
 				$formatted .= "<tr>";
@@ -333,17 +330,10 @@ sub generate_report_thtml {
 					$formatted .= "<td>" . bp_logo ($$producers{$producer}) . "</td>";
 					$formatted .= "<td><a href=\"../producers/$producer.html\">$producer_name_html</a></td>";
 				}
-				foreach my $i (1 .. scalar(@$data)) {
+				foreach my $i (1 .. scalar (@$data)) {
 					my $value = $$data[$i-1];
-					if ($icons && $i == $icons) {
-						my $classx = $$data[$class - 1];
-						$value = sev_html(kind => $value, class => $classx, lang => $lang);
-					} elsif ($class && $i == $class) {
-						$value = label ("class_$value", $lang);
-					} elsif ($href && $i == $href) {
-						$value = "<a href=\"$value\">$value</a>";
-					} elsif ($noescape && $i == $noescape) {
-						# no nothing
+					if (defined $$html_data[$i-1]) {
+						$value = $$html_data[$i-1];
 					} else {
 						$value = encode_entities ($value);
 					}
@@ -353,7 +343,7 @@ sub generate_report_thtml {
 				}
 				$formatted .= "</tr>";
 			} else {
-				$formatted = sprintf("$sprintf<br>\n", @$data);
+				$formatted = sprintf ("$sprintf<br>\n", @$data);
 			}
 
 			push (@out, $formatted);
@@ -637,6 +627,34 @@ sub whois_org {
 	}
 
 	return join ('; ', sort keys %orgs);
+}
+
+sub whois_country {
+	my ($node) = @_;
+
+	my %countrys;
+
+	foreach my $host (@{$$node{hosts}}) {
+		my $country = $$host{country};
+		next if (! $country);
+		$countrys{$country} = 1;
+	}
+
+	return join ('; ', sort keys %countrys);
+}
+
+sub whois_flag {
+	my ($node) = @_;
+
+	my %countrys;
+
+	foreach my $host (@{$$node{hosts}}) {
+		my $country = $$host{country};
+		next if (! $country);
+		$countrys{$country} = 1;
+	}
+
+	return join ('; ', map {flag_html (lc ($_))} sort keys %countrys);
 }
 
 1;

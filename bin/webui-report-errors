@@ -22,12 +22,14 @@ foreach my $lang (languages()) {
 			my $producer = $$entry{regproducer}{owner};
 			foreach my $message (@{$$entry{messages}}) {
 				next if ($$message{kind} eq 'ok');
+
+				my $icon = sev_html (kind => $$message{kind}, class => $$message{class}, lang => $lang);
+				my $class = label ('class_' . $$message{class}, $lang);
+
 				push (@section, {
 					sprintf => "%4s, %11s, %s",
-					data => [$$message{kind}, $$message{class}, generate_message($message, lang => $lang, content_type => $content_type)],
-					icons => 1,
-					class => 2,
-					noescape => 3
+					data => [$$message{kind}, $$message{class}, generate_message ($message, lang => $lang, content_type => $content_type)],
+					html_data => [$icon, $class, generate_message ($message, lang => $lang, content_type => $content_type)]
 				});
 			}
 

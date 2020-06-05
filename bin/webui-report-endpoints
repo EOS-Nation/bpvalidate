@@ -32,10 +32,14 @@ foreach my $lang (languages()) {
 
 				foreach my $node (@{$$entry{output}{nodes}{$kind}}) {
 					my $orgs = whois_org ($node);
+					my $countries = whois_country ($node);
+					my $flags = whois_flag ($node);
+					my $link = "<a href=\"$$node{address}\">$$node{address}</a>";
 					push (@section, {
 						producer => $producer,
-						sprintf => "%50s, %s",
-						data => [$$node{address}, $orgs]
+						sprintf => "%50s, %5s, %s",
+						data => [$$node{address}, $countries, $orgs],
+						html_data => [$link, $flags, undef]
 					});
 				}
 			}
