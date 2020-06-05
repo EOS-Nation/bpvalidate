@@ -632,29 +632,29 @@ sub whois_org {
 sub whois_country {
 	my ($node) = @_;
 
-	my %countrys;
+	my %countries;
 
 	foreach my $host (@{$$node{hosts}}) {
 		my $country = $$host{country};
 		next if (! $country);
-		$countrys{$country} = 1;
+		$countries{$country} = 1;
 	}
 
-	return join ('; ', sort keys %countrys);
+	return join (' ', sort keys %countries);
 }
 
 sub whois_flag {
 	my ($node) = @_;
 
-	my %countrys;
+	my %countries;
 
 	foreach my $host (@{$$node{hosts}}) {
 		my $country = $$host{country};
 		next if (! $country);
-		$countrys{$country} = 1;
+		$countries{$country} = 1;
 	}
 
-	return join ('; ', map {flag_html (lc ($_))} sort keys %countrys);
+	return join (' ', map {flag_html (lc ($_))} sort keys %countries);
 }
 
 1;
