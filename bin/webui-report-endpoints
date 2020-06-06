@@ -34,7 +34,10 @@ foreach my $lang (languages()) {
 					my $orgs = whois_org ($node);
 					my $countries = whois_country ($node);
 					my $flags = whois_flag ($node);
-					my $link = "<a href=\"$$node{address}\">$$node{address}</a>";
+					my $link = $$node{address};
+					if ($$node{address} =~ m#^http://|^https://#) {
+						$link = "<a href=\"$$node{address}\">$$node{address}</a>";
+					}
 					push (@section, {
 						producer => $producer,
 						sprintf => "%50s, %5s, %s",
