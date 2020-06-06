@@ -2547,6 +2547,7 @@ sub get_whois {
 		next if ($line !~ /:/);
 		my ($key, $value) = split (/:\s*/, $line);
 		next if ($value =~ /RIPE/);
+		next if ($value =~ /^STUB-/);
 		$$whois{$key} = $value;
 	}
 
