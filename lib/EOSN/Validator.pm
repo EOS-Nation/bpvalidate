@@ -15,7 +15,6 @@ use Carp qw(confess);
 use Text::Diff;
 use Time::HiRes qw(time);
 use EOSN::CommandUtil;
-use Net::Whois::IP qw(whoisip_query);
 use IPC::Run qw(run);
 use XML::LibXML;
 use Digest::MD5 qw(md5_hex);
@@ -2505,7 +2504,7 @@ sub validate_ip_dns {
 
 	foreach my $ip_address (@hosts) {
 		my $whois = $self->get_whois ($ip_address);
-		my $org = $$whois{OrgName} || $$whois{'org-name'} || $$whois{'Organization'} || $$whois{netname} || $$whois{owner};
+		my $org = $$whois{OrgName} || $$whois{'org-name'} || $$whois{netname} || $$whois{owner} || $$whois{'Organization'};
 		my $country = $$whois{Country} || $$whois{'country'};
 
 		push (@results, {ip_address => $ip_address, organization => $org, country => $country});
@@ -2539,7 +2538,17 @@ sub get_whois {
 	# ---------- run the request
 
 	my $clock = time;
-	my $whois = whoisip_query ($ip_address);
+
+	my $data;
+	run (['whois', $ip_address], '>', \$data);
+
+	my $whois = {};
+	foreach my $line (split (/\n/, $data)) {
+		next if ($line !~ /:/);
+		my ($key, $value) = split (/:\s*/, $line);
+		next if ($value =~ /RIPE/);
+		$$whois{$key} = $value;
+	}
 
 	# ---------- update the database
 
