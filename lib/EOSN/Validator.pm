@@ -2505,7 +2505,7 @@ sub validate_ip_dns {
 
 	foreach my $ip_address (@hosts) {
 		my $whois = $self->get_whois ($ip_address);
-		my $org = $$whois{OrgName} || $$whois{'org-name'} || $$whois{netname} || $$whois{owner};
+		my $org = $$whois{OrgName} || $$whois{'org-name'} || $$whois{'Organization'} || $$whois{netname} || $$whois{owner};
 		my $country = $$whois{Country} || $$whois{'country'};
 
 		push (@results, {ip_address => $ip_address, organization => $org, country => $country});
