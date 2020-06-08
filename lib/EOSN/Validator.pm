@@ -357,7 +357,7 @@ sub run_validate {
 	if (! ref $$json{org}) {
 		$self->add_message (
 			kind => 'err',
-			detail => 'not a object',
+			detail => 'not an object',
 			field => 'org',
 			class => 'org'
 		);
@@ -368,10 +368,14 @@ sub run_validate {
 		$self->check_org_social;
 	}
 
-	$self->check_aloha;
-	$self->check_nodes;
-	$self->check_onchainbpjson;
-	$self->check_onchainblacklist;
+	# only check remaining stuff if match between bp.json and regproducer
+	# else puppet bp nodes are checked and conflict with main node
+	if ($self->{results}{info}{name}) {
+		$self->check_aloha;
+		$self->check_nodes;
+		$self->check_onchainbpjson;
+		$self->check_onchainblacklist;
+	}
 }
 
 sub check_bpjson_filename {
@@ -557,7 +561,7 @@ sub check_org_location {
 	if (! ref $$json{org}{location}) {
 		$self->add_message (
 			kind => 'err',
-			detail => 'not a object',
+			detail => 'not an object',
 			field =>'org.location',
 			class => 'org'
 		);
@@ -691,7 +695,7 @@ sub check_org_branding {
 	if (! ref $$json{org}{branding}) {
 		$self->add_message (
 			kind => 'err',
-			detail => 'not a object',
+			detail => 'not an object',
 			field =>'org.branding',
 			class => 'org'
 		);
@@ -740,7 +744,7 @@ sub check_org_social {
 	if (! ref $$json{org}{social}) {
 		$self->add_message (
 			kind => 'err',
-			detail => 'not a object',
+			detail => 'not an object',
 			field => 'org.social',
 			class => 'org'
 		);
@@ -922,7 +926,7 @@ sub check_nodes {
 	if (! ref $$json{nodes}) {
 		$self->add_message (
 			kind => 'err',
-			detail => 'not a object',
+			detail => 'not an object',
 			field => 'nodes',
 			class => 'org'
 		);
