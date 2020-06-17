@@ -1923,7 +1923,7 @@ sub do_validate_p2p {
 
 	my $url = $self->{chain_properties}{url};
 	my $content = '';
-	run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 100], '>', \$content);
+	run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 10], '>', \$content);
 
 	my $result = $self->get_json ($content, %options);
 	return undef if (! $result);
