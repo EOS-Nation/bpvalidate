@@ -3496,7 +3496,7 @@ sub check_hyperion_health_features {
 		return undef;
 	}
 
-	my @checks = (
+	my @checks_on = (
 #		'streaming/enable',
 #		'streaming/traces',
 #		'streaming/deltas',
@@ -3505,15 +3505,19 @@ sub check_hyperion_health_features {
 		'tables/voters',
 		'index_deltas',
 		'index_transfer_memo',
-		'index_all_deltas',
-		'deferred_trx',
 		'failed_trx',
 		'resource_limits',
+	);
+
+	my @checks_off = (
+		'index_all_deltas',
+		'deferred_trx',
 		'resource_usage'
 	);
 
 	my $errors = 0;
-	foreach my $check (@checks) {
+
+	foreach my $check (@checks_on) {
 		my $value = undef;
 		if ($check =~ m#/#) {
 			my ($a, $b) = split (m#/#, $check);
@@ -3533,6 +3537,33 @@ sub check_hyperion_health_features {
 			$self->add_message (
 				kind => 'err',
 				detail => 'feature disabled that should be enabled',
+				feature => $check,
+				%options
+			);
+			$errors++;
+		}
+	}
+
+	foreach my $check (@checks_off) {
+		my $value = undef;
+		if ($check =~ m#/#) {
+			my ($a, $b) = split (m#/#, $check);
+			$value = $$json{features}{$a}{$b};
+		} else {
+			$value = $$json{features}{$check};
+		}
+
+		if ($value) {
+			$self->add_message (
+				kind => 'info',
+				detail => 'feature enabled that may not be needed: option is heavy on the indexers and/or likely attack vector',
+				feature => $check,
+				%options
+			);
+		} else {
+			$self->add_message (
+				kind => 'ok',
+				detail => 'feature disabled',
 				feature => $check,
 				%options
 			);
