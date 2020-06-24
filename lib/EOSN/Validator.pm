@@ -3505,13 +3505,13 @@ sub check_hyperion_health_features {
 		'tables/voters',
 		'index_deltas',
 		'index_transfer_memo',
-		'failed_trx',
-		'resource_limits',
+		'index_all_deltas'
 	);
 
 	my @checks_off = (
-		'index_all_deltas',
+		'failed_trx',
 		'deferred_trx',
+		'resource_limits',
 		'resource_usage'
 	);
 
