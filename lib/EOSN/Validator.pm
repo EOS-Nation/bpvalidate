@@ -3560,6 +3560,7 @@ sub check_hyperion_health_features {
 				feature => $check,
 				%options
 			);
+			# $errors++;
 		} else {
 			$self->add_message (
 				kind => 'ok',
@@ -3567,7 +3568,6 @@ sub check_hyperion_health_features {
 				feature => $check,
 				%options
 			);
-			$errors++;
 		}
 	}
 
