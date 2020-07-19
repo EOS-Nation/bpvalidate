@@ -51,7 +51,7 @@ sub fork_chain {
 	my ($chain) = @_;
 
 	my $properties = chain_properties ($chain);
-	next if (! $$properties{active});
+	return if (! $$properties{active});
 
 	my $pid1 = fork;
 	if (! defined $pid1) {
