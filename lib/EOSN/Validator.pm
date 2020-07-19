@@ -1497,8 +1497,8 @@ sub validate_url {
 	$options{log_prefix} = $self->log_prefix;
 
 	my $req = HTTP::Request->new ('GET', $xurl . $url_ext);
-	$req->header('Origin', 'https://example.com');
-	$req->header("Referer", 'https://validate.eosnation.io');
+	$req->header ('Origin', 'https://example.com');
+	$req->header ('Referer', 'https://validate.eosnation.io');
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -1515,7 +1515,7 @@ sub validate_url {
 		return undef;
 	}
 
-	my @cors_origin = $res->header('Access-Control-Allow-Origin');
+	my @cors_origin = $res->header ('Access-Control-Allow-Origin');
 	if ($cors_origin eq 'either') {
 		# do nothing
 	} elsif ($cors_origin eq 'should') {
@@ -1584,7 +1584,7 @@ sub validate_url {
 		confess "unknown cors option";
 	}
 
-	my @cors_headers = $res->header('Access-Control-Allow-Headers');
+	my @cors_headers = $res->header ('Access-Control-Allow-Headers');
 	if ($cors_headers eq 'either') {
 		# do nothing
 	} elsif ($cors_headers eq 'should') {
@@ -2148,7 +2148,7 @@ sub validate_basic_api_extra_check {
 	my $versions = $self->{versions_data};
 
 # cookies should not be used for session routing, so this check is not required
-#	my $server_header = $res->header('Server');
+#	my $server_header = $res->header ('Server');
 #	if ($server_header && $server_header =~ /cloudflare/) {
 #		$self->add_message (
 #			kind => 'info',
@@ -2162,7 +2162,7 @@ sub validate_basic_api_extra_check {
 #		$errors++;
 #	}
 #
-#	my $cookie_header = $res->header('Set-Cookie');
+#	my $cookie_header = $res->header ('Set-Cookie');
 #	if ($cookie_header) {
 #		$self->add_message (
 #			kind => 'err',
@@ -2944,7 +2944,7 @@ sub test_block_one {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 
 	$self->check_response_errors (response => $res, %options);
 
@@ -2980,7 +2980,7 @@ sub test_patreonous {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 
 	$self->check_response_errors (response => $res, %options);
 
@@ -3017,7 +3017,7 @@ sub test_error_message {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	my $json = $self->get_json ($content, %options) || return undef;
@@ -3065,7 +3065,7 @@ sub test_abi_serializer {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3132,7 +3132,7 @@ sub test_history_transaction {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3172,7 +3172,7 @@ sub test_history_actions {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3298,7 +3298,7 @@ sub test_history_key_accounts {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3358,7 +3358,7 @@ sub test_hyperion_health {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3687,7 +3687,7 @@ sub test_hyperion_transaction {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3725,7 +3725,7 @@ sub test_hyperion_actions {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3803,7 +3803,7 @@ sub test_hyperion_key_accounts {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3855,7 +3855,7 @@ sub test_wallet_account {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3906,7 +3906,7 @@ sub test_wallet_key {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -3958,7 +3958,7 @@ sub test_system_symbol {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 
 	$self->check_response_errors (response => $res, %options);
@@ -4004,7 +4004,7 @@ sub test_net_api {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 	my $response_content_type = $res->content_type;
 
@@ -4040,7 +4040,7 @@ sub test_producer_api {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 	my $response_content_type = $res->content_type;
 
@@ -4076,7 +4076,7 @@ sub test_db_size_api {
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
 	my $response_url = $res->request->uri;
-	my $response_host = $res->header('host');
+	my $response_host = $res->header ('host');
 	my $content = $res->content;
 	my $response_content_type = $res->content_type;
 
@@ -4320,7 +4320,7 @@ sub check_response_errors {
 	my $res = $options{response} || confess "response object not provided";
 	delete $options{response};
 
-	my @response_host = $res->header('host');
+	my @response_host = $res->header ('host');
 	return undef if (! @response_host);
 
 	my $errors = 0;
