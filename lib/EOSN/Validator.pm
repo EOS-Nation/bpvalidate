@@ -1585,6 +1585,7 @@ sub validate_url {
 	}
 
 	my @cors_headers = $res->header ('Access-Control-Allow-Headers');
+
 	if ($cors_headers eq 'either') {
 		# do nothing
 	} elsif ($cors_headers eq 'should') {
@@ -3636,8 +3637,8 @@ sub check_hyperion_health_health {
 		$errors++;
 	}
 
-	my $last_indexed_block = int ($services{Elasticsearch}{service_data}{last_indexed_block}) || 0;
-	my $total_indexed_blocks = int ($services{Elasticsearch}{service_data}{total_indexed_blocks}) || 0;
+	my $last_indexed_block = int ($services{Elasticsearch}{service_data}{last_indexed_block} || 0) || 0;
+	my $total_indexed_blocks = int ($services{Elasticsearch}{service_data}{total_indexed_blocks} || 0) || 0;
 	if ($last_indexed_block != $total_indexed_blocks) {
 		$self->add_message (
 			kind => 'err',
