@@ -2604,7 +2604,29 @@ sub validate_dns {
 	my @results;
 
 	foreach my $address (@$addresses) {
-		my $reply6 = $res->query ($address, "AAAA");
+		if ($address !~ /\./) {
+			$self->add_message (
+				kind => 'crit',
+				detail => 'invalid name: missing dot',
+				field => $field,
+				class => $class,
+				dns => join (',', $address)
+			);
+		}
+		if ($address =~ /\.\./) {
+			$self->add_message (
+				kind => 'crit',
+				detail => 'invalid name: double dots',
+				field => $field,
+				class => $class,
+				dns => join (',', $address)
+			);
+		}
+
+		my $reply6;
+		eval {
+			$reply6 = $res->query ($address, "AAAA");
+		};
 
 		if ($reply6) {
 			foreach my $rr (grep {$_->type eq 'AAAA'} $reply6->answer) {
@@ -2620,7 +2642,10 @@ sub validate_dns {
 #			);
 		}
 
-		my $reply4 = $res->query ($address, "A");
+		my $reply4;
+		eval {
+			$reply4 = $res->query ($address, "A");
+		};
 		if ($reply4) {
 			foreach my $rr (grep {$_->type eq 'A'} $reply4->answer) {
 				push (@results, $self->validate_ip ($rr->address, %options));
