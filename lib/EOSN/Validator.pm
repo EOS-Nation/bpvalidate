@@ -938,326 +938,87 @@ sub check_nodes {
 		@nodes = @{$$json{nodes}};
 	};
 
-	my $node_number = 0;
-	my $total_valid_api_endpoint = 0;
-	my $total_valid_ssl_endpoint = 0;
-	my $total_valid_p2p_endpoint = 0;
-	my $total_found_api_endpoint = 0;
-	my $total_found_ssl_endpoint = 0;
-	my $total_found_p2p_endpoint = 0;
-	my $count_node_type_full = 0;
-	my $count_node_type_seed = 0;
-	my $count_node_type_producer = 0;
+	my $counters;
+	$$counters{node_number} = 0;
+	$$counters{total_valid_api_endpoint} = 0;
+	$$counters{total_valid_ssl_endpoint} = 0;
+	$$counters{total_valid_p2p_endpoint} = 0;
+	$$counters{total_found_api_endpoint} = 0;
+	$$counters{total_found_ssl_endpoint} = 0;
+	$$counters{total_found_p2p_endpoint} = 0;
+	$$counters{count_node_type_query} = 0;
+	$$counters{count_node_type_seed} = 0;
+	$$counters{count_node_type_producer} = 0;
 
 	foreach my $node (@nodes) {
-		my $location = $self->validate_location(
-			location => $$node{location},
-			field => "node[$node_number].location",
-			class => 'org'
-		);
-		my $node_type = $$node{node_type};
-		my $valid_api_endpoint = 0;
-		my $valid_ssl_endpoint = 0;
-		my $valid_p2p_endpoint = 0;
-		my $found_api_endpoint = 0;
-		my $found_ssl_endpoint = 0;
-		my $found_p2p_endpoint = 0;
-
-		# ---------- check endpoints
-
-		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
-			$found_api_endpoint++;
-			my $result = $self->validate_basic_api (
-				class => 'api_endpoint',
-				api_url => $$node{api_endpoint},
-				field => "node[$node_number].api_endpoint",
-				ssl => 'off',
-				add_to_list => 'nodes/api_http',
-				node_type => $node_type,
-				location => $location
-			);
-			if ($result) {
-				$valid_api_endpoint++;
-				my $result_history = $self->validate_history_api (
-					class => 'history',
-					api_url => $$node{api_endpoint},
-					history_type => $$node{history_type},
-					field => "node[$node_number].api_endpoint",
-					ssl => 'off',
-					add_to_list => 'nodes/history_http',
-					node_type => $node_type,
-					location => $location
-				);
-				my $result_hyperion = $self->validate_hyperion_api (
-					class => 'hyperion',
-					api_url => $$node{api_endpoint},
-					history_type => $$node{history_type},
-					field => "node[$node_number].api_endpoint",
-					ssl => 'off',
-					add_to_list => 'nodes/hyperion_http',
-					node_type => $node_type,
-					location => $location
-				);
-				my $result_wallet = $self->validate_wallet_api (
-					class => 'wallet',
-					api_url => $$node{api_endpoint},
-					history_type => $$node{history_type},
-					field => "node[$node_number].api_endpoint",
-					ssl => 'off',
-					add_to_list => 'nodes/wallet_http',
-					node_type => $node_type,
-					location => $location
-				);
-			}
-		}
-
-		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
-			$found_ssl_endpoint++;
-			my $result = $self->validate_basic_api (
-				class => 'api_endpoint',
-				api_url => $$node{ssl_endpoint},
-				field => "node[$node_number].ssl_endpoint",
-				ssl => 'on',
-				modern_tls_version => 1,
-				add_to_list => 'nodes/api_https',
-				node_type => $node_type,
-				location => $location
-			);
-			if ($result) {
-				$valid_ssl_endpoint++;
-				my $result_history = $self->validate_history_api (
-					class => 'history',
-					api_url => $$node{ssl_endpoint},
-					history_type => $$node{history_type},
-					field => "node[$node_number].ssl_endpoint",
-					ssl => 'on',
-					modern_tls_version => 1,
-					add_to_list => 'nodes/history_https',
-					node_type => $node_type,
-					location => $location
-				);
-				my $result_hyperion = $self->validate_hyperion_api (
-					class => 'hyperion',
-					api_url => $$node{ssl_endpoint},
-					history_type => $$node{history_type},
-					field => "node[$node_number].ssl_endpoint",
-					ssl => 'on',
-					modern_tls_version => 1,
-					add_to_list => 'nodes/hyperion_https',
-					node_type => $node_type,
-					location => $location
-				);
-				my $result_wallet = $self->validate_wallet_api (
-					class => 'wallet',
-					api_url => $$node{ssl_endpoint},
-					history_type => $$node{history_type},
-					field => "node[$node_number].ssl_endpoint",
-					ssl => 'on',
-					modern_tls_version => 1,
-					add_to_list => 'nodes/wallet_https',
-					node_type => $node_type,
-					location => $location
-				);
-			}
-		}
-
-		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
-			$found_p2p_endpoint++;
-			if ($self->validate_connection (
-					class => 'p2p_endpoint',
-					peer => $$node{p2p_endpoint},
-					field => "node[$node_number].p2p_endpoint",
-					connection_type => 'p2p',
-					add_to_list => 'nodes/p2p',
-					node_type => $node_type,
-					location => $location,
-					dupe => 'info'
-			)) {
-				$valid_p2p_endpoint++;
-			}
-		}
-
-		# ---------- check type of node
-
-		if (exists $$node{is_producer}) {
-			if ($$node{is_producer} && (! exists $$node{node_type})) {
-				$self->add_message (
-					kind => 'warn',
-					detail => "is_producer is deprecated use instead 'node_type' with one of the following values ['producer', 'full', 'query', 'seed']",
-					field => "node[$node_number].is_producer",
-					class => 'org'
-				);
-				$node_type = 'producer';
-			} else {
-				$self->add_message (
-					kind => 'info',
-					detail => "is_producer is deprecated and can be removed",
-					field => "node[$node_number].is_producer",
-					class => 'org'
-				);
-			}
-		}
-
-		# subsequent nodes of the same type can be empty so as to add
-		# new locations for the existing endpoints
-		# https://github.com/EOS-Nation/bpvalidate/issues/29
-
-		if (! $node_type) {
-			$self->add_message (
-				kind => 'warn',
-				detail => "node_type is not provided, set it to one of the following values ['producer', 'full', 'query', 'seed']",
-				field => "node[$node_number]",
-				class => 'org'
-			);
-		} elsif ($node_type eq 'producer') {
-			$count_node_type_producer++;
-			if ($found_api_endpoint || $found_ssl_endpoint || $found_p2p_endpoint) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'endpoints provided (producer should be private)',
-					field => "node[$node_number]",
-					class => 'org'
-				);
-			}
-		} elsif ($node_type eq 'seed') {
-			$count_node_type_seed++;
-			if (! $valid_p2p_endpoint && $count_node_type_seed == 1) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'no valid p2p endpoints provided',
-					node_type => $node_type,
-					field => "node[$node_number]",
-					class => 'p2p_endpoint'
-				);
-			}
-			if ($valid_api_endpoint || $valid_ssl_endpoint) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'extranious API endpoints provided',
-					node_type => $node_type,
-					field => "node[$node_number]",
-					class => 'api_endpoint'
-				);
-			}
-		} elsif ($node_type eq 'query') {
-			$self->add_message (
-				kind => 'err',
-				detail => 'use node_type=query is deprecated; use node_type=full instead',
-				see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
-				class => 'org'
-			);
-		} elsif ($node_type eq 'full') {
-			$count_node_type_full++;
-			if ($valid_p2p_endpoint) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'extranious p2p endpoints provided',
-					see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
-					node_type => $node_type,
-					field => "node[$node_number]",
-					class => 'p2p_endpoint'
-				);
-			}
-			if (! $valid_api_endpoint && ! $valid_ssl_endpoint && $count_node_type_full == 1) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'no valid API endpoints provided',
-					node_type => $node_type,
-					field => "node[$node_number]",
-					class => 'api_endpoint'
-				);
-			}
-		} else {
-			$self->add_message (
-				kind => 'err',
-				detail => "node_type is not valid, set it to one of the following values ['producer', 'full', 'query', 'seed']",
-				field => "node[$node_number].node_type",
-				class => 'org'
-			);
-			if (! $found_api_endpoint && ! $found_ssl_endpoint && ! $found_p2p_endpoint) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'no valid endpoints provided (useless section)',
-					field => "node[$node_number]",
-					class => 'org'
-				);
-			}
-		}
-
-		$total_valid_api_endpoint += $valid_api_endpoint;
-		$total_valid_ssl_endpoint += $valid_ssl_endpoint;
-		$total_valid_p2p_endpoint += $valid_p2p_endpoint;
-		$total_found_api_endpoint += $found_api_endpoint;
-		$total_found_ssl_endpoint += $found_ssl_endpoint;
-		$total_found_p2p_endpoint += $found_p2p_endpoint;
-		$node_number++;
+		$self->check_node ($node, $counters);
 	}
 
-	if (! $count_node_type_full) {
+	if (! $$counters{count_node_type_query}) {
 		$self->add_message (
 			kind => 'err',
-			detail => 'no full nodes provided',
-			see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
+			detail => 'no query nodes provided',
+			see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/1.0.1',
 			class => 'org'
 		);
 	} else {
 		$self->add_message (
 			kind => 'ok',
-			detail => 'full node(s) provided',
-			count => $count_node_type_full,
+			detail => 'query node(s) provided',
+			count => $$counters{count_node_type_query},
 			class => 'org'
 		);
 	}
-	if (! $count_node_type_seed) {
+	if (! $$counters{count_node_type_seed}) {
 		$self->add_message (
 			kind => 'err',
 			detail => 'no seed nodes provided',
-			see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
+			see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/1.0.1',
 			class => 'org'
 		);
 	} else {
 		$self->add_message (
 			kind => 'ok',
 			detail => 'seed node(s) provided',
-			count => $count_node_type_seed,
+			count => $$counters{count_node_type_seed},
 			class => 'org'
 		);
 	}
-	if (! $count_node_type_producer) {
+	if (! $$counters{count_node_type_producer}) {
 		$self->add_message (
 			kind => 'err',
 			detail => 'no producer nodes provided',
-			see1 => 'https://github.com/eosrio/bp-info-standard/issues/21',
+			see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/1.0.1',
 			class => 'org'
 		);
 	} else {
 		$self->add_message (
 			kind => 'ok',
 			detail => 'producer node(s) provided',
-			count => $count_node_type_producer,
+			count => $$counters{count_node_type_producer},
 			class => 'org'
 		);
 	}
 
-	if (! $total_found_api_endpoint && ! $total_found_ssl_endpoint) {
+	if (! $$counters{total_found_api_endpoint} && ! $$counters{total_found_ssl_endpoint}) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no HTTP or HTTPS API endpoints provided in any node',
 			class => 'api_endpoint'
 		);
-	} elsif (! $total_valid_api_endpoint && ! $total_valid_ssl_endpoint) {
+	} elsif (! $$counters{total_valid_api_endpoint} && ! $$counters{total_valid_ssl_endpoint}) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no valid HTTP or HTTPS API endpoints provided in any node; see above messages',
 			class => 'api_endpoint'
 		);
-	} elsif (! $total_valid_ssl_endpoint) {
+	} elsif (! $$counters{total_valid_ssl_endpoint}) {
 		$self->add_message (
 			kind => 'warn',
 			detail => 'no valid HTTPS API endpoints provided in any node',
 			class => 'api_endpoint'
 		);
-	} elsif (! $total_valid_api_endpoint) {
+	} elsif (! $$counters{total_valid_api_endpoint}) {
 		# similar check is implemented on https://eosreport.franceos.fr/
 		# $self->add_message (
 		#	kind => 'warn',
@@ -1266,19 +1027,282 @@ sub check_nodes {
 		#);
 	}
 
-	if (! $total_found_p2p_endpoint) {
+	if (! $$counters{total_found_p2p_endpoint}) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no P2P endpoints provided in any node',
 			class => 'p2p_endpoint'
 		);
-	} elsif (! $total_valid_p2p_endpoint) {
+	} elsif (! $$counters{total_valid_p2p_endpoint}) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no valid P2P endpoints provided in any node; see above messages',
 			class => 'p2p_endpoint'
 		);
 	}
+}
+
+sub check_node {
+	my ($self, $node, $counters) = @_;
+
+	my $location = $self->validate_location(
+		location => $$node{location},
+		field => "node[$$counters{node_number}].location",
+		class => 'org'
+	);
+	my $valid_api_endpoint = 0;
+	my $valid_ssl_endpoint = 0;
+	my $valid_p2p_endpoint = 0;
+	my $found_api_endpoint = 0;
+	my $found_ssl_endpoint = 0;
+	my $found_p2p_endpoint = 0;
+
+	# ---------- check endpoints
+
+	if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
+		$found_api_endpoint++;
+		my $result = $self->validate_basic_api (
+			class => 'api_endpoint',
+			api_url => $$node{api_endpoint},
+			field => "node[$$counters{node_number}].api_endpoint",
+			ssl => 'off',
+			add_to_list => 'nodes/api_http',
+			location => $location
+		);
+		if ($result) {
+			$valid_api_endpoint++;
+			my $result_history = $self->validate_history_api (
+				class => 'history',
+				api_url => $$node{api_endpoint},
+				history_type => $$node{history_type},
+				field => "node[$$counters{node_number}].api_endpoint",
+				ssl => 'off',
+				add_to_list => 'nodes/history_http',
+				location => $location
+			);
+			my $result_hyperion = $self->validate_hyperion_api (
+				class => 'hyperion',
+				api_url => $$node{api_endpoint},
+				history_type => $$node{history_type},
+				field => "node[$$counters{node_number}].api_endpoint",
+				ssl => 'off',
+				add_to_list => 'nodes/hyperion_http',
+				location => $location
+			);
+			my $result_wallet = $self->validate_wallet_api (
+				class => 'wallet',
+				api_url => $$node{api_endpoint},
+				history_type => $$node{history_type},
+				field => "node[$$counters{node_number}].api_endpoint",
+				ssl => 'off',
+				add_to_list => 'nodes/wallet_http',
+				location => $location
+			);
+		}
+	}
+
+	if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
+		$found_ssl_endpoint++;
+		my $result = $self->validate_basic_api (
+			class => 'api_endpoint',
+			api_url => $$node{ssl_endpoint},
+			field => "node[$$counters{node_number}].ssl_endpoint",
+			ssl => 'on',
+			modern_tls_version => 1,
+			add_to_list => 'nodes/api_https',
+			location => $location
+		);
+		if ($result) {
+			$valid_ssl_endpoint++;
+			my $result_history = $self->validate_history_api (
+				class => 'history',
+				api_url => $$node{ssl_endpoint},
+				history_type => $$node{history_type},
+				field => "node[$$counters{node_number}].ssl_endpoint",
+				ssl => 'on',
+				modern_tls_version => 1,
+				add_to_list => 'nodes/history_https',
+				location => $location
+			);
+			my $result_hyperion = $self->validate_hyperion_api (
+				class => 'hyperion',
+				api_url => $$node{ssl_endpoint},
+				history_type => $$node{history_type},
+				field => "node[$$counters{node_number}].ssl_endpoint",
+				ssl => 'on',
+				modern_tls_version => 1,
+				add_to_list => 'nodes/hyperion_https',
+				location => $location
+			);
+			my $result_wallet = $self->validate_wallet_api (
+				class => 'wallet',
+				api_url => $$node{ssl_endpoint},
+				history_type => $$node{history_type},
+				field => "node[$$counters{node_number}].ssl_endpoint",
+				ssl => 'on',
+				modern_tls_version => 1,
+				add_to_list => 'nodes/wallet_https',
+				location => $location
+			);
+		}
+	}
+
+	if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
+		$found_p2p_endpoint++;
+		if ($self->validate_connection (
+				class => 'p2p_endpoint',
+				peer => $$node{p2p_endpoint},
+				field => "node[$$counters{node_number}].p2p_endpoint",
+				connection_type => 'p2p',
+				add_to_list => 'nodes/p2p',
+				location => $location,
+				dupe => 'info'
+		)) {
+			$valid_p2p_endpoint++;
+		}
+	}
+
+	# ---------- check type of node
+
+	# subsequent nodes of the same type can be empty so as to add
+	# new locations for the existing endpoints
+	# https://github.com/EOS-Nation/bpvalidate/issues/29
+
+	my $xnode_type = $$node{node_type};
+	my @node_types = ();
+
+	if (exists $$node{is_producer}) {
+		if ($$node{is_producer} && (! exists $$node{node_type})) {
+			$self->add_message (
+				kind => 'err',
+				detail => "is_producer is deprecated use instead 'node_type' with one or more of the following values  ['producer', 'query', 'seed']",
+				field => "node[$$counters{node_number}].is_producer",
+				class => 'org'
+			);
+			$xnode_type = 'producer';
+		} else {
+			$self->add_message (
+				kind => 'err',
+				detail => "is_producer is deprecated and needs to be removed",
+				field => "node[$$counters{node_number}].is_producer",
+				class => 'org'
+			);
+		}
+	}
+
+	if (! $xnode_type) {
+		$self->add_message (
+			kind => 'warn',
+			detail => "node_type is not provided, set it to one or more of the following values ['producer', 'query', 'seed']",
+			field => "node[$$counters{node_number}]",
+			class => 'org'
+		);
+	} elsif (ref $xnode_type eq 'HASH') {
+		$self->add_message (
+			kind => 'err',
+			detail => "node_type is not valid, set it to one or more of the following values ['producer', 'query', 'seed']",
+			field => "node[$$counters{node_number}].node_type",
+			class => 'org'
+		);
+	} elsif (ref $xnode_type eq 'ARRAY') {
+		foreach my $ynode_type (@{$xnode_type}) {
+			if (($ynode_type eq 'producer') || ($ynode_type eq 'query') || ($ynode_type eq 'seed')) {
+				push (@node_types, $ynode_type);
+			} else {
+				$self->add_message (
+					kind => 'err',
+					detail => "node_type is not valid, set it to one or more of the following values ['producer', 'query', 'seed']",
+					field => "node[$$counters{node_number}].node_type",
+					node_type => $ynode_type,
+					class => 'org'
+				);
+			}
+		}
+	} elsif ($xnode_type eq 'full') {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'use of node_type=full is deprecated since 2020-09-16; use node_type=query and/or node_type=seed instead',
+			see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/1.0.1',
+			class => 'org'
+		);
+		push (@node_types, 'query');
+	} elsif (($xnode_type eq 'producer') || ($xnode_type eq 'query') || ($xnode_type eq 'seed')) {
+		push (@node_types, $xnode_type);
+	} else {
+		$self->add_message (
+			kind => 'err',
+			detail => "node_type is not valid, set it to one or more of the following values ['producer', 'query', 'seed']",
+			field => "node[$$counters{node_number}].node_type",
+			node_type => $xnode_type,
+			class => 'org'
+		);
+	}
+
+	foreach my $node_type (@node_types) {
+		if ($node_type eq 'producer') {
+			$$counters{count_node_type_producer}++;
+			if ($found_api_endpoint || $found_ssl_endpoint || $found_p2p_endpoint) {
+				$self->add_message (
+					kind => 'warn',
+					detail => 'endpoints provided (producer should be private)',
+					field => "node[$$counters{node_number}]",
+					node_type => $node_type,
+					class => 'org'
+				);
+			}
+		} elsif ($node_type eq 'seed') {
+			$$counters{count_node_type_seed}++;
+			if (! $valid_p2p_endpoint && $$counters{count_node_type_seed} == 1) {
+				$self->add_message (
+					kind => 'warn',
+					detail => 'no valid p2p endpoints provided',
+					field => "node[$$counters{node_number}]",
+					node_type => $node_type,
+					class => 'p2p_endpoint'
+				);
+			}
+			if ($valid_api_endpoint || $valid_ssl_endpoint) {
+				$self->add_message (
+					kind => 'warn',
+					detail => 'extranious API endpoints provided',
+					field => "node[$$counters{node_number}]",
+					node_type => $node_type,
+					class => 'api_endpoint'
+				);
+			}
+		} elsif ($node_type eq 'query') {
+			$$counters{count_node_type_query}++;
+			if ($valid_p2p_endpoint) {
+				$self->add_message (
+					kind => 'warn',
+					detail => 'extranious p2p endpoints provided',
+					see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/1.0.1',
+					field => "node[$$counters{node_number}]",
+					node_type => $node_type,
+					class => 'p2p_endpoint'
+				);
+			}
+			if (! $valid_api_endpoint && ! $valid_ssl_endpoint && $$counters{count_node_type_query} == 1) {
+				$self->add_message (
+					kind => 'warn',
+					detail => 'no valid API endpoints provided',
+					field => "node[$$counters{node_number}]",
+					node_type => $node_type,
+					class => 'api_endpoint'
+				);
+			}
+		}
+	}
+
+	# ---------- done, increment global counters
+
+	$$counters{total_valid_api_endpoint} += $valid_api_endpoint;
+	$$counters{total_valid_ssl_endpoint} += $valid_ssl_endpoint;
+	$$counters{total_valid_p2p_endpoint} += $valid_p2p_endpoint;
+	$$counters{total_found_api_endpoint} += $found_api_endpoint;
+	$$counters{total_found_ssl_endpoint} += $found_ssl_endpoint;
+	$$counters{total_found_p2p_endpoint} += $found_p2p_endpoint;
+	$$counters{node_number}++;
 }
 
 sub validate_email {
@@ -2140,41 +2164,12 @@ sub validate_basic_api_extra_check {
 	my $url = $$options{api_url};
 	my $field = $$options{field};
 	my $class = $$options{class};
-	my $node_type = $$options{node_type};
 	my $ssl = $$options{ssl} || 'either'; # either, on, off
 	my $url_ext = $$options{url_ext} || '';
 
 	my %info;
 	my $errors;
 	my $versions = $self->{versions_data};
-
-# cookies should not be used for session routing, so this check is not required
-#	my $server_header = $res->header ('Server');
-#	if ($server_header && $server_header =~ /cloudflare/) {
-#		$self->add_message (
-#			kind => 'info',
-#			detail => 'cloudflare restricts some client use making this endpoint not appropriate for some use cases',
-#			url => $url,
-#			field => $field,
-#			class => $class,
-#			node_type => $node_type,
-#			see1 => 'https://validate.eosnation.io/faq/#cloudflare'
-#		);
-#		$errors++;
-#	}
-#
-#	my $cookie_header = $res->header ('Set-Cookie');
-#	if ($cookie_header) {
-#		$self->add_message (
-#			kind => 'err',
-#			detail => 'API nodes must not set cookies',
-#			url => $url,
-#			field => $field,
-#			class => $class,
-#			node_type => $node_type
-#		);
-#		$errors++;
-#	}
 
 	if ($ssl eq 'on') {
 		# LWP doesn't seem to support HTTP2, so make an extra call
@@ -2189,7 +2184,6 @@ sub validate_basic_api_extra_check {
 				url => $url,
 				field => $field,
 				class => $class,
-				node_type => $node_type,
 				see1 => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages'
 			);
 		}
@@ -2202,7 +2196,6 @@ sub validate_basic_api_extra_check {
 			url => $url,
 			field => $field,
 			class => $class,
-			node_type => $node_type
 		);
 		$errors++;
 	}
@@ -2217,7 +2210,6 @@ sub validate_basic_api_extra_check {
 			url => $url,
 			field => $field,
 			class => $class,
-			node_type => $node_type
 		);
 		$errors++;
 	}
@@ -2229,7 +2221,6 @@ sub validate_basic_api_extra_check {
 			url => $url,
 			field => $field,
 			class => $class,
-			node_type => $node_type
 		);
 		$errors++;
 	}
@@ -2249,7 +2240,6 @@ sub validate_basic_api_extra_check {
 			url => $url,
 			field => $field,
 			class => $class,
-			node_type => $node_type
 		);
 		$errors++;
 	}
@@ -2263,7 +2253,6 @@ sub validate_basic_api_extra_check {
 			url => $url,
 			field => $field,
 			class => $class,
-			node_type => $node_type
 		);
 		$errors++;
 	} else {
@@ -2277,7 +2266,6 @@ sub validate_basic_api_extra_check {
 				url => $url,
 				field => $field,
 				class => $class,
-				node_type => $node_type,
 				see1 => 'https://validate.eosnation.io/faq/#versions'
 			);
 		} else {
@@ -2292,7 +2280,6 @@ sub validate_basic_api_extra_check {
 					url => $url,
 					field => $field,
 					class => $class,
-					node_type => $node_type,
 					see1 => 'https://validate.eosnation.io/faq/#versions'
 				);
 			} else {
@@ -2303,34 +2290,33 @@ sub validate_basic_api_extra_check {
 					url => $url,
 					field => $field,
 					class => $class,
-					node_type => $node_type
 				);
 			}
 		}
 	}
 
-	if (! $self->test_block_one (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_block_one (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_patreonous (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_patreonous (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_error_message (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_error_message (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_abi_serializer (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_abi_serializer (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_system_symbol (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_system_symbol (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_producer_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_producer_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_db_size_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_db_size_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_net_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_net_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
 
@@ -2347,20 +2333,19 @@ sub validate_history_api_extra_check {
 	my $url = $$options{api_url};
 	my $field = $$options{field};
 	my $class = $$options{class};
-	my $node_type = $$options{node_type};
 	my $ssl = $$options{ssl} || 'either'; # either, on, off
 	my $url_ext = $$options{url_ext} || '';
 
 	my %info;
 	my $errors;
 
-	if (! $self->test_history_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_history_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_history_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
 
@@ -2382,23 +2367,22 @@ sub validate_hyperion_api_extra_check {
 	my $url = $$options{api_url};
 	my $field = $$options{field};
 	my $class = $$options{class};
-	my $node_type = $$options{node_type};
 	my $ssl = $$options{ssl} || 'either'; # either, on, off
 	my $url_ext = $$options{url_ext} || '';
 
 	my %info;
 	my $errors;
 
-	if (! $self->test_hyperion_health (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_health (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_hyperion_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_hyperion_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_actions (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_hyperion_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_hyperion_key_accounts (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
 
@@ -2420,7 +2404,6 @@ sub validate_wallet_api_extra_check {
 	my $url = $$options{api_url};
 	my $field = $$options{field};
 	my $class = $$options{class};
-	my $node_type = $$options{node_type};
 	my $ssl = $$options{ssl} || 'either'; # either, on, off
 	my $url_ext = $$options{url_ext} || '';
 
@@ -2431,10 +2414,10 @@ sub validate_wallet_api_extra_check {
 	# and remove the wallet extra checks.
 	# All public APIs should have this feature enabled.
 
-	if (! $self->test_wallet_account (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_wallet_account (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_wallet_key (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, node_type => $node_type, info => \%info)) {
+	if (! $self->test_wallet_key (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
 
@@ -4276,9 +4259,6 @@ sub add_to_list {
 	}
 	if ($options{location}) {
 		$data{location} = $options{location};
-	}
-	if ($options{node_type}) {
-		$data{node_type} = $options{node_type};
 	}
 	if ($options{hosts}) {
 		$data{hosts} = $options{hosts};
