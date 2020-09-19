@@ -33,6 +33,7 @@ $bad_urls{'https://pbs.twimg.com'} = {value => 'does not load when tracking prot
 our %social;
 $social{'medium'} = 'https://medium.com/@';
 $social{'steemit'} = 'https://steemit.com/@';
+$social{'hive'} = 'https://hive.blog/@';
 $social{'twitter'} = 'https://twitter.com/';
 $social{'youtube'} = 'https://www.youtube.com/';
 $social{'facebook'} = 'https://www.facebook.com/';
@@ -2972,7 +2973,7 @@ sub test_block_one {
 		kind => 'ok',
 		detail => 'block one test passed',
 		%options
-		);
+	);
 
 	return 1;
 }
