@@ -1,0 +1,49 @@
+#!/usr/bin/perl -w
+
+use utf8;
+use strict;
+use EOSN::Report;
+
+binmode(STDOUT, ":utf8");
+
+# --------------------------------------------------------------------------
+# Main
+
+my $data = get_report_options ();
+my $chain = chain ();
+my $properties = chain_properties ($chain);
+my %kinds;
+
+foreach my $entry (@{$$data{producers}}) {
+	foreach my $kind (sort keys %{$$entry{output}{social}}) {
+		$kinds{$kind} = 1;
+	}
+}
+
+foreach my $lang (languages()) {
+	foreach my $content_type (content_types()) {
+		my @report;
+		foreach my $kind (sort keys %kinds) {
+			my @section;
+
+			foreach my $entry (@{$$data{producers}}) {
+				my $producer = $$entry{regproducer}{owner};
+				my $important_bp = is_important_bp ($entry);
+
+				foreach my $resource (@{$$entry{output}{social}{$kind}}) {
+					next if (! defined $$resource{address});
+					push (@section, {
+						producer => $producer,
+						sprintf => "%s",
+						data => [$$resource{address}],
+						html_data => ["<a href=\"$$resource{address}\">$$resource{address}</a>"]
+					});
+				}
+			}
+
+			push (@report, {name => $kind, rows => \@section});
+		}
+
+		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/social", text => 1, json => 1, html => 1);
+	}
+}
