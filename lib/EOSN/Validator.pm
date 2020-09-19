@@ -197,6 +197,32 @@ sub summarize_messages {
 	$self->{results}{message_summary} = \%results;
 }
 
+# convert single value or arrayref to list
+sub array_or_string_to_list {
+	my ($self, $object, $options) = @_;
+
+	my @list;
+
+	if (! defined $object) {
+		# do nothing;
+	} elsif ($object eq '') {
+		# do nothing
+	} elsif (ref $object eq 'ARRAY') {
+		foreach my $element (@$object) {
+			next if ($element eq '');
+			push (@list, $element);
+		}
+	} elsif (ref $object eq 'HASH') {
+		$self->add_message (%$options);
+		return undef;
+	} else {
+		# single value
+		push (@list, $object);
+	}
+
+	return @list;
+}
+
 sub run_validate {
 	my ($self) = @_;
 
@@ -365,6 +391,8 @@ sub run_validate {
 		);
 	} else {
 		$self->check_org_misc;
+		$self->check_org_chain_resources;
+		$self->check_org_other_resources;
 		$self->check_org_github_users;
 		$self->check_org_location;
 		$self->check_org_branding;
@@ -691,37 +719,89 @@ sub check_org_misc {
 	return 1;
 }
 
+sub check_org_chain_resources {
+	my ($self) = @_;
+
+	my $json = $self->{results}{input};
+
+	my @chain_resources = $self->array_or_string_to_list ($$json{org}{chain_resources},
+		kind => 'err',
+		detail => "chain_resources is not valid",
+		field =>'org.chain_resources',
+		class => 'org'
+	);
+
+	my $found = 0;
+	foreach my $chain_resource (@chain_resources) {
+		if ($self->validate_url (
+			url => $chain_resource,
+			field => 'org.chain_resources',
+			class => 'org',
+			content_type => 'html',
+			add_to_list => 'resources/chain',
+			dupe => 'warn',
+			request_timeout => 10,
+			cache_timeout => 7 * 24 * 3600,
+			cache_fast_fail => 1
+		)) {
+			$found++;
+		}
+	}
+
+	if (! $found) {
+		# could add a warning here
+	}
+
+	return $found;
+}
+
+sub check_org_other_resources {
+	my ($self) = @_;
+
+	my $json = $self->{results}{input};
+
+	my @other_resources = $self->array_or_string_to_list ($$json{org}{other_resources},
+		kind => 'err',
+		detail => "other_resources is not valid",
+		field =>'org.other_resources',
+		class => 'org'
+	);
+
+	my $found = 0;
+	foreach my $chain_resource (@other_resources) {
+		if ($self->validate_url (
+			url => $chain_resource,
+			field => 'org.other_resources',
+			class => 'org',
+			content_type => 'html',
+			add_to_list => 'resources/other',
+			dupe => 'warn',
+			request_timeout => 10,
+			cache_timeout => 7 * 24 * 3600,
+			cache_fast_fail => 1
+		)) {
+			$found++;
+		}
+	}
+
+	if (! $found) {
+		# could add a warning here
+	}
+
+	return $found;
+}
+
 sub check_org_github_users {
 	my ($self) = @_;
 
 	my $json = $self->{results}{input};
 
-	# single value or array
-
-	my @github_users;
-	my $x_github_user = $$json{org}{github_user};
-
-	if (! defined $x_github_user) {
-		# do nothing;
-	} elsif ($x_github_user eq '') {
-		# do nothing
-	} elsif (ref $x_github_user eq 'ARRAY') {
-		foreach my $github_user (@$x_github_user) {
-			next if ($github_user eq '');
-			push (@github_users, $github_user);
-		}
-	} elsif (ref $x_github_user eq 'HASH') {
-		$self->add_message (
-			kind => 'err',
-			detail => "github_user is not valid",
-			field =>'org.github_user',
-			class => 'org'
-		);
-		return undef;
-	} else {
-		# single value
-		push (@github_users, $x_github_user);
-	}
+	my @github_users = $self->array_or_string_to_list ($$json{org}{github_user},
+		kind => 'err',
+		detail => "github_user is not valid",
+		field =>'org.github_user',
+		class => 'org'
+	);
 
 	my $found = 0;
 	foreach my $github_user (@github_users) {
@@ -731,10 +811,11 @@ sub check_org_github_users {
 	}
 
 	if (! $found) {
-		# could add a warning here there are no github_users found
+		# could add a warning here
 	}
-}
 
+	return $found;
+}
 
 sub check_org_github_user {
 	my ($self, $github_user) = @_;
@@ -745,7 +826,7 @@ sub check_org_github_user {
 		class => 'org',
 		request_timeout => 10,
 		cache_timeout => 7 * 24 * 3600,
-		cache_fast_fail => 1
+		cache_fast_fail => 0
 	);
 
 	my $req = HTTP::Request->new ('GET', 'https://github.com/orgs/' . $github_user);
