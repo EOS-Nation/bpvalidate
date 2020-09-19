@@ -364,6 +364,7 @@ sub run_validate {
 		);
 	} else {
 		$self->check_org_misc;
+		$self->check_org_github_user;
 		$self->check_org_location;
 		$self->check_org_branding;
 		$self->check_org_social;
@@ -680,6 +681,53 @@ sub check_org_misc {
 		class => 'org',
 		content_type => 'html',
 		add_to_list => 'resources/ownership',
+		dupe => 'warn',
+		request_timeout => 10,
+		cache_timeout => 7 * 24 * 3600,
+		cache_fast_fail => 1
+	);
+
+	return 1;
+}
+
+sub check_org_github_user {
+	my ($self) = @_;
+
+	my $json = $self->{results}{input};
+
+	my $github_user = $$json{org}{github_user};
+	return if (! defined $github_user || $github_user eq '' || ref $github_user);
+
+	my %options = (
+		value => $github_user,
+		field => 'org.github_user',
+		class => 'org',
+		request_timeout => 10,
+		cache_timeout => 7 * 24 * 3600,
+		cache_fast_fail => 1
+	);
+
+	my $req = HTTP::Request->new ('GET', 'https://github.com/orgs/' . $github_user);
+	my $res = $self->run_request ($req, \%options);
+
+	if ($res->is_success) {
+		$self->add_message (
+			value => $github_user,
+			kind => 'err',
+			detail => 'github_user is an organization, not an individual',
+			field =>'org.github_user',
+			class => 'org',
+		);
+		return undef;
+	}
+
+	$self->validate_url (
+		value => $github_user,
+		url => 'https://github.com/' . $github_user,
+		field => 'org.github_user',
+		class => 'org',
+		content_type => 'html',
+		add_to_list => 'resources/github_user',
 		dupe => 'warn',
 		request_timeout => 10,
 		cache_timeout => 7 * 24 * 3600,
