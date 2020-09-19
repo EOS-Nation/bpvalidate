@@ -603,7 +603,7 @@ sub is_important_bp {
 sub bp_logo {
 	my ($entry) = @_;
 
-	my $logo = $$entry{output}{resources}{social_logo_256}[0]{address} || '';
+	my $logo = $$entry{output}{logos}{logo_256}[0]{address} || '';
 	$logo = '' if ($logo !~ m#https://#);
 
 	if ($logo) {
