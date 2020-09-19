@@ -365,7 +365,7 @@ sub run_validate {
 		);
 	} else {
 		$self->check_org_misc;
-		$self->check_org_github_user;
+		$self->check_org_github_users;
 		$self->check_org_location;
 		$self->check_org_branding;
 		$self->check_org_social;
@@ -691,13 +691,53 @@ sub check_org_misc {
 	return 1;
 }
 
-sub check_org_github_user {
+sub check_org_github_users {
 	my ($self) = @_;
 
 	my $json = $self->{results}{input};
 
-	my $github_user = $$json{org}{github_user};
-	return if (! defined $github_user || $github_user eq '' || ref $github_user);
+	# single value or array
+
+	my @github_users;
+	my $x_github_user = $$json{org}{github_user};
+
+	if (! defined $x_github_user) {
+		# do nothing;
+	} elsif ($x_github_user eq '') {
+		# do nothing
+	} elsif (ref $x_github_user eq 'ARRAY') {
+		foreach my $github_user (@$x_github_user) {
+			next if ($github_user eq '');
+			push (@github_users, $github_user);
+		}
+	} elsif (ref $x_github_user eq 'HASH') {
+		$self->add_message (
+			kind => 'err',
+			detail => "github_user is not valid",
+			field =>'org.github_user',
+			class => 'org'
+		);
+		return undef;
+	} else {
+		# single value
+		push (@github_users, $x_github_user);
+	}
+
+	my $found = 0;
+	foreach my $github_user (@github_users) {
+		if ($self->check_org_github_user ($github_user)) {
+			$found++;
+		}
+	}
+
+	if (! $found) {
+		# could add a warning here there are no github_users found
+	}
+}
+
+
+sub check_org_github_user {
+	my ($self, $github_user) = @_;
 
 	my %options = (
 		value => $github_user,
@@ -755,25 +795,16 @@ sub check_org_github_user {
 sub validate_github_keys_extra_check {
 	my ($self, $result, $res, $options) = @_;
 
-	my $value = $$options{value};
-	my $url = $$options{url};
-	my $field = $$options{field};
-	my $class = $$options{class};
-
+	my %options = %$options;
 	my %info;
 	my $errors;
 
 	my $content = $res->content;
 
 	if (length ($content) == 0) {
-		$self->add_message (
-			kind => 'warn',
-			detail => 'no github keys found',
-			value => $value,
-			url => $url,
-			field => $field,
-			class => $class,
-		);
+		$options{kind} = 'warn';
+		$options{detail} = 'no github keys found';
+		$self->add_message (%options);
 		$errors++;
 	}
 
