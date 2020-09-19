@@ -310,7 +310,7 @@ sub generate_report_thtml {
 		push (@out, "<div class=\"card\">\n");
 		if ($name) {
 			push (@out, "<header class=\"card-header\">\n");
-			push (@out, "<p class=\"card-header-title\"> $name </p>\n");
+			push (@out, "<p class=\"card-header-title\"> <a name=\"$name\"></a>$name </p>\n");
 			push (@out, "</header>\n");
 		}
 		push (@out, "<div class=\"card-content\">\n");
