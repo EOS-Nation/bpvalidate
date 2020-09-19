@@ -15,7 +15,7 @@ my $properties = chain_properties ($chain);
 my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {
-	foreach my $kind (sort keys %{$$entry{output}{social}}) {
+	foreach my $kind (sort keys %{$$entry{output}{logos}}) {
 		$kinds{$kind} = 1;
 	}
 }
@@ -30,7 +30,7 @@ foreach my $lang (languages()) {
 				my $producer = $$entry{regproducer}{owner};
 				my $important_bp = is_important_bp ($entry);
 
-				foreach my $resource (@{$$entry{output}{social}{$kind}}) {
+				foreach my $resource (@{$$entry{output}{logos}{$kind}}) {
 					next if (! defined $$resource{address});
 					push (@section, {
 						producer => $producer,
@@ -44,6 +44,6 @@ foreach my $lang (languages()) {
 			push (@report, {name => $kind, rows => \@section});
 		}
 
-		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/social", text => 1, json => 1, html => 1);
+		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/logos", text => 1, json => 1, html => 1);
 	}
 }
