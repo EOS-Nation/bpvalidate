@@ -1855,7 +1855,7 @@ sub validate_url {
 		}
 	}
 
-	$self->add_to_list(info => $info, result => $json, %options) if ($options{add_to_list});
+	$self->add_to_list (info => $info, result => $json, %options) if ($options{add_to_list});
 
 	return $return;
 }
@@ -1986,7 +1986,7 @@ sub validate_connection {
 		sleep (10);  # wait for previous connection to cleanup;
 		$self->do_validate_p2p ($host, $port, %options);
 	} else {
-		$self->add_to_list(host => $peer, %options) if ($options{add_to_list});
+		$self->add_to_list (host => $peer, %options) if ($options{add_to_list});
 	}
 
 	return 1;
@@ -2049,7 +2049,7 @@ sub do_validate_p2p {
 
 	my $info = {speed => $speed};
 
-	$self->add_to_list(
+	$self->add_to_list (
 		add_info_to_list => 'info',
 		info => $info,
 		add_result_to_list => 'response',
