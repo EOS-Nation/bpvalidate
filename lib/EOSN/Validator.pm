@@ -24,6 +24,7 @@ $content_types{json} = ['application/json'];
 $content_types{png_jpg} = ['image/png', 'image/jpeg'];
 $content_types{svg} = ['image/svg+xml'];
 $content_types{html} = ['text/html'];
+$content_types{text} = ['text/plain'];
 
 our %bad_urls;
 $bad_urls{'https://google.com'} = {value => 'not a BP specific web site'};
@@ -734,7 +735,53 @@ sub check_org_github_user {
 		cache_fast_fail => 1
 	);
 
+	$self->validate_url (
+		value => $github_user,
+		url => 'https://github.com/' . $github_user . '.keys',
+		field => 'org.github_user',
+		class => 'org',
+		content_type => 'text',
+		add_to_list => 'resources/github_user_keys',
+		dupe => 'warn',
+		request_timeout => 10,
+		cache_timeout => 7 * 24 * 3600,
+		cache_fast_fail => 1,
+		extra_check => 'validate_github_keys_extra_check'
+	);
+
 	return 1;
+}
+
+sub validate_github_keys_extra_check {
+	my ($self, $result, $res, $options) = @_;
+
+	my $value = $$options{value};
+	my $url = $$options{url};
+	my $field = $$options{field};
+	my $class = $$options{class};
+
+	my %info;
+	my $errors;
+
+	my $content = $res->content;
+
+	if (length ($content) == 0) {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'no github keys found',
+			value => $value,
+			url => $url,
+			field => $field,
+			class => $class,
+		);
+		$errors++;
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	return \%info;
 }
 
 sub check_org_branding {
