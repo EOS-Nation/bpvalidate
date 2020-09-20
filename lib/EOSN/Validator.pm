@@ -1166,7 +1166,7 @@ sub check_nodes {
 		$self->add_message (
 			kind => 'err',
 			detail => 'no query nodes provided',
-			see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/v1.0.1',
+			see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
 			class => 'org'
 		);
 	} else {
@@ -1181,7 +1181,7 @@ sub check_nodes {
 		$self->add_message (
 			kind => 'err',
 			detail => 'no seed nodes provided',
-			see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/v1.0.1',
+			see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
 			class => 'org'
 		);
 	} else {
@@ -1196,7 +1196,7 @@ sub check_nodes {
 		$self->add_message (
 			kind => 'err',
 			detail => 'no producer nodes provided',
-			see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/v1.0.1',
+			see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
 			class => 'org'
 		);
 	} else {
@@ -1430,7 +1430,7 @@ sub check_node {
 		$self->add_message (
 			kind => 'warn',
 			detail => 'use of node_type=full is deprecated since 2020-09-16; use node_type=query and/or node_type=seed instead',
-			see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/v1.0.1',
+			see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
 			class => 'org'
 		);
 		push (@node_types, 'query');
@@ -1479,12 +1479,22 @@ sub check_node {
 				);
 			}
 		} elsif ($node_type eq 'query') {
+			if (! $$node{features}) {
+				$self->add_message (
+					kind => 'warn',
+					detail => 'mandatory features list not provided',
+					see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
+					field => "node[$$counters{node_number}]",
+					node_type => $node_type,
+					class => 'org'
+				);
+			}
 			$$counters{count_node_type_query}++;
 			if ($valid_p2p_endpoint) {
 				$self->add_message (
 					kind => 'warn',
 					detail => 'extranious p2p endpoints provided',
-					see1 => 'https://github.com/eosrio/bp-info-standard/releases/tag/v1.0.1',
+					see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
 					field => "node[$$counters{node_number}]",
 					node_type => $node_type,
 					class => 'p2p_endpoint'
