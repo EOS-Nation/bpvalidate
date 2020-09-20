@@ -307,8 +307,8 @@ sub generate_report_thtml {
 		$name = label ('unknown', $lang) if (defined $name && $name eq 'zzunknown');
 		my $rows = $$section{rows};
 
-		if ($name) {
-			push (@out, "<a name=\"$name\"></a>\n");
+		if ($$section{name}) {
+			push (@out, "<a name=\"$$section{name}\"></a>\n");
 		}
 		push (@out, "<div class=\"card\">\n");
 		if ($name) {
