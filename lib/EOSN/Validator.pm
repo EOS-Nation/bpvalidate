@@ -425,7 +425,7 @@ sub check_bpjson_filename {
 		cors_headers => 'either',
 		dupe => 'err',
 		add_to_list => 'resources/chainjson',
-		see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json',
+		see1 => 'https://github.com/eosrio/bp-info-standard',
 		request_timeout => 10,
 		cache_timeout => 300
 	);
@@ -462,7 +462,7 @@ sub check_bpjson_filename {
 				kind => 'err',
 				detail => 'could not find found chain specific bp.json',
 				class => 'chains',
-				see1 => 'https://github.com/Telos-Foundation/telos/wiki/Telos:-bp.json'
+				see1 => 'https://github.com/eosrio/bp-info-standard'
 			);
 		}
 	} else {
