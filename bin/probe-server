@@ -2,19 +2,34 @@
 
 use utf8;
 use strict;
-use JSON;
+use JSON qw(from_json to_json);
 use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::CommandUtil qw(write_timestamp_log);
 use EOSN::UA qw(eosn_cache_ua);
 use EOSN::SQL qw(do_connect_sqlite);
+use File::Slurp qw(read_file);
+use Getopt::Long;
 use EOSN::Validator;
 
 binmode(STDOUT, ":utf8");
 
 # --------------------------------------------------------------------------
-# Main
+# Config
 
 my $max_processes = 20;
+
+# --------------------------------------------------------------------------
+# Main
+
+my $configdir = undef;
+GetOptions ('config=s' => \$configdir) || exit 1;
+$configdir || die "$0: config dir not provided";
+
+my $schemafile = "$configdir/schema.json";
+if (! -e $schemafile) {
+        die "$0: schema file not found: $schemafile";
+}
+
 my @pids;
 
 write_timestamp_log ("starting max_processes=<$max_processes>");
@@ -147,6 +162,7 @@ sub handle_request {
 	$$data{log_prefix} = "[$thread_id/$producer]";
 	$$data{ua} = eosn_cache_ua ();
 	$$data{dbh} = do_connect_sqlite ('bpvalidate');
+	$$data{schema} = from_json (read_file ($schemafile));
 
 #	return if ($producer ne 'eosswedenorg');
 

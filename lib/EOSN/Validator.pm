@@ -18,6 +18,7 @@ use EOSN::CommandUtil;
 use IPC::Run qw(run);
 use XML::LibXML;
 use Digest::MD5 qw(md5_hex);
+use JSON::Validator;
 
 our %content_types;
 $content_types{json} = ['application/json'];
@@ -121,6 +122,16 @@ sub dbh {
 	}
 
 	return $self->{dbh};
+}
+
+sub schema {
+	my ($self, $schema) = @_;
+
+	if ($schema) {
+		$self->{schema} = $schema;
+	}
+
+	return $self->{schema};
 }
 
 sub log_prefix {
@@ -390,6 +401,7 @@ sub run_validate {
 			class => 'org'
 		);
 	} else {
+		$self->check_json_validate;
 		$self->check_org_misc;
 		$self->check_org_chain_resources;
 		$self->check_org_other_resources;
@@ -618,6 +630,40 @@ sub check_org_location {
 			$self->{results}{info}{country_name} = $country_name;
 			$self->{results}{info}{country_alpha2} = lc($country);
 		}
+	}
+}
+
+sub check_json_validate {
+	my ($self) = @_;
+
+	my $schema = $self->schema;
+	my $json = $self->{results}{input};
+
+	my $jv = JSON::Validator->new;
+	$jv->schema ($schema);
+	my @errors = $jv->validate ($json);
+
+	foreach my $error (@errors) {
+		$self->add_message (
+			kind => 'crit',
+			value => $error->message,
+			detail => 'json schema validation',
+			see1 => 'https://github.com/eosrio/bp-info-standard/blob/master/schema.json',
+			field => $error->path,
+			class => 'org'
+		);
+	}
+
+	if (@errors) {
+		return 0;
+	} else {
+		$self->add_message (
+			kind => 'ok',
+			detail => 'json schema validation passed',
+			see1 => 'https://github.com/eosrio/bp-info-standard/blob/master/schema.json',
+			class => 'org'
+		);
+		return 1;
 	}
 }
 

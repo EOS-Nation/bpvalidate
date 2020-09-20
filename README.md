@@ -56,4 +56,4 @@ dispatch:
 probe:
 - install libraries from https://github.com/EOS-Nation/perl-lib
 - install p2ptest from https://github.com/EOS-Nation/eosio-protocol
-- run: apt install libdbd-sqlite3-perl libnet-stomp-perl libdata-validate-ip-perl libjson-perl liblwpx-paranoidagent-perl libnet-whois-ip-perl libtext-diff-perl libipc-run-perl libxml-libxml-perl nmap
+- run: apt install libjson-validator-perl libdbd-sqlite3-perl libnet-stomp-perl libdata-validate-ip-perl libjson-perl liblwpx-paranoidagent-perl libnet-whois-ip-perl libtext-diff-perl libipc-run-perl libxml-libxml-perl nmap
