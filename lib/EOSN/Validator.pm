@@ -1423,7 +1423,9 @@ sub check_node {
 	# https://github.com/EOS-Nation/bpvalidate/issues/29
 
 	my $xnode_type = $$node{node_type};
-	my @node_types = ();
+	my $is_producer = 0;
+	my $is_seed = 0;
+	my $is_query = 0;
 
 	if (exists $$node{is_producer}) {
 		if ($$node{is_producer} && (! exists $$node{node_type})) {
@@ -1460,8 +1462,12 @@ sub check_node {
 		);
 	} elsif (ref $xnode_type eq 'ARRAY') {
 		foreach my $ynode_type (@{$xnode_type}) {
-			if (($ynode_type eq 'producer') || ($ynode_type eq 'query') || ($ynode_type eq 'seed')) {
-				push (@node_types, $ynode_type);
+			if ($ynode_type eq 'producer') {
+				$is_producer = 1;
+			} elsif ($ynode_type eq 'seed') {
+				$is_seed = 1;
+			} elsif ($ynode_type eq 'query') {
+				$is_query = 1;
 			} else {
 				$self->add_message (
 					kind => 'err',
@@ -1479,9 +1485,13 @@ sub check_node {
 			see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
 			class => 'org'
 		);
-		push (@node_types, 'query');
-	} elsif (($xnode_type eq 'producer') || ($xnode_type eq 'query') || ($xnode_type eq 'seed')) {
-		push (@node_types, $xnode_type);
+		$is_query = 1;
+	} elsif ($xnode_type eq 'producer') {
+		$is_producer = 1;
+	} elsif ($xnode_type eq 'seed') {
+		$is_seed = 1;
+	} elsif ($xnode_type eq 'query') {
+		$is_query = 1;
 	} else {
 		$self->add_message (
 			kind => 'err',
@@ -1492,69 +1502,66 @@ sub check_node {
 		);
 	}
 
-	foreach my $node_type (@node_types) {
-		if ($node_type eq 'producer') {
-			$$counters{count_node_type_producer}++;
-			if ($found_api_endpoint || $found_ssl_endpoint || $found_p2p_endpoint) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'endpoints provided (producer should be private)',
-					field => "node[$$counters{node_number}]",
-					node_type => $node_type,
-					class => 'org'
-				);
-			}
-		} elsif ($node_type eq 'seed') {
-			$$counters{count_node_type_seed}++;
-			if (! $valid_p2p_endpoint && $$counters{count_node_type_seed} == 1) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'no valid p2p endpoints provided',
-					field => "node[$$counters{node_number}]",
-					node_type => $node_type,
-					class => 'p2p_endpoint'
-				);
-			}
-			if ($valid_api_endpoint || $valid_ssl_endpoint) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'extranious API endpoints provided',
-					field => "node[$$counters{node_number}]",
-					node_type => $node_type,
-					class => 'api_endpoint'
-				);
-			}
-		} elsif ($node_type eq 'query') {
-			if (! $$node{features}) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'mandatory features list not provided',
-					see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
-					field => "node[$$counters{node_number}]",
-					node_type => $node_type,
-					class => 'org'
-				);
-			}
-			$$counters{count_node_type_query}++;
-			if ($valid_p2p_endpoint) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'extranious p2p endpoints provided',
-					see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
-					field => "node[$$counters{node_number}]",
-					node_type => $node_type,
-					class => 'p2p_endpoint'
-				);
-			}
-			if (! $valid_api_endpoint && ! $valid_ssl_endpoint && $$counters{count_node_type_query} == 1) {
-				$self->add_message (
-					kind => 'warn',
-					detail => 'no valid API endpoints provided',
-					field => "node[$$counters{node_number}]",
-					node_type => $node_type,
-					class => 'api_endpoint'
-				);
-			}
+	$$counters{count_node_type_producer}++ if ($is_producer);
+	$$counters{count_node_type_seed}++ if ($is_seed);
+	$$counters{count_node_type_query}++ if ($is_query);
+
+	if ($is_seed) {
+		if (! $valid_p2p_endpoint) {
+			$self->add_message (
+				kind => 'warn',
+				detail => 'no valid p2p endpoints provided',
+				field => "node[$$counters{node_number}]",
+				node_type => 'seed',
+				class => 'p2p_endpoint'
+			);
+		}
+	}
+
+	if ($is_query) {
+		if (! $$node{features}) {
+			$self->add_message (
+				kind => 'warn',
+				detail => 'features list not provided',
+				see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
+				field => "node[$$counters{node_number}]",
+				node_type => 'query',
+				class => 'org'
+			);
+		}
+		if (! $valid_api_endpoint && ! $valid_ssl_endpoint) {
+			$self->add_message (
+				kind => 'warn',
+				detail => 'no valid API endpoints provided',
+				field => "node[$$counters{node_number}]",
+				node_type => 'query',
+				class => 'api_endpoint'
+			);
+		}
+	}
+
+	if (! $is_seed) {
+		if ($valid_p2p_endpoint) {
+			$self->add_message (
+				kind => 'warn',
+				detail => 'extranious p2p endpoints provided',
+				see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
+				field => "node[$$counters{node_number}]",
+				node_type => 'query',
+				class => 'p2p_endpoint'
+			);
+		}
+	}
+
+	if (! $is_query) {
+		if ($valid_api_endpoint || $valid_ssl_endpoint) {
+			$self->add_message (
+				kind => 'warn',
+				detail => 'extranious API endpoints provided',
+				field => "node[$$counters{node_number}]",
+				node_type => 'seed',
+				class => 'api_endpoint'
+			);
 		}
 	}
 
