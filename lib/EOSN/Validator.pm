@@ -4385,15 +4385,10 @@ sub test_regproducer_key {
 	my ($self, %options) = @_;
 
 	my $key = $options{key};
-	$options{api_url} = $self->{chain_properties}{key_accounts_url};
-	$options{post_data} = '{"json": true, "public_key": "' . $key . '"}';
+	$options{api_url} = $self->{chain_properties}{url} . '/v1/chain/get_accounts_by_authorizers';
+	$options{post_data} = '{"json": true, "keys": ["' . $key . '"]}';
 	$options{log_prefix} = $self->log_prefix;
 	$options{suppress_timeout_message} = 1;
-
-	if (! $options{api_url}) {
-		$self->write_timestamp_log ("Cannot run test_regproducer_key because key_accounts_url is undefined in chains.csv; test disabled");
-		return 1;
-	}
 
 	my $req = HTTP::Request->new ('POST', $options{api_url}, ['Content-Type' => 'application/json'], $options{post_data});
 	my $res = $self->run_request ($req, \%options);
@@ -4410,7 +4405,7 @@ sub test_regproducer_key {
 
 	my $json = $self->get_json ($content, %options) || return 1;  #skip if down
 
-	if ((ref $$json{account_names} ne 'ARRAY') || (scalar @{$$json{account_names}} != 0)) {
+	if ((ref $$json{accounts} ne 'ARRAY') || (scalar @{$$json{accounts}} != 0)) {
 		$self->add_message (
 			kind => 'err',
 			detail => 'regproducer key is assigned to an account; better to use a dedicated signing key',
