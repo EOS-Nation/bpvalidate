@@ -110,7 +110,7 @@ sub update_website {
 sub update_chain {
 	my ($chain) = @_;
 	
-	my $wait_time = 120;
+	my $wait_time = 150;
 
 	setup_chain ($chain);
 
