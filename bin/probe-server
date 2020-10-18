@@ -140,7 +140,7 @@ sub handle_message {
 		delete $$request{data};
 		$$request{timeout} = JSON::true;
 	} else {
-		handle_request ($thread_id, $request, $producer);
+		handle_request ($request, $thread_id, $chain, $producer);
 	}
 
 	$$request{processed_time} = time;
@@ -154,17 +154,15 @@ sub handle_message {
 }
 
 sub handle_request {
-	my ($thread_id, $request, $producer) = @_;
+	my ($request, $thread_id, $chain, $producer) = @_;
 
 	my $data = $$request{data};
 	delete $$request{data};
 
-	$$data{log_prefix} = "[$thread_id/$producer]";
+	$$data{log_prefix} = "[$thread_id/$chain/$producer]";
 	$$data{ua} = eosn_cache_ua ();
 	$$data{dbh} = do_connect_sqlite ('bpvalidate');
 	$$data{schema} = from_json (read_file ($schemafile));
-
-#	return if ($producer ne 'eosswedenorg');
 
 	my $validator = new EOSN::Validator (%$data);
 	$$request{results} = $validator->validate;
