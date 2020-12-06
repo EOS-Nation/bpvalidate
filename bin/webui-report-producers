@@ -18,7 +18,6 @@ $handler{history} = 'bonus';
 $handler{hyperion} = 'bonus';
 $handler{wallet} = 'bonus';
 $handler{chains} = 'bonus';
-$handler{blacklist} = 'bonus';
 $handler{ipv6} = 'bonus';
 
 # --------------------------------------------------------------------------
@@ -140,7 +139,6 @@ foreach my $lang (languages) {
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{hyperion}</div>\n") if ($$properties{class_hyperion});
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{wallet}</div>\n") if ($$properties{class_wallet});
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{chains}</div>\n") if ($$properties{class_chains});
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{blacklist}</div>\n") if ($$properties{class_blacklist});
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{ipv6}</div>\n") if ($$properties{class_ipv6});
 		push (@report, "</div>\n");
 		push (@report, "</div>\n");
@@ -204,7 +202,6 @@ foreach my $lang (languages) {
 	push (@form, checkbox('hyperion', sev_html(kind => 'bonus_hyperion', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_hyperion_l', $lang), $lang)) if ($$properties{class_hyperion});
 	push (@form, checkbox('wallet', sev_html(kind => 'bonus_wallet', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_wallet_l', $lang), $lang)) if ($$properties{class_wallet});
 	push (@form, checkbox('chains', sev_html(kind => 'bonus_chains', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_chains_l', $lang), $lang)) if ($$properties{class_chains});
-	push (@form, checkbox('blacklist', sev_html(kind => 'bonus_blacklist', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_blacklist_l', $lang), $lang)) if ($$properties{class_blacklist});
 	push (@form, checkbox('ipv6', sev_html(kind => 'bonus_ipv6', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_ipv6_l', $lang), $lang)) if ($$properties{class_ipv6});
 	push (@form, "</div>\n");
 

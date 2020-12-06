@@ -5,7 +5,6 @@ class_regproducer,Regproducer,注册出块节点,Regproducer
 class_org,Organization,机构,기관
 class_api_endpoint,API,API,API
 class_p2p_endpoint,P2P,P2P,P2P
-class_blacklist,Blacklist,黑名单,블랙리스트
 class_bpjson,bp.json On-Chain,链上bp.json,bp.json 온체인
 class_history,History,历史,히스토리
 class_hyperion,Hyperion,Hyperion,히페리온 
@@ -20,7 +19,6 @@ class_p2p_endpoint_l,P2P Endpoints Check,P2P端点 验证,P2P 앤드포인트 �
 class_history_l,History Check,历史 验证,히스토리 검증
 class_hyperion_l,Hyperion Check,Hyperion 验证,히페리온 검증
 class_wallet_l,Wallet Check,钱包 验证,지갑 검증
-class_blacklist_l,Blacklist Check,黑名单 验证,블랙리스트 검증
 class_bpjson_l,bp.json On-Chain Check,链上bp.json 验证,bp.json 온체인 검증
 class_chains_l,Chains.json Check,Chains.json 验证,Chains.json 검증
 class_ipv6_l,IPv6 Check,IPv6协议 验证,IPv6 검증
@@ -30,7 +28,6 @@ check_ok,OK,OK,OK
 check_warn,Warning,警告,경고
 check_err,Error,错误,에러
 check_crit,Critical,批评,중요
-check_bonus_blacklist,OK,OK,OK  
 check_bonus_bpjson,OK,OK,OK  
 check_bonus_history,OK,OK,OK  
 check_bonus_hyperion,OK,OK,OK  
@@ -54,7 +51,6 @@ title_reports/socials,Socials Report,,
 title_reports/branding,Branding Report,,
 title_reports/api_versions,API Versions Report,API版本报告,API 버전 보고
 title_reports/p2p_speed,P2P Speed Report,P2P速度报告,
-title_reports/blacklist,Blacklist Report,黑名单报告,블랙리스트 보고
 title_producers,Report for %producer_name_html%,%producer_name_html%报告,%producer_name_html% 보고
 label_text_version,text version,文字内容版本,텍스트 버전 보고
 label_json_version,json version,json版本,json 버전

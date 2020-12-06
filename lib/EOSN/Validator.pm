@@ -417,7 +417,6 @@ sub run_validate {
 		$self->check_aloha;
 		$self->check_nodes;
 		$self->check_onchainbpjson;
-		$self->check_onchainblacklist;
 	}
 }
 
@@ -560,39 +559,6 @@ sub check_onchainbpjson {
 	$self->add_message (
 		kind => 'ok',
 		detail => 'bp.json has been provided on-chain and matches what is in the regproducer URL',
-		%message_options
-	);
-}
-
-sub check_onchainblacklist {
-	my ($self) = @_;
-
-	my %message_options = (contract => 'theblacklist', class => 'blacklist');
-
-	my $onchainblacklist_enabled = $self->{onchainblacklist_enabled};
-	my $onchainblacklist_data = $self->{onchainblacklist_data};
-	if (! $onchainblacklist_enabled) {
-		#print "onchainblacklist not enabled\n";
-		return;
-	}
-	if (! $onchainblacklist_data) {
-		$self->add_message (
-			kind => 'crit',
-			detail => 'blacklist has not been provided on-chain',
-			see1 => 'https://github.com/bancorprotocol/eos-producer-heartbeat-plugin',
-			%message_options
-		);
-		return;
-	}
-
-	#print "blacklist: $onchainblacklist_data\n";
-
-	$self->{results}{output}{chain}{blacklist} = $onchainblacklist_data;
-
-	$self->add_message (
-		kind => 'ok',
-		detail => 'blacklist has been provided on-chain',
-		value => $onchainblacklist_data,
 		%message_options
 	);
 }

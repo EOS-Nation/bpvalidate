@@ -355,7 +355,6 @@ sub update_chain {
 		get_globals ($chain_data);
 		get_regproducer ($chain_data);
 		get_onchain_bpjson_list ($chain_data);
-		get_onchain_blacklist_list ($chain_data);
 
 		my $records_updated = 0;
 		if ($$chain_data{errors}) {
@@ -449,35 +448,6 @@ sub get_onchain_bpjson_list {
 	$$options{onchain_bpjson_list} =$onchain_bpjson_list;
 }
 
-sub get_onchain_blacklist_list {
-	my ($options) = @_;
-
-	my $chain = $$options{chain};
-	my $base_url = $$options{base_url};
-	my $ua = $$options{ua};
-	my $onchain = $$options{onchain};
-	my $query_limit = $$options{query_limit};
-
-	my $onchain_blacklist_list = [];
-
-	if ($$chains{$chain}{class_blacklist}) {
-		$onchain_blacklist_list = get_table ($ua, $base_url . '/v1/chain/get_table_rows', limit => $query_limit, code => 'theblacklist', scope => 'theblacklist', table => 'producerhash');
-
-		if (! $onchain_blacklist_list) {
-			write_timestamp_log ("[update $chain] cannot get onchainblacklist list");
-			$$options{errors}++;
-		}
-
-		foreach my $obj (@$onchain_blacklist_list) {
-			my $user = $$obj{producer};
-			my $hash = $$obj{hash};
-			$$onchain{blacklist}{$user} = $hash;
-		}
-	}
-
-	$$options{onchain_blacklist_list} = $onchain_blacklist_list;
-}
-
 sub tabulate_votes {
 	my ($options) = @_;
 
@@ -544,7 +514,6 @@ sub update_db {
 	my $globals = $$options{globals};
 	my $producer_list = $$options{producer_list};
 	my $onchain_bpjson_list = $$options{onchain_bpjson_list};
-	my $onchain_blacklist_list = $$options{onchain_blacklist_list};
 	my $vote_total = $$options{vote_total};
 	my $max_producers = $$chains{$chain}{max_producers};
 	my $versions = $$options{versions};
@@ -572,8 +541,6 @@ sub update_db {
 			meta => $$onchain{meta}{$producer},
 			onchainbpjson_enabled => (scalar (@$onchain_bpjson_list) ? 1 : 0),
 			onchainbpjson_data => $$onchain{bpjson}{$producer},
-			onchainblacklist_enabled => (scalar (@$onchain_blacklist_list) ? 1 : 0),
-			onchainblacklist_data => $$onchain{blacklist}{$producer},
 			globals_data => $globals,
 			versions_data => $versions,
 			chain => $chain,
