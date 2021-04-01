@@ -349,6 +349,8 @@ sub run_validate {
 			$self->{results}{info}{timezone_value} = $location;
 			#print ">>> TIME ZONE: $time_zone for location=<$location> url=<$url>\n";
 		}
+	} elsif ($location_check eq 'none') {
+		# do nothing
 	} else {
 		$self->add_message (
 			kind => 'skip',
