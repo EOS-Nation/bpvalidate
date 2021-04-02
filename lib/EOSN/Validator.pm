@@ -584,7 +584,7 @@ sub check_org_location {
 		field => 'org.location.name',
 		class => 'org'
 	);
-	my $results = $self->validate_location(
+	my $results = $self->validate_location (
 		location => $$json{org}{location},
 		field => 'org.location',
 		class => 'org'
@@ -1267,7 +1267,7 @@ sub check_nodes {
 sub check_node {
 	my ($self, $node, $counters) = @_;
 
-	my $location = $self->validate_location(
+	my $location = $self->validate_location (
 		location => $$node{location},
 		field => "node[$$counters{node_number}].location",
 		class => 'org'
@@ -1278,111 +1278,6 @@ sub check_node {
 	my $found_api_endpoint = 0;
 	my $found_ssl_endpoint = 0;
 	my $found_p2p_endpoint = 0;
-
-	# ---------- check endpoints
-
-	if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
-		$found_api_endpoint++;
-		my $result = $self->validate_basic_api (
-			class => 'api_endpoint',
-			api_url => $$node{api_endpoint},
-			field => "node[$$counters{node_number}].api_endpoint",
-			ssl => 'off',
-			add_to_list => 'nodes/api_http',
-			location => $location
-		);
-		if ($result) {
-			$valid_api_endpoint++;
-			my $result_history = $self->validate_history_api (
-				class => 'history',
-				api_url => $$node{api_endpoint},
-				history_type => $$node{history_type},
-				field => "node[$$counters{node_number}].api_endpoint",
-				ssl => 'off',
-				add_to_list => 'nodes/history_http',
-				location => $location
-			);
-			my $result_hyperion = $self->validate_hyperion_api (
-				class => 'hyperion',
-				api_url => $$node{api_endpoint},
-				history_type => $$node{history_type},
-				field => "node[$$counters{node_number}].api_endpoint",
-				ssl => 'off',
-				add_to_list => 'nodes/hyperion_http',
-				location => $location
-			);
-			my $result_wallet = $self->validate_wallet_api (
-				class => 'wallet',
-				api_url => $$node{api_endpoint},
-				history_type => $$node{history_type},
-				field => "node[$$counters{node_number}].api_endpoint",
-				ssl => 'off',
-				add_to_list => 'nodes/wallet_http',
-				location => $location
-			);
-		}
-	}
-
-	if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
-		$found_ssl_endpoint++;
-		my $result = $self->validate_basic_api (
-			class => 'api_endpoint',
-			api_url => $$node{ssl_endpoint},
-			field => "node[$$counters{node_number}].ssl_endpoint",
-			ssl => 'on',
-			modern_tls_version => 1,
-			add_to_list => 'nodes/api_https',
-			location => $location
-		);
-		if ($result) {
-			$valid_ssl_endpoint++;
-			my $result_history = $self->validate_history_api (
-				class => 'history',
-				api_url => $$node{ssl_endpoint},
-				history_type => $$node{history_type},
-				field => "node[$$counters{node_number}].ssl_endpoint",
-				ssl => 'on',
-				modern_tls_version => 1,
-				add_to_list => 'nodes/history_https',
-				location => $location
-			);
-			my $result_hyperion = $self->validate_hyperion_api (
-				class => 'hyperion',
-				api_url => $$node{ssl_endpoint},
-				history_type => $$node{history_type},
-				field => "node[$$counters{node_number}].ssl_endpoint",
-				ssl => 'on',
-				modern_tls_version => 1,
-				add_to_list => 'nodes/hyperion_https',
-				location => $location
-			);
-			my $result_wallet = $self->validate_wallet_api (
-				class => 'wallet',
-				api_url => $$node{ssl_endpoint},
-				history_type => $$node{history_type},
-				field => "node[$$counters{node_number}].ssl_endpoint",
-				ssl => 'on',
-				modern_tls_version => 1,
-				add_to_list => 'nodes/wallet_https',
-				location => $location
-			);
-		}
-	}
-
-	if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
-		$found_p2p_endpoint++;
-		if ($self->validate_connection (
-				class => 'p2p_endpoint',
-				peer => $$node{p2p_endpoint},
-				field => "node[$$counters{node_number}].p2p_endpoint",
-				connection_type => 'p2p',
-				add_to_list => 'nodes/p2p',
-				location => $location,
-				dupe => 'info'
-		)) {
-			$valid_p2p_endpoint++;
-		}
-	}
 
 	# ---------- check type of node
 
@@ -1474,7 +1369,233 @@ sub check_node {
 	$$counters{count_node_type_seed}++ if ($is_seed);
 	$$counters{count_node_type_query}++ if ($is_query);
 
+	if ($is_query) {
+		my $is_feature_chain = 0;
+		my $is_feature_account = 0;
+		my $is_feature_history = 0;
+		my $is_feature_hyperion = 0;
+		my $is_feature_dfuse = 0;
+		my $is_feature_fio = 0;
+		my $is_feature_snapshot = 0;
+		my $is_feature_dsp = 0;
+		my $is_feature_atomic = 0;
+
+		if (! $$node{features}) {
+			$self->add_message (
+				kind => 'err',
+				detail => 'features list not provided',
+				see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
+				field => "node[$$counters{node_number}]",
+				node_type => 'query',
+				class => 'org'
+			);
+		} elsif (ref $$node{features} eq 'HASH') {
+			$self->add_message (
+				kind => 'err',
+				detail => 'features list is not valid',
+				see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
+				field => "node[$$counters{node_number}]",
+				node_type => 'query',
+				class => 'org'
+			);
+		} elsif (ref $$node{features} eq 'ARRAY') {
+			foreach my $feature (@{$$node{features}}) {
+				my $valid = 0;
+
+				if ($feature eq 'chain-api') {
+					$valid = 1;
+					$is_feature_chain = 1;
+				} elsif ($feature eq 'account-query') {
+					$valid = 1;
+					$is_feature_account = 1;
+				} elsif ($feature eq 'history-v1') {
+					$valid = 1;
+					$is_feature_history = 1;
+				} elsif ($feature eq 'hyperion-v2') {
+					$valid = 1;
+					$is_feature_hyperion = 1;
+				} elsif ($feature eq 'dfuse') {
+					$valid = 1;
+					$is_feature_dfuse = 1;
+				} elsif ($feature eq 'fio-api') {
+					$valid = 1;
+					$is_feature_fio = 1;
+				} elsif ($feature eq 'snapshot-api') {
+					$valid = 1;
+					$is_feature_snapshot = 1;
+				} elsif ($feature eq 'dsp-api') {
+					$valid = 1;
+					$is_feature_dsp = 1;
+				} elsif ($feature eq 'atomic-assets-api') {
+					$valid = 1;
+					$is_feature_atomic = 1;
+				} else {
+					$self->add_message (
+						kind => 'err',
+						detail => 'unknown feature error',
+						value => $feature,
+						field => "node[$$counters{node_number}]",
+						node_type => 'query',
+						class => 'api_endpoint'
+					);
+				}
+
+				if ($valid) {
+					$self->add_message (
+						kind => 'info',
+						detail => 'feature enabled',
+						value => $feature,
+						field => "node[$$counters{node_number}]",
+						node_type => 'query',
+						class => 'api_endpoint'
+					);
+				}
+			}
+		} else {
+			$self->add_message (
+				kind => 'err',
+				detail => 'features list is not valid, use array',
+				see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
+				field => "node[$$counters{node_number}]",
+				node_type => 'query',
+				class => 'org'
+			);
+		}
+
+		if ($is_feature_chain && (defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
+			$found_api_endpoint++;
+			my $result = $self->validate_basic_api (
+				class => 'api_endpoint',
+				api_url => $$node{api_endpoint},
+				field => "node[$$counters{node_number}].api_endpoint",
+				ssl => 'off',
+				add_to_list => 'nodes/api_http',
+				location => $location
+			);
+			if ($result) {
+				$valid_api_endpoint++;
+				my $result_history = $self->validate_history_api (
+					class => 'history',
+					api_url => $$node{api_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$$counters{node_number}].api_endpoint",
+					ssl => 'off',
+					add_to_list => 'nodes/history_http',
+					location => $location
+				) if ($is_feature_history);
+				my $result_hyperion = $self->validate_hyperion_api (
+					class => 'hyperion',
+					api_url => $$node{api_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$$counters{node_number}].api_endpoint",
+					ssl => 'off',
+					add_to_list => 'nodes/hyperion_http',
+					location => $location
+				) if ($is_feature_hyperion);
+				my $result_wallet = $self->validate_wallet_api (
+					class => 'wallet',
+					api_url => $$node{api_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$$counters{node_number}].api_endpoint",
+					ssl => 'off',
+					add_to_list => 'nodes/wallet_http',
+					location => $location
+				) if ($is_feature_account);
+			}
+		}
+
+		if ($is_feature_chain && (defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
+			$found_ssl_endpoint++;
+			my $result = $self->validate_basic_api (
+				class => 'api_endpoint',
+				api_url => $$node{ssl_endpoint},
+				field => "node[$$counters{node_number}].ssl_endpoint",
+				ssl => 'on',
+				modern_tls_version => 1,
+				add_to_list => 'nodes/api_https',
+				location => $location
+			);
+			if ($result) {
+				$valid_ssl_endpoint++;
+				my $result_history = $self->validate_history_api (
+					class => 'history',
+					api_url => $$node{ssl_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$$counters{node_number}].ssl_endpoint",
+					ssl => 'on',
+					modern_tls_version => 1,
+					add_to_list => 'nodes/history_https',
+					location => $location
+				) if ($is_feature_history);
+				my $result_hyperion = $self->validate_hyperion_api (
+					class => 'hyperion',
+					api_url => $$node{ssl_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$$counters{node_number}].ssl_endpoint",
+					ssl => 'on',
+					modern_tls_version => 1,
+					add_to_list => 'nodes/hyperion_https',
+					location => $location
+				) if ($is_feature_hyperion);
+				my $result_wallet = $self->validate_wallet_api (
+					class => 'wallet',
+					api_url => $$node{ssl_endpoint},
+					history_type => $$node{history_type},
+					field => "node[$$counters{node_number}].ssl_endpoint",
+					ssl => 'on',
+					modern_tls_version => 1,
+					add_to_list => 'nodes/wallet_https',
+					location => $location
+				) if ($is_feature_account);
+			}
+		}
+
+		if (! $valid_api_endpoint && ! $valid_ssl_endpoint) {
+			$self->add_message (
+				kind => 'warn',
+				detail => 'no valid API/SSL endpoints provided',
+				field => "node[$$counters{node_number}]",
+				node_type => 'query',
+				class => 'api_endpoint'
+			);
+		}
+	} else {
+		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
+			$self->add_message (
+				kind => 'warn',
+				detail => 'extranious API endpoint provided',
+				field => "node[$$counters{node_number}]",
+				node_type => 'seed',
+				class => 'api_endpoint'
+			);
+		}
+
+		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
+			$self->add_message (
+				kind => 'warn',
+				detail => 'extranious SSL endpoint provided',
+				field => "node[$$counters{node_number}]",
+				node_type => 'seed',
+				class => 'api_endpoint'
+			);
+		}
+	}
+
 	if ($is_seed) {
+		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
+			$found_p2p_endpoint++;
+			if ($self->validate_connection (
+				class => 'p2p_endpoint',
+				peer => $$node{p2p_endpoint},
+				field => "node[$$counters{node_number}].p2p_endpoint",
+				connection_type => 'p2p',
+				add_to_list => 'nodes/p2p',
+				location => $location,
+				dupe => 'info'
+			)) {
+				$valid_p2p_endpoint++;
+			}
+		}
 		if (! $valid_p2p_endpoint) {
 			$self->add_message (
 				kind => 'warn',
@@ -1484,32 +1605,8 @@ sub check_node {
 				class => 'p2p_endpoint'
 			);
 		}
-	}
-
-	if ($is_query) {
-		if (! $$node{features}) {
-			$self->add_message (
-				kind => 'warn',
-				detail => 'features list not provided',
-				see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
-				field => "node[$$counters{node_number}]",
-				node_type => 'query',
-				class => 'org'
-			);
-		}
-		if (! $valid_api_endpoint && ! $valid_ssl_endpoint) {
-			$self->add_message (
-				kind => 'warn',
-				detail => 'no valid API endpoints provided',
-				field => "node[$$counters{node_number}]",
-				node_type => 'query',
-				class => 'api_endpoint'
-			);
-		}
-	}
-
-	if (! $is_seed) {
-		if ($valid_p2p_endpoint) {
+	} else {
+		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
 			$self->add_message (
 				kind => 'warn',
 				detail => 'extranious p2p endpoints provided',
@@ -1517,18 +1614,6 @@ sub check_node {
 				field => "node[$$counters{node_number}]",
 				node_type => 'query',
 				class => 'p2p_endpoint'
-			);
-		}
-	}
-
-	if (! $is_query) {
-		if ($valid_api_endpoint || $valid_ssl_endpoint) {
-			$self->add_message (
-				kind => 'warn',
-				detail => 'extranious API endpoints provided',
-				field => "node[$$counters{node_number}]",
-				node_type => 'seed',
-				class => 'api_endpoint'
 			);
 		}
 	}
@@ -2648,10 +2733,6 @@ sub validate_wallet_api_extra_check {
 
 	my %info;
 	my $errors;
-
-	# This should move into the validate_basic_api_extra_check() function
-	# and remove the wallet extra checks.
-	# All public APIs should have this feature enabled.
 
 	if (! $self->test_wallet_account (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
