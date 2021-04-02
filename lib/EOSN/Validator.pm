@@ -2643,6 +2643,9 @@ sub validate_basic_api_extra_check {
 	if (! $self->test_net_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
+	if (! $self->test_supported_api (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+		$errors++;
+	}
 
 	if ($errors) {
 		return undef;
@@ -4316,6 +4319,53 @@ sub test_system_symbol {
 	$self->add_message (
 		kind => 'ok',
 		detail => 'basic symbol test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_supported_api {
+	my ($self, %options) = @_;
+
+	$options{api_url} .= '/v1/node/get_supported_apis';
+	$options{log_prefix} = $self->log_prefix;
+
+	my $req = HTTP::Request->new ('GET', $options{api_url}, undef);
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header ('host');
+	my $content = $res->content;
+	my $response_content_type = $res->content_type;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'supported apis not available',
+			value => $status_message,
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options) || return undef;
+
+	if ((ref $$json{apis} ne 'ARRAY') || (scalar @{$$json{apis}} < 20)) {
+		$self->add_message (
+			kind => 'warn',
+			detail => 'format of supported apis is not correct',
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'supported apis is available',
 		%options
 	);
 
