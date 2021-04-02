@@ -1442,7 +1442,7 @@ sub check_node {
 
 				if ($valid) {
 					$self->add_message (
-						kind => 'info',
+						kind => 'ok',
 						detail => 'feature enabled',
 						value => $feature,
 						field => "node[$$counters{node_number}]",
