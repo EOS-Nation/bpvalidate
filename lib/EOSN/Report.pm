@@ -19,7 +19,7 @@ $icons{none} = '<!-- none -->';
 $icons{bonus_bpjson} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cog"></i></span>';
 $icons{bonus_history} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
 $icons{bonus_hyperion} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_wallet} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-wallet"></i></span>';
+$icons{bonus_account} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-wallet"></i></span>';
 $icons{bonus_chains} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-link"></i></span>';
 $icons{bonus_ipv6} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cloud"></i></span>';
 $icons{skip} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-ban"></i></span>';
@@ -37,7 +37,7 @@ $icons{none_bw} = '<!-- none -->';
 $icons{bonus_bpjson_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cog"></i></span>';
 $icons{bonus_history_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
 $icons{bonus_hyperion_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_wallet_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-wallet"></i></span>';
+$icons{bonus_account_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-wallet"></i></span>';
 $icons{bonus_chains_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-link"></i></span>';
 $icons{bonus_ipv6_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cloud"></i></span>';
 $icons{skip_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-ban"></i></span>';
@@ -94,7 +94,7 @@ sub chain_properties {
 }
 
 sub classes {
-	my @classes_available = (qw (regproducer org api_endpoint p2p_endpoint bpjson history hyperion wallet chains ipv6));
+	my @classes_available = (qw (regproducer org api_endpoint p2p_endpoint bpjson history hyperion account chains ipv6));
 	my @classes_configured = ();
 
 	foreach my $class (@classes_available) {

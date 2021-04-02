@@ -1492,13 +1492,13 @@ sub check_node {
 					add_to_list => 'nodes/hyperion_http',
 					location => $location
 				) if ($is_feature_hyperion);
-				my $result_wallet = $self->validate_wallet_api (
-					class => 'wallet',
+				my $result_account = $self->validate_account_api (
+					class => 'account',
 					api_url => $$node{api_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$$counters{node_number}].api_endpoint",
 					ssl => 'off',
-					add_to_list => 'nodes/wallet_http',
+					add_to_list => 'nodes/account_http',
 					location => $location
 				) if ($is_feature_account);
 			}
@@ -1537,14 +1537,14 @@ sub check_node {
 					add_to_list => 'nodes/hyperion_https',
 					location => $location
 				) if ($is_feature_hyperion);
-				my $result_wallet = $self->validate_wallet_api (
-					class => 'wallet',
+				my $result_account = $self->validate_account_api (
+					class => 'account',
 					api_url => $$node{ssl_endpoint},
 					history_type => $$node{history_type},
 					field => "node[$$counters{node_number}].ssl_endpoint",
 					ssl => 'on',
 					modern_tls_version => 1,
-					add_to_list => 'nodes/wallet_https',
+					add_to_list => 'nodes/account_https',
 					location => $location
 				) if ($is_feature_account);
 			}
@@ -2454,10 +2454,10 @@ sub validate_hyperion_api {
 	);
 }
 
-sub validate_wallet_api {
+sub validate_account_api {
 	my ($self, %options) = @_;
 
-	return if (! $self->{chain_properties}{class_wallet});
+	return if (! $self->{chain_properties}{class_account});
 
 	my $api_url = $options{api_url};
 	my $field = $options{field};
@@ -2472,7 +2472,7 @@ sub validate_wallet_api {
 		cors_origin => 'on',
 		cors_headers => 'on',
 		non_standard_port => 1,
-		extra_check => 'validate_wallet_api_extra_check',
+		extra_check => 'validate_account_api_extra_check',
 		add_result_to_list => 'response',
 		add_info_to_list => 'info',
 		dupe => 'info',
@@ -2722,7 +2722,7 @@ sub validate_hyperion_api_extra_check {
 	return \%info;
 }
 
-sub validate_wallet_api_extra_check {
+sub validate_account_api_extra_check {
 	my ($self, $result, $res, $options) = @_;
 
 	my $url = $$options{api_url};
@@ -2734,10 +2734,10 @@ sub validate_wallet_api_extra_check {
 	my %info;
 	my $errors;
 
-	if (! $self->test_wallet_account (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+	if (! $self->test_account_account (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_wallet_key (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+	if (! $self->test_account_key (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
 
@@ -4171,7 +4171,7 @@ sub test_hyperion_key_accounts {
 	return 1;
 }
 
-sub test_wallet_account {
+sub test_account_account {
 	my ($self, %options) = @_;
 
 	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.csv";
@@ -4222,7 +4222,7 @@ sub test_wallet_account {
 	return 1;
 }
 
-sub test_wallet_key {
+sub test_account_key {
 	my ($self, %options) = @_;
 
 	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
