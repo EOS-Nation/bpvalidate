@@ -267,6 +267,7 @@
                 "history-v1",
                 "hyperion-v2",
                 "dfuse",
+                "firehose",
                 "fio-api",
                 "snapshot-api",
                 "dsp-api",
