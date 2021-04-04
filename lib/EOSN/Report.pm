@@ -19,6 +19,9 @@ $icons{none} = '<!-- none -->';
 $icons{bonus_bpjson} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cog"></i></span>';
 $icons{bonus_history} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
 $icons{bonus_hyperion} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+$icons{bonus_dfuse} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+$icons{bonus_firehose} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+$icons{bonus_atomic} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-atom"></i></span>';
 $icons{bonus_account} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-wallet"></i></span>';
 $icons{bonus_chains} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-link"></i></span>';
 $icons{bonus_ipv6} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cloud"></i></span>';
@@ -37,6 +40,9 @@ $icons{none_bw} = '<!-- none -->';
 $icons{bonus_bpjson_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cog"></i></span>';
 $icons{bonus_history_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
 $icons{bonus_hyperion_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+$icons{bonus_dfuse_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+$icons{bonus_firehose_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+$icons{bonus_atomic_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-atom"></i></span>';
 $icons{bonus_account_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-wallet"></i></span>';
 $icons{bonus_chains_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-link"></i></span>';
 $icons{bonus_ipv6_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cloud"></i></span>';
@@ -94,7 +100,7 @@ sub chain_properties {
 }
 
 sub classes {
-	my @classes_available = (qw (regproducer org api_endpoint p2p_endpoint bpjson history hyperion account chains ipv6));
+	my @classes_available = (qw (regproducer org api_endpoint p2p_endpoint bpjson history hyperion dfuse firehose atomic account chains ipv6));
 	my @classes_configured = ();
 
 	foreach my $class (@classes_available) {

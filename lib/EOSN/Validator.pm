@@ -1065,7 +1065,7 @@ sub check_aloha {
 	$options{cache_timeout} = 300;
 
 	my $req = HTTP::Request->new ('POST', $options{url}, ['Content-Type' => 'application/x-www-form-urlencoded'], $options{post_data});
-	$req->header("Referer", 'https://validate.eosnation.io');
+	$req->header ("Referer", 'https://validate.eosnation.io');
 	my $res = $self->run_request ($req, \%options);
 	my $status_code = $res->code;
 	my $status_message = $res->status_line;
@@ -1162,12 +1162,12 @@ sub check_nodes {
 
 	my $counters;
 	$$counters{node_number} = 0;
-	$$counters{total_valid_api_endpoint} = 0;
-	$$counters{total_valid_ssl_endpoint} = 0;
-	$$counters{total_valid_p2p_endpoint} = 0;
-	$$counters{total_found_api_endpoint} = 0;
-	$$counters{total_found_ssl_endpoint} = 0;
-	$$counters{total_found_p2p_endpoint} = 0;
+	$$counters{total_valid_nodeos_api_endpoint} = 0;
+	$$counters{total_valid_nodeos_ssl_endpoint} = 0;
+	$$counters{total_valid_nodeos_p2p_endpoint} = 0;
+	$$counters{total_found_nodeos_api_endpoint} = 0;
+	$$counters{total_found_nodeos_ssl_endpoint} = 0;
+	$$counters{total_found_nodeos_p2p_endpoint} = 0;
 	$$counters{count_node_type_query} = 0;
 	$$counters{count_node_type_seed} = 0;
 	$$counters{count_node_type_producer} = 0;
@@ -1222,25 +1222,25 @@ sub check_nodes {
 		);
 	}
 
-	if (! $$counters{total_found_api_endpoint} && ! $$counters{total_found_ssl_endpoint}) {
+	if (! $$counters{total_found_nodeos_api_endpoint} && ! $$counters{total_found_nodeos_ssl_endpoint}) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no HTTP or HTTPS API endpoints provided in any node',
 			class => 'api_endpoint'
 		);
-	} elsif (! $$counters{total_valid_api_endpoint} && ! $$counters{total_valid_ssl_endpoint}) {
+	} elsif (! $$counters{total_valid_nodeos_api_endpoint} && ! $$counters{total_valid_nodeos_ssl_endpoint}) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no valid HTTP or HTTPS API endpoints provided in any node; see above messages',
 			class => 'api_endpoint'
 		);
-	} elsif (! $$counters{total_valid_ssl_endpoint}) {
+	} elsif (! $$counters{total_valid_nodeos_ssl_endpoint}) {
 		$self->add_message (
 			kind => 'warn',
 			detail => 'no valid HTTPS API endpoints provided in any node',
 			class => 'api_endpoint'
 		);
-	} elsif (! $$counters{total_valid_api_endpoint}) {
+	} elsif (! $$counters{total_valid_nodeos_api_endpoint}) {
 		# similar check is implemented on https://eosreport.franceos.fr/
 		# $self->add_message (
 		#	kind => 'warn',
@@ -1249,13 +1249,13 @@ sub check_nodes {
 		#);
 	}
 
-	if (! $$counters{total_found_p2p_endpoint}) {
+	if (! $$counters{total_found_nodeos_p2p_endpoint}) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no P2P endpoints provided in any node',
 			class => 'p2p_endpoint'
 		);
-	} elsif (! $$counters{total_valid_p2p_endpoint}) {
+	} elsif (! $$counters{total_valid_nodeos_p2p_endpoint}) {
 		$self->add_message (
 			kind => 'crit',
 			detail => 'no valid P2P endpoints provided in any node; see above messages',
@@ -1267,17 +1267,29 @@ sub check_nodes {
 sub check_node {
 	my ($self, $node, $counters) = @_;
 
+	if (exists $$node{chain_resources}) {
+		$self->add_message (
+			kind => 'warn',
+			field => "node[$$counters{node_number}].chain_resources",
+			detail => 'chain_resources does not belong under nodes; ignored',
+			class => 'org'
+		);
+	}
+
 	my $location = $self->validate_location (
 		location => $$node{location},
 		field => "node[$$counters{node_number}].location",
 		class => 'org'
 	);
-	my $valid_api_endpoint = 0;
-	my $valid_ssl_endpoint = 0;
-	my $valid_p2p_endpoint = 0;
-	my $found_api_endpoint = 0;
-	my $found_ssl_endpoint = 0;
-	my $found_p2p_endpoint = 0;
+
+	my $valid_nodeos_api_endpoint = 0;
+	my $valid_nodeos_ssl_endpoint = 0;
+	my $valid_nodeos_p2p_endpoint = 0;
+	my $valid_other_endpoint = 0;
+	my $found_nodeos_api_endpoint = 0;
+	my $found_nodeos_ssl_endpoint = 0;
+	my $found_nodeos_p2p_endpoint = 0;
+	my $found_other_endpoint = 0;
 
 	# ---------- check type of node
 
@@ -1375,9 +1387,10 @@ sub check_node {
 		my $is_feature_history = 0;
 		my $is_feature_hyperion = 0;
 		my $is_feature_dfuse = 0;
-		my $is_feature_fio = 0;
-		my $is_feature_snapshot = 0;
-		my $is_feature_dsp = 0;
+		my $is_feature_firehose = 0;
+		my $is_feature_fio = 0;  # not implemented
+		my $is_feature_snapshot = 0; # not implemented
+		my $is_feature_dsp = 0; # not implemented
 		my $is_feature_atomic = 0;
 
 		if (! $$node{features}) {
@@ -1417,6 +1430,9 @@ sub check_node {
 				} elsif ($feature eq 'dfuse') {
 					$valid = 1;
 					$is_feature_dfuse = 1;
+				} elsif ($feature eq 'firehose') {
+					$valid = 1;
+					$is_feature_firehose = 1;
 				} elsif ($feature eq 'fio-api') {
 					$valid = 1;
 					$is_feature_fio = 1;
@@ -1436,7 +1452,7 @@ sub check_node {
 						value => $feature,
 						field => "node[$$counters{node_number}]",
 						node_type => 'query',
-						class => 'api_endpoint'
+						class => 'org'
 					);
 				}
 
@@ -1447,7 +1463,7 @@ sub check_node {
 						value => $feature,
 						field => "node[$$counters{node_number}]",
 						node_type => 'query',
-						class => 'api_endpoint'
+						class => 'org'
 					);
 				}
 			}
@@ -1463,7 +1479,7 @@ sub check_node {
 		}
 
 		if ($is_feature_chain && (defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
-			$found_api_endpoint++;
+			$found_nodeos_api_endpoint++;
 			my $result = $self->validate_basic_api (
 				class => 'api_endpoint',
 				api_url => $$node{api_endpoint},
@@ -1473,7 +1489,7 @@ sub check_node {
 				location => $location
 			);
 			if ($result) {
-				$valid_api_endpoint++;
+				$valid_nodeos_api_endpoint++;
 				my $result_history = $self->validate_history_api (
 					class => 'history',
 					api_url => $$node{api_endpoint},
@@ -1492,6 +1508,14 @@ sub check_node {
 					add_to_list => 'nodes/hyperion_http',
 					location => $location
 				) if ($is_feature_hyperion);
+				my $result_dfuse = $self->validate_dfuse_api (
+					class => 'dfuse',
+					api_url => $$node{api_endpoint},
+					field => "node[$$counters{node_number}].api_endpoint",
+					ssl => 'off',
+					add_to_list => 'nodes/dfuse_http',
+					location => $location
+				) if ($is_feature_dfuse);
 				my $result_account = $self->validate_account_api (
 					class => 'account',
 					api_url => $$node{api_endpoint},
@@ -1504,8 +1528,34 @@ sub check_node {
 			}
 		}
 
+		if ((defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
+			my $result_firehose = $self->validate_firehose_api (
+				class => 'firehose',
+				api_url => $$node{api_endpoint},
+				field => "node[$$counters{node_number}].api_endpoint",
+				ssl => 'off',
+				add_to_list => 'nodes/firehose_http',
+				location => $location
+			) if ($is_feature_firehose);
+			if ($result_firehose) {
+				$valid_other_endpoint++;
+			}
+
+			my $result_atomic = $self->validate_atomic_api (
+				class => 'atomic',
+				api_url => $$node{api_endpoint},
+				field => "node[$$counters{node_number}].api_endpoint",
+				ssl => 'off',
+				add_to_list => 'nodes/atomic_http',
+				location => $location
+			) if ($is_feature_atomic);
+			if ($result_atomic) {
+				$valid_other_endpoint++;
+			}
+		}
+
 		if ($is_feature_chain && (defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
-			$found_ssl_endpoint++;
+			$found_nodeos_ssl_endpoint++;
 			my $result = $self->validate_basic_api (
 				class => 'api_endpoint',
 				api_url => $$node{ssl_endpoint},
@@ -1516,7 +1566,7 @@ sub check_node {
 				location => $location
 			);
 			if ($result) {
-				$valid_ssl_endpoint++;
+				$valid_nodeos_ssl_endpoint++;
 				my $result_history = $self->validate_history_api (
 					class => 'history',
 					api_url => $$node{ssl_endpoint},
@@ -1537,6 +1587,15 @@ sub check_node {
 					add_to_list => 'nodes/hyperion_https',
 					location => $location
 				) if ($is_feature_hyperion);
+				my $result_dfuse = $self->validate_dfuse_api (
+					class => 'dfuse',
+					api_url => $$node{ssl_endpoint},
+					field => "node[$$counters{node_number}].ssl_endpoint",
+					ssl => 'on',
+					modern_tls_version => 1,
+					add_to_list => 'nodes/dfuse_https',
+					location => $location
+				) if ($is_feature_dfuse);
 				my $result_account = $self->validate_account_api (
 					class => 'account',
 					api_url => $$node{ssl_endpoint},
@@ -1550,7 +1609,35 @@ sub check_node {
 			}
 		}
 
-		if (! $valid_api_endpoint && ! $valid_ssl_endpoint) {
+		if ((defined $$node{ssl_endpoint}) && ($$node{ssl_endpoint} ne '')) {
+			my $result_firehose = $self->validate_firehose_api (
+				class => 'firehose',
+				api_url => $$node{ssl_endpoint},
+				field => "node[$$counters{node_number}].ssl_endpoint",
+				ssl => 'on',
+				modern_tls_version => 1,
+				add_to_list => 'nodes/firehose_https',
+				location => $location
+			) if ($is_feature_firehose);
+			if ($result_firehose) {
+				$valid_other_endpoint++;
+			}
+
+			my $result_atomic = $self->validate_atomic_api (
+				class => 'atomic',
+				api_url => $$node{ssl_endpoint},
+				field => "node[$$counters{node_number}].ssl_endpoint",
+				ssl => 'on',
+				modern_tls_version => 1,
+				add_to_list => 'nodes/atomic_https',
+				location => $location
+			) if ($is_feature_atomic);
+			if ($result_atomic) {
+				$valid_other_endpoint++;
+			}
+		}
+
+		if (! $valid_nodeos_api_endpoint && ! $valid_nodeos_ssl_endpoint && ! $valid_other_endpoint) {
 			$self->add_message (
 				kind => 'warn',
 				detail => 'no valid API/SSL endpoints provided',
@@ -1565,8 +1652,8 @@ sub check_node {
 				kind => 'warn',
 				detail => 'extranious API endpoint provided',
 				field => "node[$$counters{node_number}]",
-				node_type => 'seed',
-				class => 'api_endpoint'
+				node_type => 'query',
+				class => 'org'
 			);
 		}
 
@@ -1575,15 +1662,15 @@ sub check_node {
 				kind => 'warn',
 				detail => 'extranious SSL endpoint provided',
 				field => "node[$$counters{node_number}]",
-				node_type => 'seed',
-				class => 'api_endpoint'
+				node_type => 'query',
+				class => 'org'
 			);
 		}
 	}
 
 	if ($is_seed) {
 		if ((defined $$node{p2p_endpoint}) && ($$node{p2p_endpoint} ne '')) {
-			$found_p2p_endpoint++;
+			$found_nodeos_p2p_endpoint++;
 			if ($self->validate_connection (
 				class => 'p2p_endpoint',
 				peer => $$node{p2p_endpoint},
@@ -1593,16 +1680,16 @@ sub check_node {
 				location => $location,
 				dupe => 'info'
 			)) {
-				$valid_p2p_endpoint++;
+				$valid_nodeos_p2p_endpoint++;
 			}
 		}
-		if (! $valid_p2p_endpoint) {
+		if (! $valid_nodeos_p2p_endpoint) {
 			$self->add_message (
 				kind => 'warn',
 				detail => 'no valid p2p endpoints provided',
 				field => "node[$$counters{node_number}]",
 				node_type => 'seed',
-				class => 'p2p_endpoint'
+				class => 'org'
 			);
 		}
 	} else {
@@ -1613,19 +1700,19 @@ sub check_node {
 				see1 => 'https://medium.com/@eosriobrazil/bp-json-update-119877d3525c',
 				field => "node[$$counters{node_number}]",
 				node_type => 'query',
-				class => 'p2p_endpoint'
+				class => 'org'
 			);
 		}
 	}
 
 	# ---------- done, increment global counters
 
-	$$counters{total_valid_api_endpoint} += $valid_api_endpoint;
-	$$counters{total_valid_ssl_endpoint} += $valid_ssl_endpoint;
-	$$counters{total_valid_p2p_endpoint} += $valid_p2p_endpoint;
-	$$counters{total_found_api_endpoint} += $found_api_endpoint;
-	$$counters{total_found_ssl_endpoint} += $found_ssl_endpoint;
-	$$counters{total_found_p2p_endpoint} += $found_p2p_endpoint;
+	$$counters{total_valid_nodeos_api_endpoint} += $valid_nodeos_api_endpoint;
+	$$counters{total_valid_nodeos_ssl_endpoint} += $valid_nodeos_ssl_endpoint;
+	$$counters{total_valid_nodeos_p2p_endpoint} += $valid_nodeos_p2p_endpoint;
+	$$counters{total_found_nodeos_api_endpoint} += $found_nodeos_api_endpoint;
+	$$counters{total_found_nodeos_ssl_endpoint} += $found_nodeos_ssl_endpoint;
+	$$counters{total_found_nodeos_p2p_endpoint} += $found_nodeos_p2p_endpoint;
 	$$counters{node_number}++;
 }
 
@@ -2454,6 +2541,90 @@ sub validate_hyperion_api {
 	);
 }
 
+sub validate_dfuse_api {
+	my ($self, %options) = @_;
+
+	return if (! $self->{chain_properties}{class_dfuse});
+
+	my $api_url = $options{api_url};
+	my $field = $options{field};
+	my $class = $options{class} || confess "class not provided";
+
+	return $self->validate_url (
+		api_url => $api_url,
+		field => $field,
+		class => $class,
+		url_ext => '/v1/chain/get_info',
+		content_type => 'json',
+		cors_origin => 'on',
+		cors_headers => 'on',
+		non_standard_port => 1,
+		extra_check => 'validate_dfuse_api_extra_check',
+		add_result_to_list => 'response',
+		add_info_to_list => 'info',
+		dupe => 'info',
+		request_timeout => 2,
+		cache_timeout => 300,
+		%options
+	);
+}
+
+sub validate_firehose_api {
+	my ($self, %options) = @_;
+
+	return if (! $self->{chain_properties}{class_firehose});
+
+	my $api_url = $options{api_url};
+	my $field = $options{field};
+	my $class = $options{class} || confess "class not provided";
+
+	return $self->validate_url (
+		api_url => $api_url,
+		field => $field,
+		class => $class,
+		url_ext => '',
+		content_type => 'html',
+#		cors_origin => 'on',
+#		cors_headers => 'on',
+		non_standard_port => 1,
+		extra_check => 'validate_firehose_api_extra_check',
+		add_result_to_list => 'response',
+		add_info_to_list => 'info',
+		dupe => 'info',
+		request_timeout => 2,
+		cache_timeout => 300,
+		%options
+	);
+}
+
+sub validate_atomic_api {
+	my ($self, %options) = @_;
+
+	return if (! $self->{chain_properties}{class_atomic});
+
+	my $api_url = $options{api_url};
+	my $field = $options{field};
+	my $class = $options{class} || confess "class not provided";
+
+	return $self->validate_url (
+		api_url => $api_url,
+		field => $field,
+		class => $class,
+		url_ext => '/health',
+		content_type => 'json',
+		cors_origin => 'on',
+		cors_headers => 'on',
+		non_standard_port => 1,
+		extra_check => 'validate_atomic_api_extra_check',
+		add_result_to_list => 'response',
+		add_info_to_list => 'info',
+		dupe => 'info',
+		request_timeout => 2,
+		cache_timeout => 300,
+		%options
+	);
+}
+
 sub validate_account_api {
 	my ($self, %options) = @_;
 
@@ -2716,6 +2887,84 @@ sub validate_hyperion_api_extra_check {
 	if ($info{history_type}) {
 		my $new_value = 'history_' . $info{history_type} . '_';
 		$$options{add_to_list} =~ s/history_/$new_value/;
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	return \%info;
+}
+
+sub validate_dfuse_api_extra_check {
+	my ($self, $result, $res, $options) = @_;
+
+	my $url = $$options{api_url};
+	my $field = $$options{field};
+	my $class = $$options{class};
+	my $ssl = $$options{ssl} || 'either'; # either, on, off
+	my $url_ext = $$options{url_ext} || '';
+
+	my %info;
+	my $errors;
+
+	if (! $self->test_dfuse_grpc (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+		$errors++;
+	}
+	if (! $self->test_dfuse_blocks (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+		$errors++;
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	return \%info;
+}
+
+sub validate_firehose_api_extra_check {
+	my ($self, $result, $res, $options) = @_;
+
+	my $url = $$options{api_url};
+	my $field = $$options{field};
+	my $class = $$options{class};
+	my $ssl = $$options{ssl} || 'either'; # either, on, off
+	my $url_ext = $$options{url_ext} || '';
+
+	my %info;
+	my $errors;
+
+	if (! $self->test_firehose_grpc (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+		$errors++;
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	return \%info;
+}
+
+sub validate_atomic_api_extra_check {
+	my ($self, $result, $res, $options) = @_;
+
+	my $url = $$options{api_url};
+	my $field = $$options{field};
+	my $class = $$options{class};
+	my $ssl = $$options{ssl} || 'either'; # either, on, off
+	my $url_ext = $$options{url_ext} || '';
+
+	my %info;
+	my $errors;
+
+	if (! $self->test_atomic_health (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+		$errors++;
+	}
+	if (! $self->test_atomic_count (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+		$errors++;
+	}
+	if (! $self->test_atomic_transaction (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+		$errors++;
 	}
 
 	if ($errors) {
@@ -4561,6 +4810,206 @@ sub test_regproducer_claim_rewards {
 		detail => 'regproducer claim rewards test passed',
 		%options
 	);
+
+	return 1;
+}
+
+sub test_dfuse_grpc {
+	my ($self, %options) = @_;
+
+	# not supported by dfuse at this time
+	# grpc_health_probe -addr eos.dfuse.eosnation.io:9000 -tls
+	# status: SERVING
+	# see test_firehose_grpc() below for implementation
+
+	return 1;
+}
+
+sub test_dfuse_blocks {
+	my ($self, %options) = @_;
+
+	my $request_time = time2str ("%Y-%m-%dT%TZ", time - 30, 'UTC');
+	$options{api_url} .= "/v0/block_id/by_time?time=$request_time&comparator=lte";
+	$options{log_prefix} = $self->log_prefix;
+
+	my $req = HTTP::Request->new ('GET', $options{api_url}, undef);
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header ('host');
+	my $content = $res->content;
+	my $response_content_type = $res->content_type;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'dfuse block_id error',
+			value => $status_message,
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options);
+
+	if (ref $$json{block} ne 'HASH') {
+		$self->add_message (
+			kind => 'err',
+			detail => 'dfuse block_id syntax error',
+			%options
+		);
+		return undef;
+	}
+
+	my $response_time = $$json{block}{time};
+	if ((! defined $response_time) || ($request_time ne $response_time)) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'dfuse block time error',
+			value => $response_time,
+			suggested_value => $request_time,
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'dfuse block time ok',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_firehose_grpc {
+	my ($self, %options) = @_;
+
+	# grpc_health_probe -addr eos.firehose.eosnation.io:9000 -tls
+	# status: SERVING
+
+	my $hostname = $options{api_url};
+	$hostname =~ s#^https://##;
+	$hostname =~ s#/$##;
+	$hostname =~ s#:.*$##;
+
+	my $status;
+	run (['grpc_health_probe', '-addr', "$hostname:9000", '-tls'], '2>', \$status);
+
+	if (! defined $status) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'grpc health probe failed',
+			%options
+		);
+		return undef;
+	} elsif ($status ne "status: SERVING\n") {
+		$self->add_message (
+			kind => 'err',
+			detail => 'grpc health probe unknown status',
+			%options
+		);
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'grpc health probe test passed',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_atomic_health {
+	my ($self, %options) = @_;
+
+	$options{api_url} .= '/health';
+	$options{log_prefix} = $self->log_prefix;
+
+	my $req = HTTP::Request->new ('GET', $options{api_url}, undef);
+	my $res = $self->run_request ($req, \%options);
+	my $status_code = $res->code;
+	my $status_message = $res->status_line;
+	my $response_url = $res->request->uri;
+	my $response_host = $res->header ('host');
+	my $content = $res->content;
+	my $response_content_type = $res->content_type;
+
+	$self->check_response_errors (response => $res, %options);
+
+	if (! $res->is_success) {
+		$self->add_message (
+			kind => 'err',
+			detail => 'atomic assets health error',
+			value => $status_message,
+			response_host => $response_host,
+			%options
+		);
+		return undef;
+	}
+
+	my $json = $self->get_json ($content, %options);
+
+	if (ref $$json{data} ne 'HASH') {
+		$self->add_message (
+			kind => 'err',
+			detail => 'atomic assets health syntax error',
+			%options
+		);
+		return undef;
+	}
+
+	my $errors = 0;
+	foreach my $key (qw (postgres redis chain)) {
+		my $status = $$json{data}{$key}{status} || 'unknown';
+		if ($status ne 'OK') {
+			$self->add_message (
+				kind => 'err',
+				detail => 'atomic assets component health error',
+				value => "$key: $status",
+				%options
+			);
+			$errors++;
+		} else {
+			$self->add_message (
+				kind => 'ok',
+				detail => 'atomic assets component health ok',
+				value => "$key: $status",
+				%options
+			);
+		}
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	$self->add_message (
+		kind => 'ok',
+		detail => 'atomic assets health ok',
+		%options
+	);
+
+	return 1;
+}
+
+sub test_atomic_count {
+	my ($self, %options) = @_;
+
+	# https://wax.api.atomicassets.io/atomicassets/v1/assets/_count
+
+	return 1;
+}
+
+sub test_atomic_transaction {
+	my ($self, %options) = @_;
+
+	# first WAX NFT: https://wax.api.atomicassets.io/atomicassets/v1/assets/1099511627776
 
 	return 1;
 }
