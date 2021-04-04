@@ -38,7 +38,6 @@ foreach my $thread_id (1 .. $max_processes) {
 	my $pid = fork;
 	if (! defined $pid) {
 		die "$0: could not fork";
-		next;
 	} elsif (! $pid) {
 		write_timestamp_log ("[$thread_id] start worker");
 		run_main_loop ($thread_id);
@@ -48,6 +47,7 @@ foreach my $thread_id (1 .. $max_processes) {
 	}
 }
 
+run_cleanup ();
 wait ();
 
 write_timestamp_log ('stopping');
@@ -61,6 +61,30 @@ exit 1;
 
 # --------------------------------------------------------------------------
 # Subroutines
+
+sub run_cleanup {
+	my $thread_id = 0;
+	my $pid = fork;
+
+        if (! defined $pid) {
+                die "$0: could not fork";
+	} elsif (! $pid) {
+		# ok
+	} else {
+		push (@pids, $pid);
+		return;
+	}
+
+	write_timestamp_log ("[$thread_id] start cleanup");
+	my $dbh = do_connect_sqlite ('bpvalidate');
+
+	while (1) {
+		write_timestamp_log ("[$thread_id] run cleanup");
+		my $cleanup_time = time - (3600 * 24 * 30);
+		$dbh->do ("delete from url where checked_at < $cleanup_time");
+		sleep (300);
+	}
+}
 
 sub run_main_loop {
 	my ($thread_id) = @_;
