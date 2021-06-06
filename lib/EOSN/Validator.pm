@@ -536,10 +536,7 @@ sub check_onchainbpjson {
 
 	#print "bpjson: $onchainbpjson_data\n";
 
-	my $chain_json = $self->get_json ($onchainbpjson_data, %message_options);
-	if (! $chain_json) {
-		return;
-	}
+	my $chain_json = $self->get_json ($onchainbpjson_data, %message_options) || return undef;
 
 	my $file_json = $self->{results}{input};
 
@@ -1079,6 +1076,7 @@ sub check_aloha {
 	}
 
 	my $json = $self->get_json ($content, %options);
+
 	if (! $json) {
 		$self->write_timestamp_log ("aloha error $options{url} $options{post_data} => invalid json $content");
 		return undef;
@@ -2361,8 +2359,7 @@ sub do_validate_p2p {
 	my $content = '';
 	run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 10], '>', \$content);
 
-	my $result = $self->get_json ($content, %options);
-	return undef if (! $result);
+	my $result = $self->get_json ($content, %options) || return undef;
 
 	if ($$result{status} ne 'success') {
 		$self->write_timestamp_log ("p2p error $host:$port => $$result{error_detail}");
@@ -3605,6 +3602,19 @@ sub test_error_message {
 
 	$self->check_response_errors (response => $res, %options);
 
+	if (! ref $$json{error}) {
+		use Data::Dumper;
+		print Dumper $json;
+		die;
+		$self->add_message (
+			kind => 'err',
+			response_host => $response_host,
+			detail => 'invalid json structure for error message',
+			%options
+		);
+		return undef;
+	}
+
 	if ((ref $$json{error}{details} ne 'ARRAY') || (scalar (@{$$json{error}{details}}) == 0)) {
 		$self->add_message (
 			kind => 'err',
@@ -3898,6 +3908,7 @@ sub test_history_key_accounts {
 	}
 
 	my $json = $self->get_json ($content, %options) || return undef;
+
 	if (ref $json eq 'ARRAY') {
 		$self->add_message (
 			kind => 'err',
@@ -3907,6 +3918,7 @@ sub test_history_key_accounts {
 		);
 		return undef;
 	}
+
 	if ((! $$json{account_names}) || (! scalar (@{$$json{account_names}}))) {
 		$self->add_message (
 			kind => 'err',
@@ -4556,6 +4568,7 @@ sub test_system_symbol {
 	}
 
 	my $json = $self->get_json ($content, %options) || return undef;
+
 	if (! scalar (@$json)) {
 		$self->add_message (
 			kind => 'err',
