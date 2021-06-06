@@ -3602,17 +3602,20 @@ sub test_error_message {
 
 	$self->check_response_errors (response => $res, %options);
 
+	if ($status_code != 404) {
+		$self->add_message (
+			kind => 'err',
+			response_host => $response_host,
+			value => $status_message,
+			detail => 'invalid response code',
+			%options
+		);
+	}
+
 	if (! ref $$json{error}) {
 		use Data::Dumper;
 		print Dumper $json;
 		die;
-		$self->add_message (
-			kind => 'err',
-			response_host => $response_host,
-			detail => 'invalid json structure for error message',
-			%options
-		);
-		return undef;
 	}
 
 	if ((ref $$json{error}{details} ne 'ARRAY') || (scalar (@{$$json{error}{details}}) == 0)) {
