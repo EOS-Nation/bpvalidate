@@ -3610,6 +3610,7 @@ sub test_error_message {
 			detail => 'invalid response code',
 			%options
 		);
+		return undef;
 	}
 
 	if ((ref $$json{error}{details} ne 'ARRAY') || (scalar (@{$$json{error}{details}}) == 0)) {
