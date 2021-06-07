@@ -3612,12 +3612,6 @@ sub test_error_message {
 		);
 	}
 
-	if (! ref $$json{error}) {
-		use Data::Dumper;
-		print Dumper $json;
-		die;
-	}
-
 	if ((ref $$json{error}{details} ne 'ARRAY') || (scalar (@{$$json{error}{details}}) == 0)) {
 		$self->add_message (
 			kind => 'err',
