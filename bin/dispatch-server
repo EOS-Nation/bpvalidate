@@ -7,7 +7,8 @@ use EOSN::CommandUtil qw(write_timestamp_log write_file_atomic);
 use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::SQL qw(do_connect_mysql);
 use EOSN::FileUtil qw(write_file read_csv_hash);
-use EOSN::UA qw(eosn_normal_ua eosn_cache_ua get_table);
+use EOSN::UA qw(eosn_normal_ua eosn_cache_ua);
+use EOSN::BlockchainAPI qw(get_info get_table);
 use Getopt::Long;
 use Time::HiRes qw(usleep);
 
@@ -352,9 +353,10 @@ sub update_chain {
 		$$chain_data{dbh} = $dbh;
 		$$chain_data{versions} = $versions;
 
-		get_globals ($chain_data);
-		get_regproducer ($chain_data);
-		get_onchain_bpjson_list ($chain_data);
+		get_chain_info ($chain_data);
+		get_chain_globals ($chain_data);
+		get_chain_regproducer ($chain_data);
+		get_chain_bpjson_list ($chain_data);
 
 		my $records_updated = 0;
 		if ($$chain_data{errors}) {
@@ -375,7 +377,26 @@ sub update_chain {
 	}
 }
 
-sub get_globals {
+sub get_chain_info {
+	my ($options) = @_;
+
+	my $chain = $$options{chain};
+	my $base_url = $$options{base_url};
+	my $ua = $$options{ua};
+	my $onchain = $$options{onchain};
+	my $query_limit = $$options{query_limit};
+
+	my $info = get_info ($ua, $base_url . '/v1/chain/get_info');
+
+	if (! $info) {
+		write_timestamp_log ("[update $chain] cannot get info");
+		$$options{errors}++;
+	}
+
+	$$options{info} = $info;
+}
+
+sub get_chain_globals {
 	my ($options) = @_;
 
 	my $chain = $$options{chain};
@@ -395,7 +416,7 @@ sub get_globals {
 	$$options{globals} = $globals;
 }
 
-sub get_regproducer {
+sub get_chain_regproducer {
 	my ($options) = @_;
 
 	my $chain = $$options{chain};
@@ -415,7 +436,7 @@ sub get_regproducer {
 	$$options{producer_list} = $producer_list;
 }
 
-sub get_onchain_bpjson_list {
+sub get_chain_bpjson_list {
 	my ($options) = @_;
 
 	my $chain = $$options{chain};
@@ -511,6 +532,7 @@ sub update_db {
 	my $chain = $$options{chain};
 	my $dbh = $$options{dbh};
 	my $onchain = $$options{onchain};
+	my $info = $$options{info};
 	my $globals = $$options{globals};
 	my $producer_list = $$options{producer_list};
 	my $onchain_bpjson_list = $$options{onchain_bpjson_list};
@@ -541,6 +563,7 @@ sub update_db {
 			meta => $$onchain{meta}{$producer},
 			onchainbpjson_enabled => (scalar (@$onchain_bpjson_list) ? 1 : 0),
 			onchainbpjson_data => $$onchain{bpjson}{$producer},
+			info_data => $info,
 			globals_data => $globals,
 			versions_data => $versions,
 			chain => $chain,
