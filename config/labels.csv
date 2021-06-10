@@ -52,7 +52,6 @@ title_reports/country,Country Report,国家报告,국가 보고
 title_reports/timezone,Time Zone Report,时区报告,타임존 보고
 title_reports/endpoints,Endpoints Report,终端报告,앤드포인트 보고
 title_reports/errors,Errors Report,错误信息报告,에러 보고
-title_reports/node_types,Node Types Report,节点类型报告,노드 타입 보고
 title_producers/producer,Report for %producer%,%producer% 报告,%producer% 보고
 title_producers/index,Producer Scorecard,出块节点计分卡,프로듀서 스코어 카드
 title_reports/resources,Resources Report,资源报告,자원 보고
