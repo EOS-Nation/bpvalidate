@@ -22,31 +22,15 @@ rabbitmq:
 mariadb:
 - run: apt install mariadb-server
 - mysql: create database bpvalidate
-- mysql: create user user bpvalidate identified by 'bpvalidate'
+- mysql: create user bpvalidate identified by 'bpvalidate'
 - mysql: grant all privileges on bpvalidate.* to 'bpvalidate'@'%'
 
 webui:
 - install libraries from https://github.com/EOS-Nation/perl-lib
 - get png-small icons from https://github.com/EOS-Nation/chain-icons and put in /var/www/chains
 - download fontawesome and place in /var/www/fontawesome (or edit res/template.html and replace fontawesome references to the fontawesome CDN)
-- run: apt install apache2
-- create /etc/apache/sites-enabled/bpvalidate.conf to point at html directory
-```
-<VirtualHost *:80>
-  ...
-  AddDefaultCharset UTF-8
-  ErrorDocument 403 /errors/403.html
-  ErrorDocument 404 /errors/404.html
-  DocumentRoot /var/www/bpvalidate
-  <Directory /var/www/bpvalidate>
-    Options +MultiViews -Indexes
-    AddLanguage en .en
-    AddLanguage zh .zh
-    AddLanguage ko .ko
-    LanguagePriority en zh ko
-  </Directory>
-</VirtualHost>
-```
+- run: apt install starman libi18n-acceptlanguage-perl
+- data directory is /var/www/bpvdalidate
 
 dispatch:
 - install libraries from https://github.com/EOS-Nation/perl-lib

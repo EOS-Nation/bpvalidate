@@ -28,8 +28,6 @@ write_timestamp_log ('starting');
 my @pids;
 my $delay = 10;
 
-fork_website_builder ();
-
 foreach my $chain (sort (chains())) {
 	fork_chain ($chain);
 	sleep ($delay);
@@ -64,46 +62,6 @@ sub fork_chain {
 		die "$0: update chain=<$chain> exited abmormally";
 	} else {
 		push (@pids, $pid1);
-	}
-}
-
-sub fork_website_builder {
-	my $pid = fork;
-	if (! defined $pid) {
-		die "$0: could not fork";
-		next;
-	} elsif (! $pid) {
-		write_timestamp_log ("run website builder");
-		update_website ();
-		# do something
-		write_timestamp_log ("abnormal exit website builder");
-		die "$0: website builder exited abmormally";
-	} else {
-		push (@pids, $pid);
-	}
-}
-
-sub update_website {
-	my $wait_time = 30;
-
-	while (1) {
-		exit if (getppid() == 1);
-		my $start_time = time;
-
-		foreach my $lang (languages()) {
-			my $xfile = "$outdir/about/index.thtml.$lang";
-			touch ($xfile);
-		}
-
-		run_command ('[website]', 'webui-builder', "--out=$outdir", "--config=$confdir");
-
-		my $end_time = time;
-		my $process_time = $end_time - $start_time;
-		my $sleep_time = $wait_time - $process_time;
-		$sleep_time = 0 if ($sleep_time < 0);
-
-		write_timestamp_log ("[website] in time=<$process_time s> sleep=<$sleep_time s>");
-		sleep ($sleep_time);
 	}
 }
 

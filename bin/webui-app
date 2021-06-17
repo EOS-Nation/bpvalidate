@@ -1,0 +1,242 @@
+#!/usr/bin/perl -w
+
+# --------------------------------------------------------------------------
+# Required modules
+
+use utf8;
+use strict;
+use EOSN::Report;
+use EOSN::CommandUtil qw(write_timestamp_log);
+use EOSN::Webpage;
+use File::Slurp qw(read_dir read_file);
+use I18N::AcceptLanguage;
+use Plack::Builder;
+use Plack::Request;
+use Plack::App::File;
+use Encode;
+
+binmode(STDOUT, ":utf8");
+
+# --------------------------------------------------------------------------
+# Main
+
+my %generated;
+my %globals;
+my $labels;
+get_report_options_website2 ();
+my $outdir = outdir ();
+
+read_globals ();
+
+# --------------------------------------------------------------------------
+# App
+
+my $app = sub {
+	my ($env) = @_;
+
+        my $request = Plack::Request->new ($env);
+        my $uri = $request->path_info;
+
+	my $webpage = new EOSN::Webpage;
+	my $acceptor = I18N::AcceptLanguage->new;
+	my $lang = $acceptor->accepts ($$env{HTTP_ACCEPT_LANGUAGE}, [$webpage->langs]);
+
+	if ($uri =~ /\.html$/) {
+		my $filename = $uri;
+		$filename =~ s/\.html/.thtml.$lang/;
+		return generate_html_content (lang => $lang, filename => $outdir . $filename, webpage => $webpage);
+
+	} elsif ($uri =~ m#/$#) {
+		my $filename = $uri;
+		$filename .= "index.thtml.$lang";
+		return generate_html_content (lang => $lang, filename => $outdir . $filename, webpage => $webpage);
+
+	} elsif ($uri =~ /\.json$/) {
+		my $filename = $uri . '.' . $lang;
+		return generate_json_content (lang => $lang, filename => $outdir . $filename, webpage => $webpage);
+
+	} elsif ($uri =~ /\.txt$/) {
+		my $filename = $uri . '.' . $lang;
+		return generate_txt_content (lang => $lang, filename => $outdir . $filename, webpage => $webpage);
+	}
+
+	return error_404 ();
+};
+
+builder {
+	mount "/res" => Plack::App::File->new (root => $outdir . '/res/');
+	mount "/" => $app;
+};
+
+# --------------------------------------------------------------------------
+# Subroutines
+
+sub error_404 {
+	return ['404', [], []];
+}
+
+# ---------------------------------------------------------------------------
+# Subroutines
+
+sub read_globals {
+	$globals{"template"} = read_file ("$outdir/res/template.html", {binmode => ':utf8'});
+	$globals{generated_at} = time2str ("%C", time);
+
+	$labels = labels ();
+
+	foreach my $file (read_dir ("$outdir/res/maintainer")) {
+		my ($maintainer, $lang) = (split (/\./, $file))[0,2];
+		$$labels{"maintainer_$maintainer"}{"label_$lang"} = read_file ("$outdir/res/maintainer/$file", {binmode => ':utf8'});
+	}
+
+        foreach my $chain (chains()) {
+		my $properties = chain_properties ($chain);
+		next if (! $$properties{active});
+
+		# ---------- navigation
+
+		$generated{navigation_producers} .= nav_link ($chain, 'producers') . "\n";
+		$generated{navigation_reports} .= nav_link ($chain, 'reports') . "\n";
+		$generated{navigation_info} .= nav_link ($chain, 'info') . "\n";
+		$generated{networks} .= (' ' x 4) . ' <li> <a href="' . $chain . '/"><img class="navbar-image" src="/res/chains/' . $chain . '.png" alt=""> %chain_' . $chain . '%</a>' . "\n";
+
+		# --------- list of active reports
+
+		my $xproperties;
+                foreach my $property (keys %$properties) {
+                        next if ($property !~ /^report_/);
+                        next if (! $$properties{$property});
+			$$xproperties{$property} = $$properties{$property};
+		}
+                foreach my $property (sort {$$xproperties{$a} <=> $$xproperties{$b}} keys %$xproperties) {
+                        my $report = $property;
+                        $report =~ s/^report_//;
+			$generated{"report_list_$chain"} .= (' ' x 2) . '<li><a href="' . $report . '.html">%title_reports/' . $report . '%</a>' . "\n";
+		}
+	}
+}
+
+sub nav_link {
+	my ($chain, $url) = @_;
+
+	return (' ' x 8) . '<a class="navbar-item" href="/' . $chain . '/' . $url . '/"><img class="navbar-image" src="/res/chains/' . $chain . '.png" alt=""> %chain_' . $chain . '%</a>';
+}
+
+sub generate_html_content {
+	my (%options) = @_;
+
+	my $lang = $options{lang};
+	my $filename = $options{filename};
+	my $webpage = $options{webpage};
+
+	if (! -e $filename) {
+		return error_404 ();
+	}
+
+	#print "generate file from=<$filename_in> to=<$filename_out>\n";
+	my (@content) = read_file ($filename, {binmode => ':utf8'});
+
+	my $header = 1;
+	my %variables;
+	foreach my $line (@content) {
+		chomp ($line);
+		if ($line =~ /^$/ && $header) {
+			$header = 0;
+		} elsif ($header) {
+			my ($key, $value) = split (/\s*=\s*/, $line, 2);
+			$variables{$key} = $value;
+		} else {
+			$variables{content} .= "$line\n";
+		}
+	}
+
+	my $output = $globals{template};
+	$globals{lang} = $lang;
+	$globals{last_update} = datetime($globals{generated_at}, $lang);
+	if ($variables{chain}) {
+		$globals{chain_plain} = $variables{chain};
+		$globals{chain} = $$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain};
+		$globals{chain_title} = ($$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain}) . ": ";
+		$generated{report_list} = $generated{'report_list_' . $variables{chain}};
+
+		my $properties = chain_properties ($variables{chain});
+		foreach my $key (qw (filename chain_id core_symbol)) {
+			$generated{"config_$key"} = $$properties{$key};
+		}
+		$generated{maintainer} = '%maintainer_' . $$properties{maintainer} . '%';
+	} else {
+		$globals{chain} = '--';
+		$globals{chain_title} = '';
+	}
+
+	foreach my $key (keys %variables) {
+		my $value = $variables{$key};
+		$output =~ s/%$key%/$value/g;
+	}
+
+	foreach my $key (keys %generated) {
+		my $value = $generated{$key};
+		$output =~ s/%$key%/$value/g;
+	}
+
+	foreach my $key (keys %$labels) {
+		my $value = $$labels{$key}{"label_$lang"} || $$labels{$key}{"label_en"};
+		if (! defined $value) {
+			die "$0: cannot get label for key=<$key>\n";
+		}
+		$output =~ s/%$key%/$value/g;
+	}
+
+	foreach my $key (keys %globals) {
+		my $value = $globals{$key};
+		$output =~ s/%$key%/$value/g;
+	}	
+
+	$output = $webpage->inject_footer (content => $output, lang => $lang);
+
+	return [
+		200, 
+		['Content-Type' => 'text/html; charset=UTF-8'],
+		[encode_utf8 ($output)]
+	];
+}
+
+sub generate_json_content {
+	my (%options) = @_;
+
+	my $lang = $options{lang};
+	my $filename = $options{filename};
+	my $webpage = $options{webpage};
+
+	if (! -e $filename) {
+		return error_404 ();
+	}
+
+	my $content = read_file ($filename, {binmode => ':utf8'});
+
+	return [
+		200, 
+		['Content-Type' => 'application/json; charset=UTF-8'],
+		[encode_utf8 ($content)]
+	];
+}
+
+sub generate_txt_content {
+	my (%options) = @_;
+
+	my $lang = $options{lang};
+	my $filename = $options{filename};
+	my $webpage = $options{webpage};
+
+	if (! -e $filename) {
+		return error_404 ();
+	}
+
+	my $content = read_file ($filename, {binmode => ':utf8'});
+
+	return [
+		200, 
+		['Content-Type' => 'text/plain; charset=UTF-8'],
+		[encode_utf8 ($content)]
+	];
+}

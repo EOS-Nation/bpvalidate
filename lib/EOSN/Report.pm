@@ -141,6 +141,17 @@ sub get_report_options_website {
 	return undef;
 }
 
+# hack!!!
+sub get_report_options_website2 {
+	$outdir = "/var/www/bpvalidate";
+	$confdir = "/etc/bpvalidate";
+
+	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
+	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
+	$chains = read_csv_hash ("$confdir/chains.csv", 'name');
+	return undef;
+}
+
 sub get_report_options_chain {
 	GetOptions('chain=s' => \$chain, 'output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
 
