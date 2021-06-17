@@ -9,7 +9,6 @@ use EOSN::Report;
 use EOSN::CommandUtil qw(write_timestamp_log);
 use EOSN::Webpage;
 use File::Slurp qw(read_dir read_file);
-use I18N::AcceptLanguage;
 use Plack::Builder;
 use Plack::Request;
 use Plack::App::File;
@@ -38,8 +37,7 @@ my $app = sub {
         my $uri = $request->path_info;
 
 	my $webpage = new EOSN::Webpage;
-	my $acceptor = I18N::AcceptLanguage->new;
-	my $lang = $acceptor->accepts ($$env{HTTP_ACCEPT_LANGUAGE}, [$webpage->langs]);
+	my $lang = $webpage->lang (env => $env);
 
 	if ($uri =~ /\.html$/) {
 		my $filename = $uri;
