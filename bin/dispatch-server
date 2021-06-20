@@ -6,7 +6,7 @@ use JSON;
 use EOSN::CommandUtil qw(write_timestamp_log write_file_atomic);
 use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::SQL qw(do_connect_mysql);
-use EOSN::FileUtil qw(write_file read_csv_hash);
+use EOSN::FileUtil qw(read_csv_hash);
 use EOSN::UA qw(eosn_normal_ua eosn_cache_ua);
 use EOSN::BlockchainAPI qw(get_info get_table);
 use Getopt::Long;
