@@ -34,8 +34,8 @@ my $labels = labels ();
 my $properties = chain_properties ($chain);
 my @classes = classes ();
 
-foreach my $lang (languages()) {
-	foreach my $content_type (content_types()) {
+foreach my $lang (languages ()) {
+	foreach my $content_type (content_types ()) {
 		foreach my $entry (@{$$data{producers}}) {
 			my @section;
 

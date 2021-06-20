@@ -19,8 +19,8 @@ foreach my $entry (@{$$data{producers}}) {
 	$kinds{$key} = 1;
 }
 
-foreach my $lang (languages()) {
-	foreach my $content_type (content_types()) {
+foreach my $lang (languages ()) {
+	foreach my $content_type (content_types ()) {
 		my @report;
 		foreach my $kind (sort keys %kinds) {
 			my @section;
