@@ -50,7 +50,6 @@ sub fork_chain {
 	my ($chain) = @_;
 
 	my $properties = $webpage->chain_properties ($chain);
-	return if (! $$properties{active});
 
 	my $pid1 = fork;
 	if (! defined $pid1) {

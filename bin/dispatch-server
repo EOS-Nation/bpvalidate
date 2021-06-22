@@ -63,7 +63,6 @@ sub fork_children {
 	my ($chain) = @_;
 
 	my $properties = $webpage->chain_properties ($chain);
-	return if (! $$properties{active});
 
 	# ---------- update database
 
