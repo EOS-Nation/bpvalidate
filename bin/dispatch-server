@@ -541,7 +541,9 @@ sub update_db {
 	foreach my $entry (@{$producer_list}) {
 		my $producer = $$entry{owner};
 		my $rank = $$onchain{meta}{$producer}{rank};
+		my $is_active = $$entry{is_active};
 
+		next if (! $is_active);
 		last if ($rank > $max_producers);
 		$records_updated = $rank;
 
@@ -578,7 +580,7 @@ sub update_db {
 	}
 
 	# expire producers no longer in list with required rank
-	$dbh->do ("delete from producer_$chain where regproducer_at < ?", {}, time - (3600 * 12));
+	$dbh->do ("delete from producer_$chain where regproducer_at < ?", {}, time - (3600 * 6));
 
 	return $records_updated;
 }
