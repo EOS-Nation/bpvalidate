@@ -1,4 +1,7 @@
-package EOSN::Validator;
+package EOSN::Validate::Validator;
+
+# --------------------------------------------------------------------------
+# Required modules
 
 use utf8;
 use strict;
@@ -14,7 +17,7 @@ use Date::Parse qw(str2time);
 use Carp qw(confess);
 use Text::Diff;
 use Time::HiRes qw(time);
-use EOSN::CommandUtil;
+use EOSN::Log;
 use IPC::Run qw(run);
 use XML::LibXML;
 use Digest::MD5 qw(md5_hex);
@@ -5236,7 +5239,7 @@ sub write_timestamp_log {
 	my $log_prefix = $self->log_prefix || '';
 	$log_prefix .= ' ' if ($log_prefix);
 
-	EOSN::CommandUtil::write_timestamp_log ($self->log_prefix . $message);
+	EOSN::Log::write_timestamp_log ($self->log_prefix . $message);
 }
 
 1;

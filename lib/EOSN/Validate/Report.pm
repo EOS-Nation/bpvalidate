@@ -1,18 +1,24 @@
+# --------------------------------------------------------------------------
+# Required modules
+
 use utf8;
 use strict;
 use HTML::Entities;
 use JSON;
-use EOSN::FileUtil qw(read_file write_file read_csv_hash);
+use File::Slurp qw(read_file);
+use EOSN::File qw(write_file_atomic);
+use YAML qw(LoadFile);
 use Carp qw(confess);
 use Getopt::Long;
 use Date::Parse;
 use Date::Format;
-use Data::Dumper;
+use EOSN::Validate::Webpage;
 
+our $webpage = EOSN::Validate::Webpage->new;
 our $chain = undef;
 our $infile = undef;
-our $outdir = undef;
-our $confdir = undef;
+our $webdir = $webpage->webdir;
+our $configdir = $webpage->configdir;
 
 our %icons;
 $icons{none} = '<!-- none -->';
@@ -57,46 +63,17 @@ $icons{bp_top21_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-batte
 $icons{bp_standby_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-half"></i></span>';
 $icons{bp_other_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-empty"></i></span>';
 
-our $labels;
-our $languages;
-our $chains;
 our $producers;
 
 # --------------------------------------------------------------------------
 # Getter Subroutines
 
-sub content_types {
-	return ('txt', 'json', 'html');
-}
-
-sub labels {
-	return $labels;
-}
-
-sub languages {
-	return keys %$languages;
-}
-
-sub chains {
-	return sort {$$chains{$a}{sort_order} <=> $$chains{$b}{sort_order}} keys %$chains;
-}
-
-sub outdir {
-	return $outdir;
-}
-
-sub confdir {
-	return $confdir;
+sub webpage {
+	return $webpage;
 }
 
 sub chain {
 	return $chain;
-}
-
-sub chain_properties {
-	my ($chain) = @_;
-
-	return $$chains{$chain};
 }
 
 sub classes {
@@ -104,8 +81,10 @@ sub classes {
 	my @classes_configured = ();
 
 	foreach my $class (@classes_available) {
-		next if (! exists $$chains{$chain}{"class_$class"});
-		next if (! $$chains{$chain}{"class_$class"});
+		my $properties = $webpage->chain_properties ($chain);
+
+		next if (! exists $$properties{"class_$class"});
+		next if (! $$properties{"class_$class"});
 		push (@classes_configured, $class);
 	}
 
@@ -116,53 +95,12 @@ sub classes {
 # Subroutines
 
 sub get_report_options {
-	GetOptions('chain=s' => \$chain, 'input=s' => \$infile, 'output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
+	GetOptions('chain=s' => \$chain, 'input=s' => \$infile) || exit 1;
 
 	confess "$0: chain not given" if (! $chain);
 	confess "$0: input filename not given" if (! $infile);
-	confess "$0: output dir not given" if (! $outdir);
-	confess "$0: config dir not given" if (! $confdir);
 
-	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
-	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
-	$chains = read_csv_hash ("$confdir/chains.csv", 'name');
-	return from_json(read_file($infile) || confess "$0: no data read");
-}
-
-sub get_report_options_website {
-	GetOptions('chain=s' => \$chain, 'output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
-
-	confess "$0: output dir not given" if (! $outdir);
-	confess "$0: config dir not given" if (! $confdir);
-
-	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
-	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
-	$chains = read_csv_hash ("$confdir/chains.csv", 'name');
-	return undef;
-}
-
-# hack!!!
-sub get_report_options_website2 {
-	$outdir = "/var/www/bpvalidate";
-	$confdir = "/etc/bpvalidate";
-
-	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
-	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
-	$chains = read_csv_hash ("$confdir/chains.csv", 'name');
-	return undef;
-}
-
-sub get_report_options_chain {
-	GetOptions('chain=s' => \$chain, 'output=s' => \$outdir, 'config=s' => \$confdir) || exit 1;
-
-	confess "$0: chain not given" if (! $chain);
-	confess "$0: output dir not given" if (! $outdir);
-	confess "$0: config dir not given" if (! $confdir);
-
-	$languages = read_csv_hash ("$confdir/languages.csv", 'lang');
-	$labels = read_csv_hash ("$confdir/labels.csv", 'key');
-	$chains = read_csv_hash ("$confdir/chains.csv", 'name');
-	return undef;
+	return from_json (read_file ($infile, {binmode => ':utf8'}));
 }
 
 sub generate_report {
@@ -193,24 +131,25 @@ sub generate_report {
 }
 
 sub generate_report_txt {
-	my %options = @_;
+	my (%options) = @_;
 
 	my $lang = $options{lang};
 	my $data = $options{data};
 	my $report = $options{report};
 	my $outfile = $options{outfile};
 	my $chain = $options{chain} || confess "missing chain";
-	my $title = $options{title} || label ("title_$outfile", $lang);
+	my $title = $options{title} || $webpage->label (key => "title_$outfile", lang => $lang);
 	my @out;
 
 	push (@out, "# $title\n");
-	push (@out, "# " . label ('txt_chain', $lang) . ' ' . label ('chain_' . $chain, $lang) . "\n");
-	push (@out, "# " . label ('txt_update', $lang) . ' ' . datetime ($$data{meta}{generated_at}, $lang) . "\n");
-	push (@out, "# " . label ('txt_about', $lang) . "\n");
+	push (@out, "# " . $webpage->label (key => 'txt_chain', lang => $lang) . ' ' . $webpage->label (key => 'chain_' . $chain, lang => $lang) . "\n");
+	push (@out, "# " . $webpage->label (key => 'txt_update', lang => $lang) . ' ' . $webpage->datetime (timestring => $$data{meta}{generated_at}, lang => $lang) . "\n");
+	push (@out, "# " . $webpage->label (key => 'txt_about', lang => $lang) . "\n");
 	push (@out, "\n");
+
 	foreach my $section (@$report) {
 		my $name = $$section{name};
-		$name = label ('unknown', $lang) if (defined $name && $name eq 'zzunknown');
+		$name = $webpage->label (key => 'unknown', lang => $lang) if (defined $name && $name eq 'zzunknown');
 		my $rows = $$section{rows};
 		my $prefix = $$section{name_prefix} || '';
 		my $divider = $$section{section_divider} || 1;
@@ -240,30 +179,30 @@ sub generate_report_txt {
 		push (@out, "\n");
 	}
 
-	report_write_file ("$outfile.txt.$lang", @out);
+	write_file_atomic ($webdir . '/' . $chain . '/' . "$outfile.txt.$lang", {binmode => ':utf8'}, @out);
 }
 
 sub generate_report_json {
-	my %options = @_;
+	my (%options) = @_;
 
 	my $lang = $options{lang};
 	my $data = $options{data};
 	my $report = $options{report};
 	my $outfile = $options{outfile};
 	my $chain = $options{chain} || confess "missing chain";
-	my $title = $options{title} || label ("title_$outfile", $lang);
+	my $title = $options{title} || $webpage->label (key => "title_$outfile", lang => $lang);
 	my %out;
 
 	$out{meta}{title}{value} = $title;
-	$out{meta}{network}{label} = label ('txt_chain', $lang);
-	$out{meta}{network}{value} = label ('chain_' . $chain, $lang);
-	$out{meta}{update}{label} = label ('txt_update', $lang);
-	$out{meta}{update}{value} = datetime ($$data{meta}{generated_at}, $lang);
-	$out{meta}{details}{value} = label ('txt_about', $lang);
+	$out{meta}{network}{label} = $webpage->label (key => 'txt_chain', lang => $lang);
+	$out{meta}{network}{value} = $webpage->label (key => 'chain_' . $chain, lang => $lang);
+	$out{meta}{update}{label} = $webpage->label (key => 'txt_update', lang => $lang);
+	$out{meta}{update}{value} = $webpage->datetime (timestring => $$data{meta}{generated_at}, lang => $lang);
+	$out{meta}{details}{value} = $webpage->label (key => 'txt_about', lang => $lang);
 
 	foreach my $section (@$report) {
 		my $name = $$section{name};
-		$name = label ('unknown', $lang) if (defined $name && $name eq 'zzunknown');
+		$name = $webpage->label (key => 'unknown', lang => $lang) if (defined $name && $name eq 'zzunknown');
 		my $rows = $$section{rows};
 		my $prefix = $$section{name_prefix} || '';
 		my $divider = $$section{section_divider} || 1;
@@ -292,11 +231,11 @@ sub generate_report_json {
 		}
 	}
 
-	report_write_file ("$outfile.json.$lang", to_json (\%out, {canonical => 1}));
+	write_file_atomic ($webdir . '/' . $chain . '/' . "$outfile.json.$lang", {binmode => ':utf8'}, to_json (\%out, {canonical => 1}));
 }
 
 sub generate_report_thtml {
-	my %options = @_;
+	my (%options) = @_;
 
 	my $lang = $options{lang};
 	my $data = $options{data};
@@ -308,10 +247,10 @@ sub generate_report_thtml {
 	my @out;
 
 	if ($text) {
-		push (@out, "<p><a href=\"../$outfile.txt\">" . label ('label_text_version', $lang) . "</a></p>");
+		push (@out, "<p><a href=\"../$outfile.txt\">" . $webpage->label (key => 'label_text_version', lang => $lang) . "</a></p>");
 	}
 	if ($json) {
-		push (@out, "<p><a href=\"../$outfile.json\">" . label ('label_json_version', $lang) . "</a></p>");
+		push (@out, "<p><a href=\"../$outfile.json\">" . $webpage->label (key => 'label_json_version', lang => $lang) . "</a></p>");
 	}
 	if ($text || $json) {
 		push (@out, "<br>\n");
@@ -319,7 +258,7 @@ sub generate_report_thtml {
 
 	foreach my $section (@$report) {
 		my $name = $$section{title} || $$section{name};
-		$name = label ('unknown', $lang) if (defined $name && $name eq 'zzunknown');
+		$name = $webpage->label (key => 'unknown', lang => $lang) if (defined $name && $name eq 'zzunknown');
 		my $rows = $$section{rows};
 
 		if ($$section{name}) {
@@ -385,7 +324,7 @@ sub write_report_thtml {
 	my $content = $options{content};
 	my $outfile = $options{outfile};
 	my $chain = $options{chain} || confess "missing chain";
-	my $title = $options{title} || label ("title_$outfile", $lang);
+	my $title = $options{title} || $webpage->label (key => "title_$outfile", lang => $lang);
 	my @out;
 
 	push (@out, "chain = $chain\n");
@@ -394,7 +333,7 @@ sub write_report_thtml {
 	push (@out, "\n");
 	push (@out, @$content);
 
-	report_write_file ("$outfile.thtml.$lang", @out);
+	write_file_atomic ($webdir . '/' . $chain . '/' . "$outfile.thtml.$lang", {binmode => ':utf8'}, @out);
 }
 
 sub sev_html {
@@ -411,11 +350,11 @@ sub sev_html {
 	}
 
 	if ($class) {
-		my $title_class = label ("class_$class", $lang);
-		my $title = label ("check_$kind", $lang);
+		my $title_class = $webpage->label (key => "class_$class", lang => $lang);
+		my $title = $webpage->label (key => "check_$kind", lang => $lang);
 		$html =~ s/ / title="$title_class: $title" /;
 	} else {
-		my $title = label ("$kind", $lang);
+		my $title = $webpage->label (key => "$kind", lang => $lang);
 		$html =~ s/ / title="$title" /;
 	}
 	
@@ -477,7 +416,7 @@ sub generate_message {
 		$response_url = undef if ($url eq $response_url);
 	}
 
-	$request_timeout .= ' ' . label ('time_s', $lang) if ($request_timeout);
+	$request_timeout .= ' ' . $webpage->label (key => 'time_s', lang => $lang) if ($request_timeout);
 
 	if ($cache_timeout) {
 		$cache_timeout = undef if ($cache_timeout < 1800);
@@ -485,15 +424,15 @@ sub generate_message {
 	if ($cache_timeout) {
 		if ($cache_timeout > 3600) {
 			$cache_timeout = int ($cache_timeout / 3600);
-			$cache_timeout .= ' ' . label ('time_h', $lang);
+			$cache_timeout .= ' ' . $webpage->label (key => 'time_h', lang => $lang);
 		} else {
 			$cache_timeout = int ($cache_timeout / 60);
-			$cache_timeout .= ' ' . label ('time_m', $lang);
+			$cache_timeout .= ' ' . $webpage->label (key => 'time_m', lang => $lang);
 		}
 	}
 
-	$elapsed_time = format_elapsed_time ($elapsed_time, $lang);
-	$delta_time = format_elapsed_time ($delta_time, $lang);
+	$elapsed_time = format_elapsed_time (seconds => $elapsed_time, lang => $lang);
+	$delta_time = format_elapsed_time (seconds => $delta_time, lang => $lang);
 
 	# ---------- output
 
@@ -502,7 +441,7 @@ sub generate_message {
 	$detail .= format_message_entry ('msg_threshold', $threshold, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_count', $count, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_value', $value, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_value_time', datetime ($value_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_value_time', $webpage->datetime (timestring => $value_time, lang => $lang), 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_suggested_to_use_value', $suggested_value, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_delta_time', $delta_time, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_field', $field, 0, $content_type, $lang);
@@ -520,21 +459,23 @@ sub generate_message {
 	$detail .= format_message_entry ('msg_port', $port, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_elapsed_time', $elapsed_time, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_timeout', $request_timeout, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_validated_at', datetime ($check_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_validated_at', $webpage->datetime (timestring => $check_time, lang => $lang), 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_validated_every', $cache_timeout, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_explanation', $explanation, 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_see', $see1, 1, $content_type, $lang);
 	$detail .= format_message_entry ('msg_see', $see2, 1, $content_type, $lang);
-	$detail .= format_message_entry ('msg_last_updated_at', datetime ($last_update_time, $lang), 0, $content_type, $lang);
+	$detail .= format_message_entry ('msg_last_updated_at', $webpage->datetime (timestring => $last_update_time, lang => $lang), 0, $content_type, $lang);
 	$detail .= format_message_entry ('msg_diff', $diff, 2, $content_type, $lang);
 
 	return $detail;
 }
 
 sub format_elapsed_time {
-	my ($time, $lang) = @_;
+	my (%options) = @_;
 
-	# $time is in seconds
+	my $time = $options{seconds}; # $time is in seconds
+	my $lang = $options{lang};
+
 	return undef if (! defined $time);
 
 	use integer;
@@ -543,14 +484,14 @@ sub format_elapsed_time {
 	my $s = $time % 60;
 
 	if ($time > 3600) {
-		return $h . ' ' . label ('time_h', $lang) .  ' '
-			. $m . ' ' . label ('time_m', $lang) .  ' '
-			. $s . ' ' . label ('time_s', $lang);
+		return $h . ' ' . $webpage->label (key => 'time_h', lang => $lang) .  ' '
+			. $m . ' ' . $webpage->label (key => 'time_m', lang => $lang) .  ' '
+			. $s . ' ' . $webpage->label (key => 'time_s', lang => $lang);
 	} elsif ($time > 60) {
-		return $m . ' ' . label ('time_m', $lang) .  ' '
-			. $s . ' ' . label ('time_s', $lang);
+		return $m . ' ' . $webpage->label (key => 'time_m', lang => $lang) .  ' '
+			. $s . ' ' . $webpage->label (key => 'time_s', lang => $lang);
 	} else {
-		return $time . ' ' . label ('time_s', $lang);
+		return $time . ' ' . $webpage->label (key => 'time_s', lang => $lang);
 	}
 }
 
@@ -568,37 +509,14 @@ sub format_message_entry {
 		} else {
 			$value = encode_entities ($value);
 		}
-		return ', ' . label ($key, $lang) . '=&lt;' . $value . '&gt;';
+		return ', ' . $webpage->label (key => $key, lang => $lang) . '=&lt;' . $value . '&gt;';
 	} else {
 		if ($is_url == 2) {
 			return "";
 		} else {
-			return ', ' . label ($key, $lang) . '=<' . $value .'>';
+			return ', ' . $webpage->label (key => $key, lang => $lang) . '=<' . $value .'>';
 		}
 	}
-}
-
-sub report_write_file {
-	my ($filename, @out) = @_;
-
-	my $report_dir = $outdir . "/$chain";
-	write_file ($report_dir . "/" . $filename, @out);
-}
-
-sub label {
-	my ($key, $lang) = @_;
-
-	#return "[" . ($$labels{$key}{"label_$lang"} || $$labels{$key}{label_en} || $key) . "]";
-	return $$labels{$key}{"label_$lang"} || $$labels{$key}{label_en} || $key;
-}
-
-sub datetime {
-	my ($value, $lang) = @_;
-
-	return '' if (! defined $value);
-
-	my $unixtime = str2time($value);
-	return time2str (label ('format_datetime', $lang), $unixtime, 'UTC');
 }
 
 sub is_important_bp {

@@ -6,7 +6,7 @@ use Carp qw(confess);
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes qw(time);
 use Date::Format qw(time2str);
-use EOSN::CommandUtil qw(write_timestamp_log);
+use EOSN::Log qw(write_timestamp_log);
 use JSON;
 
 use parent qw(LWPx::ParanoidAgent);

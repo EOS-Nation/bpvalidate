@@ -4,12 +4,12 @@ use utf8;
 use strict;
 use JSON qw(from_json to_json);
 use EOSN::STOMP qw(do_connect_stomp);
-use EOSN::CommandUtil qw(write_timestamp_log);
+use EOSN::Log qw(write_timestamp_log);
 use EOSN::UA qw(eosn_cache_ua);
 use EOSN::SQL qw(do_connect_sqlite);
 use File::Slurp qw(read_file);
 use Getopt::Long;
-use EOSN::Validator;
+use EOSN::Validate::Validator;
 
 binmode(STDOUT, ":utf8");
 
@@ -188,6 +188,6 @@ sub handle_request {
 	$$data{dbh} = do_connect_sqlite ('bpvalidate');
 	$$data{schema} = from_json (read_file ($schemafile));
 
-	my $validator = new EOSN::Validator (%$data);
+	my $validator = EOSN::Validate::Validator->new (%$data);
 	$$request{results} = $validator->validate;
 }

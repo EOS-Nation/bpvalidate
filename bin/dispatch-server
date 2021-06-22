@@ -3,14 +3,15 @@
 use utf8;
 use strict;
 use JSON;
-use EOSN::CommandUtil qw(write_timestamp_log write_file_atomic);
+use EOSN::Log qw(write_timestamp_log);
+use EOSN::File qw(write_file_atomic);
 use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::SQL qw(do_connect_mysql);
-use EOSN::FileUtil qw(read_csv_hash);
+use EOSN::Validate::Webpage;
 use EOSN::UA qw(eosn_normal_ua eosn_cache_ua);
 use EOSN::BlockchainAPI qw(get_info get_table);
-use Getopt::Long;
 use Time::HiRes qw(usleep);
+use YAML qw(LoadFile);
 
 binmode(STDOUT, ":utf8");
 
@@ -34,18 +35,10 @@ $stats_config{count_stale} = {query => 'sum(if(unix_timestamp() - regproducer_at
 # --------------------------------------------------------------------------
 # Main
 
-my $configdir = undef;
-GetOptions ('config=s' => \$configdir) || exit 1;
-$configdir || die "$0: config dir not provided";
-
-my $chainsfile = "$configdir/chains.csv";
-if (! -e $chainsfile) {
-	die "$0: chains file not found: $chainsfile";
-}
-
 write_timestamp_log ('starting');
 
-my $chains = read_csv_hash ($chainsfile, 'name');
+my $webpage = EOSN::Validate::Webpage->new;
+my $chains = $webpage->chains;
 my @pids;
 
 foreach my $chain (sort keys %$chains) {
@@ -330,8 +323,8 @@ sub update_chain {
 	my $ua = eosn_normal_ua ();
 	my $dbh = do_connect_mysql ('bpvalidate');
 	my $wait_time = 300;
-	my $versionsfile = "$configdir/versions_$chain.csv";
-	my $versions = read_csv_hash ($versionsfile, 'hash');
+	my $versionsfile = $webpage->configdir . "/versions_$chain.yml";
+	my $versions = LoadFile ($versionsfile);
 
 	write_timestamp_log ("[update $chain] read from url=<$base_url>");
 	

@@ -5,9 +5,9 @@
 
 use utf8;
 use strict;
-use EOSN::Report;
-use EOSN::CommandUtil qw(write_timestamp_log);
-use EOSN::Webpage;
+use EOSN::Log qw(write_timestamp_log);
+use EOSN::Validate::Webpage;
+use Date::Format qw(time2str);
 use File::Slurp qw(read_dir read_file);
 use Plack::Builder;
 use Plack::Request;
@@ -21,9 +21,10 @@ binmode(STDOUT, ":utf8");
 
 my %generated;
 my %globals;
-my $labels;
-get_report_options_website2 ();
-my $outdir = outdir ();
+my $webpage = EOSN::Validate::Webpage->new;
+my $configdir = $webpage->configdir;
+my $labels = $webpage->labels;
+my $webdir = $webpage->webdir;
 
 read_globals ();
 
@@ -35,34 +36,32 @@ my $app = sub {
 
         my $request = Plack::Request->new ($env);
         my $uri = $request->path_info;
-
-	my $webpage = new EOSN::Webpage;
 	my $lang = $webpage->lang (env => $env);
 
 	if ($uri =~ /\.html$/) {
 		my $filename = $uri;
 		$filename =~ s/\.html/.thtml.$lang/;
-		return generate_html_content (lang => $lang, filename => $outdir . $filename, webpage => $webpage);
+		return generate_html_content (lang => $lang, filename => $webdir . $filename, webpage => $webpage);
 
 	} elsif ($uri =~ m#/$#) {
 		my $filename = $uri;
 		$filename .= "index.thtml.$lang";
-		return generate_html_content (lang => $lang, filename => $outdir . $filename, webpage => $webpage);
+		return generate_html_content (lang => $lang, filename => $webdir . $filename, webpage => $webpage);
 
 	} elsif ($uri =~ /\.json$/) {
 		my $filename = $uri . '.' . $lang;
-		return generate_json_content (lang => $lang, filename => $outdir . $filename, webpage => $webpage);
+		return generate_json_content (lang => $lang, filename => $webdir . $filename, webpage => $webpage);
 
 	} elsif ($uri =~ /\.txt$/) {
 		my $filename = $uri . '.' . $lang;
-		return generate_txt_content (lang => $lang, filename => $outdir . $filename, webpage => $webpage);
+		return generate_txt_content (lang => $lang, filename => $webdir . $filename, webpage => $webpage);
 	}
 
 	return error_404 ();
 };
 
 builder {
-	mount "/res" => Plack::App::File->new (root => $outdir . '/res/');
+	mount "/res" => Plack::App::File->new (root => $webdir . '/res/');
 	mount "/" => $app;
 };
 
@@ -77,18 +76,18 @@ sub error_404 {
 # Subroutines
 
 sub read_globals {
-	$globals{"template"} = read_file ("$outdir/res/template.html", {binmode => ':utf8'});
+	$globals{"template"} = read_file ("$webdir/res/template.html", {binmode => ':utf8'});
 	$globals{generated_at} = time2str ("%C", time);
 
-	$labels = labels ();
+	$labels = $webpage->labels;
 
-	foreach my $file (read_dir ("$outdir/res/maintainer")) {
+	foreach my $file (read_dir ("$webdir/res/maintainer")) {
 		my ($maintainer, $lang) = (split (/\./, $file))[0,2];
-		$$labels{"maintainer_$maintainer"}{"label_$lang"} = read_file ("$outdir/res/maintainer/$file", {binmode => ':utf8'});
+		$$labels{"maintainer_$maintainer"}{$lang} = read_file ("$webdir/res/maintainer/$file", {binmode => ':utf8'});
 	}
 
-        foreach my $chain (chains()) {
-		my $properties = chain_properties ($chain);
+        foreach my $chain ($webpage->chains) {
+		my $properties = $webpage->chain_properties ($chain);
 		next if (! $$properties{active});
 
 		# ---------- navigation
@@ -150,14 +149,14 @@ sub generate_html_content {
 
 	my $output = $globals{template};
 	$globals{lang} = $lang;
-	$globals{last_update} = datetime($globals{generated_at}, $lang);
+	$globals{last_update} = $webpage->datetime ($globals{generated_at}, $lang);
 	if ($variables{chain}) {
 		$globals{chain_plain} = $variables{chain};
-		$globals{chain} = $$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain};
-		$globals{chain_title} = ($$labels{'chain_' . $variables{chain}}{"label_$lang"} || $variables{chain}) . ": ";
+		$globals{chain} = $$labels{'chain_' . $variables{chain}}{$lang} || $variables{chain};
+		$globals{chain_title} = ($$labels{'chain_' . $variables{chain}}{$lang} || $variables{chain}) . ": ";
 		$generated{report_list} = $generated{'report_list_' . $variables{chain}};
 
-		my $properties = chain_properties ($variables{chain});
+		my $properties = $webpage->chain_properties ($variables{chain});
 		foreach my $key (qw (filename chain_id core_symbol)) {
 			$generated{"config_$key"} = $$properties{$key};
 		}
@@ -178,7 +177,7 @@ sub generate_html_content {
 	}
 
 	foreach my $key (keys %$labels) {
-		my $value = $$labels{$key}{"label_$lang"} || $$labels{$key}{"label_en"};
+		my $value = $$labels{$key}{$lang} || $$labels{$key}{en};
 		if (! defined $value) {
 			die "$0: cannot get label for key=<$key>\n";
 		}

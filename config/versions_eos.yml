@@ -1,0 +1,256 @@
+greymass-v1.8.0:
+  api_current: 0
+  hash: greymass-v1.8.0
+  name: 1.8.0 (greymass)
+greymass-v1.8.1:
+  api_current: 0
+  hash: greymass-v1.8.1
+  name: 1.8.1 (greymass)
+greymass-v1.8.10:
+  api_current: 0
+  hash: greymass-v1.8.10
+  name: 1.8.10 (greymass)
+greymass-v1.8.11:
+  api_current: 0
+  hash: greymass-v1.8.11
+  name: 1.8.11 (greymass)
+greymass-v1.8.12:
+  api_current: 0
+  hash: greymass-v1.8.12
+  name: 1.8.12 (greymass)
+greymass-v1.8.13:
+  api_current: 0
+  hash: greymass-v1.8.13
+  name: 1.8.13 (greymass)
+greymass-v1.8.14:
+  api_current: 0
+  hash: greymass-v1.8.14
+  name: 1.8.14 (greymass)
+greymass-v1.8.15:
+  api_current: 0
+  hash: greymass-v1.8.15
+  name: 1.8.15 (greymass)
+greymass-v1.8.2:
+  api_current: 0
+  hash: greymass-v1.8.2
+  name: 1.8.2 (greymass)
+greymass-v1.8.3:
+  api_current: 0
+  hash: greymass-v1.8.3
+  name: 1.8.3 (greymass)
+greymass-v1.8.4:
+  api_current: 0
+  hash: greymass-v1.8.4
+  name: 1.8.4 (greymass)
+greymass-v1.8.5:
+  api_current: 0
+  hash: greymass-v1.8.5
+  name: 1.8.5 (greymass)
+greymass-v1.8.6:
+  api_current: 0
+  hash: greymass-v1.8.6
+  name: 1.8.6 (greymass)
+greymass-v1.8.7:
+  api_current: 0
+  hash: greymass-v1.8.7
+  name: 1.8.7 (greymass)
+greymass-v1.8.8:
+  api_current: 0
+  hash: greymass-v1.8.8
+  name: 1.8.8 (greymass)
+greymass-v1.8.9:
+  api_current: 0
+  hash: greymass-v1.8.9
+  name: 1.8.9 (greymass)
+greymass-v2.0.0:
+  api_current: 0
+  hash: greymass-v2.0.0
+  name: 2.0.0 (greymass)
+greymass-v2.0.1:
+  api_current: 0
+  hash: greymass-v2.0.1
+  name: 2.0.1 (greymass)
+greymass-v2.0.10:
+  api_current: 1
+  hash: greymass-v2.0.10
+  name: 2.0.10 (greymass)
+greymass-v2.0.11:
+  api_current: 1
+  hash: greymass-v2.0.11
+  name: 2.0.11 (greymass)
+greymass-v2.0.12:
+  api_current: 1
+  hash: greymass-v2.0.12
+  name: 2.0.12 (greymass)
+greymass-v2.0.13:
+  api_current: 1
+  hash: greymass-v2.0.13
+  name: 2.0.13 (greymass)
+greymass-v2.0.14:
+  api_current: 1
+  hash: greymass-v2.0.14
+  name: 2.0.14 (greymass)
+greymass-v2.0.2:
+  api_current: 0
+  hash: greymass-v2.0.2
+  name: 2.0.2 (greymass)
+greymass-v2.0.3:
+  api_current: 0
+  hash: greymass-v2.0.3
+  name: 2.0.3 (greymass)
+greymass-v2.0.4:
+  api_current: 0
+  hash: greymass-v2.0.4
+  name: 2.0.4 (greymass)
+greymass-v2.0.5:
+  api_current: 0
+  hash: greymass-v2.0.5
+  name: 2.0.5 (greymass)
+greymass-v2.0.6:
+  api_current: 0
+  hash: greymass-v2.0.6
+  name: 2.0.6 (greymass)
+greymass-v2.0.7:
+  api_current: 0
+  hash: greymass-v2.0.7
+  name: 2.0.7 (greymass)
+greymass-v2.0.8:
+  api_current: 1
+  hash: greymass-v2.0.8
+  name: 2.0.8 (greymass)
+greymass-v2.0.9:
+  api_current: 1
+  hash: greymass-v2.0.9
+  name: 2.0.9 (greymass)
+greymass-v2.1.0:
+  api_current: 1
+  hash: greymass-v2.1.0
+  name: 2.1.0 (greymass)
+v1.8.0:
+  api_current: 0
+  hash: v1.8.0
+  name: 1.8.0 (eosio)
+v1.8.1:
+  api_current: 0
+  hash: v1.8.1
+  name: 1.8.1 (eosio)
+v1.8.10:
+  api_current: 0
+  hash: v1.8.10
+  name: 1.8.10 (eosio)
+v1.8.11:
+  api_current: 0
+  hash: v1.8.11
+  name: 1.8.11 (eosio)
+v1.8.12:
+  api_current: 0
+  hash: v1.8.12
+  name: 1.8.12 (eosio)
+v1.8.13:
+  api_current: 0
+  hash: v1.8.13
+  name: 1.8.13 (eosio)
+v1.8.14:
+  api_current: 0
+  hash: v1.8.14
+  name: 1.8.14 (eosio)
+v1.8.15:
+  api_current: 0
+  hash: v1.8.15
+  name: 1.8.15 (eosio)
+v1.8.2:
+  api_current: 0
+  hash: v1.8.2
+  name: 1.8.2 (eosio)
+v1.8.3:
+  api_current: 0
+  hash: v1.8.3
+  name: 1.8.3 (eosio)
+v1.8.4:
+  api_current: 0
+  hash: v1.8.4
+  name: 1.8.4 (eosio)
+v1.8.5:
+  api_current: 0
+  hash: v1.8.5
+  name: 1.8.5 (eosio)
+v1.8.6:
+  api_current: 0
+  hash: v1.8.6
+  name: 1.8.6 (eosio)
+v1.8.7:
+  api_current: 0
+  hash: v1.8.7
+  name: 1.8.7 (eosio)
+v1.8.8:
+  api_current: 0
+  hash: v1.8.8
+  name: 1.8.8 (eosio)
+v1.8.9:
+  api_current: 0
+  hash: v1.8.9
+  name: 1.8.9 (eosio)
+v2.0.0:
+  api_current: 0
+  hash: v2.0.0
+  name: 2.0.0 (eosio)
+v2.0.1:
+  api_current: 0
+  hash: v2.0.1
+  name: 2.0.1 (eosio)
+v2.0.10:
+  api_current: 1
+  hash: v2.0.10
+  name: 2.0.10 (eosio)
+v2.0.11:
+  api_current: 1
+  hash: v2.0.11
+  name: 2.0.11 (eosio)
+v2.0.12:
+  api_current: 1
+  hash: v2.0.12
+  name: 2.0.12 (eosio)
+v2.0.13:
+  api_current: 1
+  hash: v2.0.13
+  name: 2.0.13 (eosio)
+v2.0.14:
+  api_current: 1
+  hash: v2.0.14
+  name: 2.0.14 (eosio)
+v2.0.2:
+  api_current: 0
+  hash: v2.0.2
+  name: 2.0.2 (eosio)
+v2.0.3:
+  api_current: 0
+  hash: v2.0.3
+  name: 2.0.3 (eosio)
+v2.0.4:
+  api_current: 0
+  hash: v2.0.4
+  name: 2.0.4 (eosio)
+v2.0.5:
+  api_current: 0
+  hash: v2.0.5
+  name: 2.0.5 (eosio)
+v2.0.6:
+  api_current: 0
+  hash: v2.0.6
+  name: 2.0.6 (eosio)
+v2.0.7:
+  api_current: 0
+  hash: v2.0.7
+  name: 2.0.7 (eosio)
+v2.0.8:
+  api_current: 1
+  hash: v2.0.8
+  name: 2.0.8 (eosio)
+v2.0.9:
+  api_current: 1
+  hash: v2.0.9
+  name: 2.0.9 (eosio)
+v2.1.0:
+  api_current: 1
+  hash: v2.1.0
+  name: 2.1.0 (eosio)

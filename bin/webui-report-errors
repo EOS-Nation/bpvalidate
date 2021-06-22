@@ -2,19 +2,20 @@
 
 use utf8;
 use strict;
-use EOSN::Report;
+use EOSN::Validate::Report;
 
 binmode(STDOUT, ":utf8");
 
 # --------------------------------------------------------------------------
 # Main
 
+my $webpage = webpage ();
 my $data = get_report_options ();
 my $chain = chain ();
-my $properties = chain_properties ($chain);
+my $properties = $webpage->chain_properties ($chain);
 
-foreach my $lang (languages ()) {
-	foreach my $content_type (content_types ()) {
+foreach my $lang ($webpage->langs) {
+	foreach my $content_type ($webpage->content_types) {
 		my @report;
 		foreach my $entry (@{$$data{producers}}) {
 			my @section;
@@ -24,7 +25,7 @@ foreach my $lang (languages ()) {
 				next if ($$message{kind} eq 'ok');
 
 				my $icon = sev_html (kind => $$message{kind}, class => $$message{class}, lang => $lang);
-				my $class = label ('class_' . $$message{class}, $lang);
+				my $class = $webpage->label (key => 'class_' . $$message{class}, lang => $lang);
 
 				push (@section, {
 					sprintf => "%4s, %11s, %s",

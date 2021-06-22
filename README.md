@@ -29,12 +29,12 @@ webui:
 - install libraries from https://github.com/EOS-Nation/perl-lib
 - get png-small icons from https://github.com/EOS-Nation/chain-icons and put in /var/www/chains
 - download fontawesome and place in /var/www/fontawesome (or edit res/template.html and replace fontawesome references to the fontawesome CDN)
-- run: apt install starman libi18n-acceptlanguage-perl
+- run: apt install starman libi18n-acceptlanguage-perl libyaml-perl libjson-perl
 - data directory is /var/www/bpvdalidate
 
 dispatch:
 - install libraries from https://github.com/EOS-Nation/perl-lib
-- run: apt install libtext-csv-perl libjson-perl libdbd-mysql-perl libdata-validate-perl liblocale-codes-perl libnet-stomp-perl
+- run: apt install libtext-csv-perl libjson-perl libdbd-mysql-perl libdata-validate-perl liblocale-codes-perl libnet-stomp-perl libyaml-perl
 - mkdir /run/bpvalidate
 
 probe:

@@ -2,7 +2,7 @@
 
 use utf8;
 use strict;
-use EOSN::Report;
+use EOSN::Validate::Report;
 use List::Util qw(shuffle);
 use Date::Format qw(time2str);
 
@@ -28,22 +28,22 @@ my @bonus = (qw (bpjson history hyperion dfuse firehose atomic account chains ip
 # --------------------------------------------------------------------------
 # Main
 
+my $webpage = webpage ();
 my $data = get_report_options ();
 my $chain = chain ();
-my $labels = labels ();
-my $properties = chain_properties ($chain);
+my $properties = $webpage->chain_properties ($chain);
 my @classes = classes ();
 
-foreach my $lang (languages ()) {
-	foreach my $content_type (content_types ()) {
+foreach my $lang ($webpage->langs) {
+	foreach my $content_type ($webpage->content_types) {
 		foreach my $entry (@{$$data{producers}}) {
 			my @section;
 
 			my $producer = $$entry{regproducer}{owner};
 			my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
 			foreach my $message (@{$$entry{messages}}) {
-                                my $icon = sev_html (kind => $$message{kind}, class => $$message{class}, lang => $lang);
-                                my $class = label ('class_' . $$message{class}, $lang);
+				my $icon = sev_html (kind => $$message{kind}, class => $$message{class}, lang => $lang);
+				my $class = $webpage->label (key => 'class_' . $$message{class}, lang => $lang);
 				push (@section, {
 					sprintf => "%4s, %11s, %s",
 					data => [$$message{kind}, $$message{class}, generate_message ($message, lang => $lang, content_type => $content_type)],
@@ -51,7 +51,7 @@ foreach my $lang (languages ()) {
 				});
 			}
 
-			my $title = $$labels{title_producers}{"label_$lang"} || $$labels{title_producers}{"label_en"};
+			my $title = $webpage->label (key => 'title_producers', lang => $lang);
 			$title =~ s/%producer_name_html%/$producer_name_html/;
 			generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => $title, columns => 1, outfile => "producers/$producer", text => 1, json => 1, html => 1);
 		}
@@ -82,7 +82,7 @@ foreach my $entry (shuffle (@{$$data{producers}})) {
 	}
 }
 
-foreach my $lang (languages) {
+foreach my $lang ($webpage->langs) {
 	my @report;
 	push (@report, "<div>\n");
 	foreach my $entry (@entries1, @entries2, @entries3) {
@@ -100,12 +100,12 @@ foreach my $lang (languages) {
 
 		foreach my $key (@classes) {
 			if ($handler{$key} eq 'regular') {
-				$msgsummary{$key} = sev_html(kind => $msgsummary{$key} || 'skip', class => $key, lang => $lang);
+				$msgsummary{$key} = sev_html (kind => $msgsummary{$key} || 'skip', class => $key, lang => $lang);
 			} elsif ($handler{$key} eq 'bonus') {
 				if (defined $msgsummary{$key} && ($msgsummary{$key} eq 'ok' || $msgsummary{$key} eq 'info')) {
-					$msgsummary{$key} = sev_html(kind => "bonus_$key", class => $key, lang => $lang);
+					$msgsummary{$key} = sev_html (kind => "bonus_$key", class => $key, lang => $lang);
 				} else {
-					$msgsummary{$key} = sev_html(kind => 'none', class => $key, lang => $lang);
+					$msgsummary{$key} = sev_html (kind => 'none', class => $key, lang => $lang);
 				}
 			} else {
 				die "$0: unknown hanndler=<$key>";
@@ -114,11 +114,11 @@ foreach my $lang (languages) {
 
 		my $selected = '';
 		if ($is_top_21) {
-			$selected = sev_html(kind => 'bp_top21', class => undef, lang => $lang);
+			$selected = sev_html (kind => 'bp_top21', class => undef, lang => $lang);
 		} elsif ($is_standby) {
-			$selected = sev_html(kind => 'bp_standby', class => undef, lang => $lang);
+			$selected = sev_html (kind => 'bp_standby', class => undef, lang => $lang);
 		} else {
-			$selected = sev_html(kind => 'bp_other', class => undef, lang => $lang);
+			$selected = sev_html (kind => 'bp_other', class => undef, lang => $lang);
 		}
 
 		my $flag = '';
@@ -196,20 +196,55 @@ foreach my $lang (languages) {
 
 	my @form;
 	push (@form, "<div>\n");
-	push (@form, checkbox('top21', sev_html(kind => 'bp_top21', class => undef, lang => $lang, color => 'bw') . ' ' . label('bp_top21', $lang), $lang));
-	push (@form, checkbox('paid', sev_html(kind => 'bp_standby', class => undef, lang => $lang, color => 'bw') . ' ' . label('bp_standby', $lang), $lang));
-	push (@form, checkbox('other', sev_html(kind => 'bp_other', class => undef, lang => $lang, color => 'bw') . ' ' . label('bp_other', $lang), $lang));
-	push (@form, checkbox('regproducer', sev_html(kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_regproducer_l', $lang), $lang));
-	push (@form, checkbox('org', sev_html(kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_org_l', $lang), $lang));
-	push (@form, checkbox('api_endpoint', sev_html(kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_api_endpoint_l', $lang), $lang));
-	push (@form, checkbox('p2p_endpoint', sev_html(kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . label('class_p2p_endpoint_l', $lang), $lang));
+
+	push (@form, checkbox (
+		name => 'top21',
+		label => sev_html (kind => 'bp_top21', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_top21', lang => $lang),
+		lang => $lang
+	));
+	push (@form, checkbox (
+		name => 'paid',
+		label => sev_html (kind => 'bp_standby', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_standby', lang => $lang),
+		lang => $lang
+	));
+	push (@form, checkbox (
+		name => 'other',
+		label => sev_html (kind => 'bp_other', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_other', lang => $lang),
+		lang => $lang
+	));
+	push (@form, checkbox (
+		name => 'regproducer',
+		label => sev_html (kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'class_regproducer_l', lang => $lang),
+		lang => $lang
+	));
+	push (@form, checkbox (
+		name => 'org',
+		label => sev_html (kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'class_org_l', lang => $lang),
+		lang => $lang
+	));
+	push (@form, checkbox (
+		name => 'api_endpoint',
+		label => sev_html (kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'class_api_endpoint_l', lang => $lang),
+		lang => $lang
+	));
+	push (@form, checkbox (
+		name => 'p2p_endpoint',
+		label => sev_html (kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'class_p2p_endpoint_l', lang => $lang),
+		lang => $lang
+	));
+
 	foreach my $key (@bonus) {
 		my $class_key = "class_$key";
 		my $classl_key = "class_${key}_l";
 		my $bonus_key = "bonus_$key";
 		next if (! $$properties{$class_key});
-		push (@form, checkbox($key, sev_html(kind => $bonus_key, class => undef, lang => $lang, color => 'bw') . ' ' . label($classl_key, $lang), $lang));
+		push (@form, checkbox (
+			name => $key,
+			label => sev_html (kind => $bonus_key, class => undef, lang => $lang, color => 'bw') . ' '. $webpage->label (key => $classl_key, lang => $lang),
+			lang => $lang
+		));
 	}
+
 	push (@form, "</div>\n");
 
 	unshift (@report, @form);
@@ -220,14 +255,18 @@ foreach my $lang (languages) {
 }
 
 sub checkbox {
-	my ($name, $label, $lang) = @_;
+	my (%options) = @_;
+
+	my $name = $options{name};
+	my $label = $options{label};
+	my $lang = $options{lang};
 
 	my $string = '';
 	$string .= "<div class=\"filtergroup\">\n";
 	$string .= "$label<br>\n";
-	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}=y\" onClick=\"clickFilter()\"> " . label('filter_yes', $lang) . "</label>\n";
-	$string .= " <label class=\"radio\"><input class=\"filterx\" type=\"radio\" name=\"$name\" checked onClick=\"clickFilter()\"> " . label('filter_na', $lang) ."</label>\n";
-	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}=n\" onClick=\"clickFilter()\"> " . label('filter_no', $lang) . "</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}=y\" onClick=\"clickFilter()\"> " . $webpage->label (key => 'filter_yes', lang => $lang) . "</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filterx\" type=\"radio\" name=\"$name\" checked onClick=\"clickFilter()\"> " . $webpage->label (key => 'filter_na', lang => $lang) ."</label>\n";
+	$string .= " <label class=\"radio\"><input class=\"filter\" type=\"radio\" name=\"$name\" value=\"${name}=n\" onClick=\"clickFilter()\"> " . $webpage->label (key => 'filter_no', lang => $lang) . "</label>\n";
 	$string .= "</div>\n";
 	return $string;
 }

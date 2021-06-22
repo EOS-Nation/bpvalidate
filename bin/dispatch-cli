@@ -3,7 +3,7 @@
 use utf8;
 use strict;
 use JSON;
-use EOSN::CommandUtil qw(write_timestamp_log);
+use EOSN::Log qw(write_timestamp_log);
 use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::SQL qw(do_connect_mysql);
 use Getopt::Long;

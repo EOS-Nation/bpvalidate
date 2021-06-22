@@ -1,0 +1,500 @@
+bp_other:
+  en: Not-Paid Standby BP
+  ko: 페이 받지 않는 스탠바이BP
+  zh: 无报酬的备选节点
+bp_standby:
+  en: Paid Standby BP
+  ko: 페이 받는 스탠바이BP
+  zh: 有报酬的备选节点
+bp_top21:
+  en: Top 21 BP
+  ko: 탑 21BP
+  zh: 前21名BP
+chain_bos:
+  en: BOS
+  ko: BOS
+  zh: BOS
+chain_bostest:
+  en: BOS Testnet
+  ko: BOS 테스트넷
+  zh: BOS测试网
+chain_eos:
+  en: EOS
+  ko: EOS
+  zh: 主网
+chain_jungle:
+  en: Jungle Testnet
+  ko: 정글 테스트넷
+  zh: Jungle测试网
+chain_kylin:
+  en: Kylin Testnet
+  ko: Kylin 테스트넷
+  zh: Kylin测试网
+chain_telos:
+  en: Telos
+  ko: Telos
+  zh: Telos
+chain_telostest:
+  en: Telos Testnet
+  ko: ''
+  zh: ''
+chain_wax:
+  en: WAX
+  ko: WAX
+  zh: WAX
+chain_waxtest:
+  en: WAX Testnet
+  ko: WAX 테스트넷
+  zh: WAX测试网
+check_bonus_account:
+  en: OK
+  ko: OK
+  zh: OK
+check_bonus_atomic:
+  en: OK
+  ko: OK
+  zh: OK
+check_bonus_bpjson:
+  en: OK
+  ko: OK
+  zh: OK
+check_bonus_chains:
+  en: OK
+  ko: OK
+  zh: OK
+check_bonus_dfuse:
+  en: OK
+  ko: OK
+  zh: OK
+check_bonus_firehose:
+  en: OK
+  ko: OK
+  zh: OK
+check_bonus_history:
+  en: OK
+  ko: OK
+  zh: OK
+check_bonus_hyperion:
+  en: OK
+  ko: OK
+  zh: OK
+check_bonus_ipv6:
+  en: OK
+  ko: OK
+  zh: OK
+check_crit:
+  en: Critical
+  ko: 중요
+  zh: 批评
+check_err:
+  en: Error
+  ko: 에러
+  zh: 错误
+check_info:
+  en: Information
+  ko: 정보
+  zh: 信息
+check_ok:
+  en: OK
+  ko: OK
+  zh: OK
+check_skip:
+  en: Skipped
+  ko: 건너뛰기
+  zh: 跳过
+check_warn:
+  en: Warning
+  ko: 경고
+  zh: 警告
+class_account:
+  en: Account
+  ko: ''
+  zh: ''
+class_account_l:
+  en: Account Check
+  ko: ''
+  zh: ''
+class_api_endpoint:
+  en: API
+  ko: API
+  zh: API
+class_api_endpoint_l:
+  en: API Endpoints Check
+  ko: API 앤드포인트 검증
+  zh: API端点 验证
+class_atomic:
+  en: Atomic
+  ko: ''
+  zh: ''
+class_atomic_l:
+  en: Atomic Assets Check
+  ko: ''
+  zh: ''
+class_bpjson:
+  en: bp.json On-Chain
+  ko: bp.json 온체인
+  zh: 链上bp.json
+class_bpjson_l:
+  en: bp.json On-Chain Check
+  ko: bp.json 온체인 검증
+  zh: 链上bp.json 验证
+class_chains:
+  en: Chains.json
+  ko: Chains.json
+  zh: Chains.json
+class_chains_l:
+  en: Chains.json Check
+  ko: Chains.json 검증
+  zh: Chains.json 验证
+class_dfuse:
+  en: dfuse
+  ko: ~
+  zh: ''
+class_dfuse_l:
+  en: dfuse Check
+  ko: ''
+  zh: ''
+class_firehose:
+  en: Firehose
+  ko: ''
+  zh: ''
+class_firehose_l:
+  en: Firehose Check
+  ko: ''
+  zh: ''
+class_general:
+  en: General Info
+  ko: 기본정보
+  zh: 基本信息
+class_general_l:
+  en: General Info Check
+  ko: 기본정보 검증
+  zh: 基本信息 验证
+class_history:
+  en: History
+  ko: 히스토리
+  zh: 历史
+class_history_l:
+  en: History Check
+  ko: 히스토리 검증
+  zh: 历史 验证
+class_hyperion:
+  en: Hyperion
+  ko: '히페리온 '
+  zh: Hyperion
+class_hyperion_l:
+  en: Hyperion Check
+  ko: 히페리온 검증
+  zh: Hyperion 验证
+class_ipv6:
+  en: IPv6
+  ko: IPv6
+  zh: IPv6协议
+class_ipv6_l:
+  en: IPv6 Check
+  ko: IPv6 검증
+  zh: IPv6协议 验证
+class_org:
+  en: Organization
+  ko: 기관
+  zh: 机构
+class_org_l:
+  en: Organization Check
+  ko: 기관 검증
+  zh: 机构 验证
+class_p2p_endpoint:
+  en: P2P
+  ko: P2P
+  zh: P2P
+class_p2p_endpoint_l:
+  en: P2P Endpoints Check
+  ko: P2P 앤드포인트 검증
+  zh: P2P端点 验证
+class_regproducer:
+  en: Regproducer
+  ko: Regproducer
+  zh: 注册出块节点
+class_regproducer_l:
+  en: Regproducer Check
+  ko: Regproducer 검증
+  zh: 注册出块节点 验证
+cpu_xeon_gold:
+  en: Xeon Gold
+  ko: Xeon Gold 시스탬
+  zh: Xeon Gold系列
+cpu_xeon_platinum:
+  en: Xeon Platinum
+  ko: Xeon Platinum 시스탬
+  zh: Xeon Platinum系列
+cpu_xeon_silver:
+  en: Xeon Silver
+  ko: Xeon Silver 시스탬
+  zh: Xeon Silver系列
+cpu_xeon_zzother:
+  en: Xeon Other
+  ko: Xeon 기타 시스탬
+  zh: Xeon其他系列
+cpu_zzother:
+  en: Other
+  ko: '기타 '
+  zh: 其它
+filter_na:
+  en: n/a
+  ko: 내용 없음
+  zh: 无内容
+filter_no:
+  en: No
+  ko: 아니요
+  zh: 不是
+filter_yes:
+  en: Yes
+  ko: 예
+  zh: 是
+format_datetime:
+  en: '%Y-%m-%d %R %Z'
+  ko: '%Y년 %m월 %d일 %R %Z'
+  zh: '%Y年%m月%d日 %R %Z'
+label_json_version:
+  en: json version
+  ko: json 버전
+  zh: json版本
+label_text_version:
+  en: text version
+  ko: 텍스트 버전 보고
+  zh: 文字内容版本
+msg_api_url:
+  en: api_url
+  ko: api_url
+  zh: api_url
+msg_contract:
+  en: contract
+  ko: '컨트랙트 '
+  zh: 合约
+msg_count:
+  en: count
+  ko: 계수
+  zh: 计数
+msg_delta_time:
+  en: time delta
+  ko: 시간간격
+  zh: 时间间隔
+msg_diff:
+  en: diff
+  ko: diff
+  zh: diff
+msg_dns:
+  en: dns
+  ko: dns
+  zh: dns
+msg_elapsed_time:
+  en: elapsed time
+  ko: 경과시간
+  zh: 运行时间
+msg_explanation:
+  en: explanation
+  ko: '설명 '
+  zh: 解释
+msg_feature:
+  en: feature
+  ko: 기능
+  zh: 功能
+msg_field:
+  en: field
+  ko: '필드 '
+  zh: 域
+msg_having_node_type:
+  en: having node_type
+  ko: '노드 타입 있음 '
+  zh: 有node_type
+msg_host:
+  en: host
+  ko: '호스트 '
+  zh: 主机
+msg_ip:
+  en: ip
+  ko: ip
+  zh: ip
+msg_last_updated_at:
+  en: last updated at
+  ko: '최신 업데이트 '
+  zh: 最近一次更新
+msg_port:
+  en: port
+  ko: 포트
+  zh: 端口
+msg_post_data:
+  en: post_data
+  ko: post_data
+  zh: post_data
+msg_redirected_to_response_url:
+  en: redirected to response_url
+  ko: response_url로 리다이렉트
+  zh: 重定向到response_url
+msg_resource:
+  en: resource
+  ko: '리소스 '
+  zh: 资源
+msg_response_from_host:
+  en: response from host
+  ko: 호스트로부터 응답
+  zh: 主机响应
+msg_see:
+  en: see
+  ko: '보기 '
+  zh: 查看
+msg_service:
+  en: service
+  ko: 서비스
+  zh: 服务
+msg_suggested_to_use_value:
+  en: suggested to use value
+  ko: 수치 이용 제안
+  zh: 建议使用数值
+msg_threshold:
+  en: threshold
+  ko: '한정치 '
+  zh: 阈值
+msg_timeout:
+  en: timeout
+  ko: '시간초과 '
+  zh: 超时
+msg_url:
+  en: url
+  ko: url
+  zh: url
+msg_validated_at:
+  en: validated at
+  ko: '검증 시간 '
+  zh: 验证时间为
+msg_validated_every:
+  en: validated every
+  ko: 검증 주기
+  zh: 验证每一个
+msg_value:
+  en: value
+  ko: '수치 '
+  zh: 数值
+msg_value_time:
+  en: value
+  ko: 수치
+  zh: 数值
+nav_about:
+  en: About
+  ko: About
+  zh: 关于
+nav_chain:
+  en: 'Network: %chain%'
+  ko: '네트워크: %chain%'
+  zh: 网络：%chain%
+nav_info:
+  en: Network Info
+  ko: 네트워크 정보
+  zh: 网络信息
+nav_lang:
+  en: 'Language: %lang%'
+  ko: '언어:  %lang%'
+  zh: '语言: %lang%'
+nav_producers:
+  en: Producer Scorecard
+  ko: 프로듀서 스코어 카드
+  zh: ' 出块节点计分卡'
+nav_reports:
+  en: Reports
+  ko: '보고 '
+  zh: 报告
+nav_title:
+  en: bp.json Validator
+  ko: bp.json 검증기
+  zh: bp.json 验证器
+time_h:
+  en: h
+  ko: 시
+  zh: h
+time_m:
+  en: m
+  ko: 분
+  zh: m
+time_s:
+  en: s
+  ko: 초
+  zh: s
+title_producers:
+  en: Report for %producer_name_html%
+  ko: '%producer_name_html% 보고'
+  zh: '%producer_name_html%报告'
+title_producers/index:
+  en: Producer Scorecard
+  ko: 프로듀서 스코어 카드
+  zh: 出块节点计分卡
+title_producers/producer:
+  en: Report for %producer%
+  ko: '%producer% 보고'
+  zh: '%producer% 报告'
+title_reports/api_versions:
+  en: API Versions Report
+  ko: API 버전 보고
+  zh: API版本报告
+title_reports/branding:
+  en: Branding Report
+  ko: ''
+  zh: ''
+title_reports/config:
+  en: Endpoints config.ini
+  ko: 앤드포인트 초기설정
+  zh: 终端配置初始化
+title_reports/country:
+  en: Country Report
+  ko: 국가 보고
+  zh: 国家报告
+title_reports/endpoints:
+  en: Endpoints Report
+  ko: 앤드포인트 보고
+  zh: 终端报告
+title_reports/errors:
+  en: Errors Report
+  ko: 에러 보고
+  zh: 错误信息报告
+title_reports/p2p_speed:
+  en: P2P Speed Report
+  ko: ''
+  zh: P2P速度报告
+title_reports/resources:
+  en: Resources Report
+  ko: 자원 보고
+  zh: 资源报告
+title_reports/socials:
+  en: Socials Report
+  ko: ''
+  zh: ''
+title_reports/timezone:
+  en: Time Zone Report
+  ko: 타임존 보고
+  zh: 时区报告
+title_site:
+  en: Block Producer bp.json Validator
+  ko: 블록프로듀서 bp.json 검증기
+  zh: 出块节点 bp.json 验证器
+txt_about:
+  en: For details on how this is generated see https://validate.eosnation.io/about/
+  ko: ' 상세내용울 보기 위해서는 https://validate.eosnatio.io/about/을 방문해주세요.  '
+  zh: 关于如何生成的详细信息请参见https://validate.eosnation.io/about/
+txt_chain:
+  en: 'Network:'
+  ko: '네트워크:'
+  zh: 网络：
+txt_update:
+  en: 'Validator last update:'
+  ko: '검증기 최신 업데이트:'
+  zh: '验证器最后更新:'
+unknown:
+  en: Unknown
+  ko: UnKnown
+  zh: 未知
+vtype_bare-metal:
+  en: Bare-metal
+  ko: Bare-metal
+  zh: 裸金属架构
+vtype_hvm:
+  en: HVM
+  ko: HVM
+  zh: HVM
