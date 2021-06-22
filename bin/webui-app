@@ -88,7 +88,6 @@ sub read_globals {
 
         foreach my $chain ($webpage->chains) {
 		my $properties = $webpage->chain_properties ($chain);
-		next if (! $$properties{active});
 
 		# ---------- navigation
 
@@ -177,7 +176,7 @@ sub generate_html_content {
 	}
 
 	foreach my $key (keys %$labels) {
-		my $value = $$labels{$key}{$lang} || $$labels{$key}{en};
+		my $value = $$labels{$key}{$lang} || $$labels{$lang}{en};
 		if (! defined $value) {
 			die "$0: cannot get label for key=<$key>\n";
 		}
