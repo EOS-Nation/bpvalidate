@@ -48,6 +48,10 @@ my $app = sub {
 		$filename .= "index.thtml.$lang";
 		return generate_html_content (lang => $lang, filename => $webdir . $filename, webpage => $webpage);
 
+	} elsif ($uri =~ m#/bps.json$#) {
+		my $filename = $uri;
+		return generate_json_content (lang => $lang, filename => $webdir . $filename, webpage => $webpage);
+
 	} elsif ($uri =~ /\.json$/) {
 		my $filename = $uri . '.' . $lang;
 		return generate_json_content (lang => $lang, filename => $webdir . $filename, webpage => $webpage);
