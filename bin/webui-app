@@ -180,7 +180,7 @@ sub generate_html_content {
 	}
 
 	foreach my $key (keys %$labels) {
-		my $value = $$labels{$key}{$lang} || $$labels{$lang}{en};
+		my $value = $$labels{$key}{$lang} || $$labels{$key}{en};
 		if (! defined $value) {
 			die "$0: cannot get label for key=<$key>\n";
 		}
