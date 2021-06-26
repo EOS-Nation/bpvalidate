@@ -65,7 +65,7 @@ my $app = sub {
 };
 
 builder {
-	mount "/res" => Plack::App::File->new (root => $webdir . '/res/');
+	mount "/res" => Plack::App::File->new (root => $webdir . '/res/')->to_app;
 	mount "/" => $app;
 };
 
