@@ -391,21 +391,25 @@ nav_info:
   ko: 네트워크 정보
   zh: 网络信息
 nav_lang:
-  en: 'Language: %lang%'
-  ko: '언어:  %lang%'
-  zh: '语言: %lang%'
+  en: Language: %lang%
+  ko: 언어:  %lang%
+  zh: 语言: %lang%
 nav_producers:
   en: Producer Scorecard
   ko: 프로듀서 스코어 카드
-  zh: ' 出块节点计分卡'
+  zh: 出块节点计分卡
 nav_reports:
   en: Reports
-  ko: '보고 '
+  ko: 보고
   zh: 报告
 nav_title:
   en: bp.json Validator
   ko: bp.json 검증기
   zh: bp.json 验证器
+nav_last_update:
+  en: last updated at: %last_update%
+  ko: 최신 업데이트: %last_update%
+  zh: 最近一次更新: %last_update%
 time_h:
   en: h
   ko: 시
@@ -420,16 +424,16 @@ time_s:
   zh: s
 title_producers:
   en: Report for %producer_name_html%
-  ko: '%producer_name_html% 보고'
-  zh: '%producer_name_html%报告'
+  ko: %producer_name_html% 보고
+  zh: %producer_name_html%报告
 title_producers/index:
   en: Producer Scorecard
   ko: 프로듀서 스코어 카드
   zh: 出块节点计分卡
 title_producers/producer:
   en: Report for %producer%
-  ko: '%producer% 보고'
-  zh: '%producer% 报告'
+  ko: %producer% 보고
+  zh: %producer% 报告
 title_reports/api_versions:
   en: API Versions Report
   ko: API 버전 보고

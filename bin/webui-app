@@ -81,7 +81,6 @@ sub error_404 {
 
 sub read_globals {
 	$globals{"template"} = read_file ("$webdir/res/template.html", {binmode => ':utf8'});
-	$globals{generated_at} = time2str ("%C", time);
 
 	$labels = $webpage->labels;
 
@@ -135,6 +134,7 @@ sub generate_html_content {
 
 	#print "generate file from=<$filename_in> to=<$filename_out>\n";
 	my (@content) = read_file ($filename, {binmode => ':utf8'});
+	my $time = (stat ($filename))[9];
 
 	my $header = 1;
 	my %variables;
@@ -152,7 +152,7 @@ sub generate_html_content {
 
 	my $output = $globals{template};
 	$globals{lang} = $lang;
-	$globals{last_update} = $webpage->datetime ($globals{generated_at}, $lang);
+	$globals{last_update} = $webpage->datetime (unixtime => $time, lang => $lang);
 	if ($variables{chain}) {
 		$globals{chain_plain} = $variables{chain};
 		$globals{chain} = $$labels{'chain_' . $variables{chain}}{$lang} || $variables{chain};
