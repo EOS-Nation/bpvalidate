@@ -63,16 +63,3 @@ h1 = 关于出块节点验证器
     </ul>
   </div>
 </div>
-
-<div class="card">
-  <header class="card-header">
-    <p class="card-header-title">
-      Statistics
-    </p>
-  </header>
-  <div class="card-content">
-    <ul class="bullet">
-    <li class="bullet"> %txt_update%
-    </ul>
-  </div>
-</div>

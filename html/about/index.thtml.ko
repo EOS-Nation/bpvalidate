@@ -62,16 +62,3 @@ h1 = BP 검증기에 대하여
     </ul>
   </div>
 </div>
-
-<div class="card">
-  <header class="card-header">
-    <p class="card-header-title">
-      Statistics
-    </p>
-  </header>
-  <div class="card-content">
-    <ul class="bullet">
-    <li class="bullet"> %txt_update%
-    </ul>
-  </div>
-</div>
