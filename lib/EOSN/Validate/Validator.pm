@@ -245,7 +245,7 @@ sub run_validate {
 	my $location = $self->{regproducer_data}{location};
 	my $key = $self->{regproducer_data}{producer_key};
 	my $chain = $self->{chain};
-	my $location_check = $self->{chain_properties}{location_check} || die "$0: location_check is undefined in chains.csv";
+	my $location_check = $self->{chain_properties}{location_check} || die "$0: location_check is undefined in chains.yml";
 
 	$self->check_meta ();
 
@@ -428,8 +428,8 @@ sub run_validate {
 sub check_bpjson_filename {
 	my ($self, $xurl) = @_;
 
-	my $bpjson_filename = $self->{chain_properties}{filename} || die "$0: filename is undefined in chains.csv";
-	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.csv";
+	my $bpjson_filename = $self->{chain_properties}{filename} || die "$0: filename is undefined in chains.yml";
+	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.yml";
 
 	my $chains_json = $self->validate_url (
 		url => "$xurl/chains.json",
@@ -2695,7 +2695,7 @@ sub validate_basic_api_extra_check {
 		$errors++;
 	}
 
-	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.csv";
+	my $chain_id = $self->{chain_properties}{chain_id} || die "$0: chain_id is undefined in chains.yml";
 
 	if ($$result{chain_id} ne $chain_id) {
 		$self->add_message (
@@ -3646,7 +3646,7 @@ sub test_abi_serializer {
 	my $number_of_transactions = $self->{chain_properties}{big_block_transactions};
 
 	if (! $big_block || ! $number_of_transactions) {
-		$self->write_timestamp_log ("Cannot run test_abi_serializer because big_block or number_of_transactions is undefined in chains.csv; test disabled");
+		$self->write_timestamp_log ("Cannot run test_abi_serializer because big_block or number_of_transactions is undefined in chains.yml; test disabled");
 		return 1;
 	}
 
@@ -3714,7 +3714,7 @@ sub test_abi_serializer {
 sub test_history_transaction {
 	my ($self, %options) = @_;
 
-	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv\n";
+	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.yml\n";
 	$options{api_url} .= '/v1/history/get_transaction';
 	$options{log_prefix} = $self->log_prefix;
 	$options{post_data} = '{"json": true, "id": "' . $transaction . '"}';
@@ -3880,7 +3880,7 @@ sub test_history_actions {
 sub test_history_key_accounts {
 	my ($self, %options) = @_;
 
-	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
+	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.yml";
 	$options{api_url} .= '/v1/history/get_key_accounts';
 	$options{post_data} = '{"json": true, "public_key": "' . $public_key . '"}';
 	$options{log_prefix} = $self->log_prefix;
@@ -4271,7 +4271,7 @@ sub test_hyperion_transaction {
 	my ($self, %options) = @_;
 
 	my $base_url = $options{api_url};
-	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.csv\n";
+	my $transaction = $self->{chain_properties}{test_transaction} || die "$0: test_transaction is undefined in chains.yml\n";
 
 	$options{api_url} = $base_url . '/v2/history/get_transaction?id=' . $transaction;
 	$options{log_prefix} = $self->log_prefix;
@@ -4387,7 +4387,7 @@ sub test_hyperion_actions {
 sub test_hyperion_key_accounts {
 	my ($self, %options) = @_;
 
-	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
+	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.yml";
 	$options{api_url} .= '/v2/state/get_key_accounts';
 	$options{post_data} = '{"public_key": "' . $public_key . '"}';
 	$options{log_prefix} = $self->log_prefix;
@@ -4439,7 +4439,7 @@ sub test_hyperion_key_accounts {
 sub test_account_account {
 	my ($self, %options) = @_;
 
-	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.csv";
+	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.yml";
 	$options{api_url} .= '/v1/chain/get_accounts_by_authorizers';
 	$options{post_data} = '{"accounts": ["' . $test_account . '"]}';
 	$options{log_prefix} = $self->log_prefix;
@@ -4490,7 +4490,7 @@ sub test_account_account {
 sub test_account_key {
 	my ($self, %options) = @_;
 
-	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.csv";
+	my $public_key = $self->{chain_properties}{test_public_key} || die "$0: test_public_key is undefined in chains.yml";
 	$options{api_url} .= '/v1/chain/get_accounts_by_authorizers';
 	$options{post_data} = '{"keys": ["' . $public_key . '"]}';
 	$options{log_prefix} = $self->log_prefix;
@@ -4541,8 +4541,8 @@ sub test_account_key {
 sub test_system_symbol {
 	my ($self, %options) = @_;
 
-	my $core_symbol = $self->{chain_properties}{core_symbol} || die "$0: core_symbol is undefined in chains.csv";
-	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.csv";
+	my $core_symbol = $self->{chain_properties}{core_symbol} || die "$0: core_symbol is undefined in chains.yml";
+	my $test_account = $self->{chain_properties}{test_account} || die "$0: test_account is undefined in chains.yml";
 	$options{api_url} .= '/v1/chain/get_currency_balance';
 	$options{post_data} = '{"json": true, "account": "' . $test_account . '", "code":"eosio.token", "symbol": "' . $core_symbol . '"}';
 	$options{log_prefix} = $self->log_prefix;

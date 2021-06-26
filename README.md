@@ -34,7 +34,7 @@ webui:
 
 dispatch:
 - install libraries from https://github.com/EOS-Nation/perl-lib
-- run: apt install libtext-csv-perl libjson-perl libdbd-mysql-perl libdata-validate-perl liblocale-codes-perl libnet-stomp-perl libyaml-perl
+- run: apt install libjson-perl libdbd-mysql-perl libdata-validate-perl liblocale-codes-perl libnet-stomp-perl libyaml-perl
 - mkdir /run/bpvalidate
 
 probe:
