@@ -1163,12 +1163,6 @@ sub check_nodes {
 
 	my $counters;
 	$$counters{node_number} = 0;
-	$$counters{total_valid_nodeos_api_endpoint} = 0;
-	$$counters{total_valid_nodeos_ssl_endpoint} = 0;
-	$$counters{total_valid_nodeos_p2p_endpoint} = 0;
-	$$counters{total_found_nodeos_api_endpoint} = 0;
-	$$counters{total_found_nodeos_ssl_endpoint} = 0;
-	$$counters{total_found_nodeos_p2p_endpoint} = 0;
 	$$counters{count_node_type_query} = 0;
 	$$counters{count_node_type_seed} = 0;
 	$$counters{count_node_type_producer} = 0;
@@ -1220,47 +1214,6 @@ sub check_nodes {
 			detail => 'producer node(s) provided',
 			count => $$counters{count_node_type_producer},
 			class => 'org'
-		);
-	}
-
-	if (! $$counters{total_found_nodeos_api_endpoint} && ! $$counters{total_found_nodeos_ssl_endpoint}) {
-		$self->add_message (
-			kind => 'crit',
-			detail => 'no HTTP or HTTPS API endpoints provided in any node',
-			class => 'api_endpoint'
-		);
-	} elsif (! $$counters{total_valid_nodeos_api_endpoint} && ! $$counters{total_valid_nodeos_ssl_endpoint}) {
-		$self->add_message (
-			kind => 'crit',
-			detail => 'no valid HTTP or HTTPS API endpoints provided in any node; see above messages',
-			class => 'api_endpoint'
-		);
-	} elsif (! $$counters{total_valid_nodeos_ssl_endpoint}) {
-		$self->add_message (
-			kind => 'warn',
-			detail => 'no valid HTTPS API endpoints provided in any node',
-			class => 'api_endpoint'
-		);
-	} elsif (! $$counters{total_valid_nodeos_api_endpoint}) {
-		# similar check is implemented on https://eosreport.franceos.fr/
-		# $self->add_message (
-		#	kind => 'warn',
-		#	detail => 'no valid HTTP API endpoints provided in any node',
-		#	class => 'api_endpoint'
-		#);
-	}
-
-	if (! $$counters{total_found_nodeos_p2p_endpoint}) {
-		$self->add_message (
-			kind => 'crit',
-			detail => 'no P2P endpoints provided in any node',
-			class => 'p2p_endpoint'
-		);
-	} elsif (! $$counters{total_valid_nodeos_p2p_endpoint}) {
-		$self->add_message (
-			kind => 'crit',
-			detail => 'no valid P2P endpoints provided in any node; see above messages',
-			class => 'p2p_endpoint'
 		);
 	}
 }
@@ -1708,12 +1661,6 @@ sub check_node {
 
 	# ---------- done, increment global counters
 
-	$$counters{total_valid_nodeos_api_endpoint} += $valid_nodeos_api_endpoint;
-	$$counters{total_valid_nodeos_ssl_endpoint} += $valid_nodeos_ssl_endpoint;
-	$$counters{total_valid_nodeos_p2p_endpoint} += $valid_nodeos_p2p_endpoint;
-	$$counters{total_found_nodeos_api_endpoint} += $found_nodeos_api_endpoint;
-	$$counters{total_found_nodeos_ssl_endpoint} += $found_nodeos_ssl_endpoint;
-	$$counters{total_found_nodeos_p2p_endpoint} += $found_nodeos_p2p_endpoint;
 	$$counters{node_number}++;
 }
 
