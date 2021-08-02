@@ -22,15 +22,20 @@ our $configdir = $webpage->configdir;
 
 our %icons;
 $icons{none} = '<!-- none -->';
-$icons{bonus_bpjson} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cog"></i></span>';
-$icons{bonus_history} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_hyperion} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_dfuse} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_firehose} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_atomic} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-atom"></i></span>';
-$icons{bonus_account} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-wallet"></i></span>';
-$icons{bonus_chains} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-link"></i></span>';
-$icons{bonus_ipv6} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cloud"></i></span>';
+$icons{class_regproducer} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-file-alt"></i></span>';
+$icons{class_org} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-sitemap"></i></span>';
+$icons{class_blocks} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-dice-d6"></i></span>';
+$icons{class_api_endpoint} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-server"></i></span>';
+$icons{class_p2p_endpoint} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-network-wired"></i></span>';
+$icons{class_bpjson} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cog"></i></span>';
+$icons{class_history} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+$icons{class_hyperion} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+$icons{class_dfuse} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+$icons{class_firehose} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+$icons{class_atomic} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-atom"></i></span>';
+$icons{class_account} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-wallet"></i></span>';
+$icons{class_chains} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-link"></i></span>';
+$icons{class_ipv6} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cloud"></i></span>';
 $icons{skip} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-ban"></i></span>';
 $icons{info} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-info-circle"></i></span>';
 $icons{ok} = '<span class="icon is-medium has-text-success"><i class="fas fa-lg fa-check-square"></i></span>';
@@ -43,15 +48,20 @@ $icons{bp_standby} = '<span class="icon is-medium has-text-grey"><i class="fas f
 $icons{bp_other} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-battery-empty"></i></span>';
 
 $icons{none_bw} = '<!-- none -->';
-$icons{bonus_bpjson_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cog"></i></span>';
-$icons{bonus_history_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_hyperion_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_dfuse_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_firehose_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
-$icons{bonus_atomic_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-atom"></i></span>';
-$icons{bonus_account_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-wallet"></i></span>';
-$icons{bonus_chains_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-link"></i></span>';
-$icons{bonus_ipv6_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cloud"></i></span>';
+$icons{class_regproducer_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-file-alt"></i></span>';
+$icons{class_org_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-sitemap"></i></span>';
+$icons{class_blocks_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-dice-d6"></i></span>';
+$icons{class_api_endpoint_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-server"></i></span>';
+$icons{class_p2p_endpoint_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-network-wired"></i></span>';
+$icons{class_bpjson_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cog"></i></span>';
+$icons{class_history_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+$icons{class_hyperion_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+$icons{class_dfuse_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+$icons{class_firehose_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+$icons{class_atomic_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-atom"></i></span>';
+$icons{class_account_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-wallet"></i></span>';
+$icons{class_chains_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-link"></i></span>';
+$icons{class_ipv6_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cloud"></i></span>';
 $icons{skip_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-ban"></i></span>';
 $icons{info_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-info-circle"></i></span>';
 $icons{ok_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-check-square"></i></span>';
@@ -77,7 +87,7 @@ sub chain {
 }
 
 sub classes {
-	my @classes_available = (qw (regproducer org api_endpoint p2p_endpoint bpjson history hyperion dfuse firehose atomic account chains ipv6));
+	my @classes_available = (qw (regproducer org blocks api_endpoint p2p_endpoint bpjson history hyperion dfuse firehose atomic account chains ipv6));
 	my @classes_configured = ();
 
 	foreach my $class (@classes_available) {
@@ -350,14 +360,13 @@ sub sev_html {
 	}
 
 	if ($class) {
-		my $title_class = $webpage->label (key => "class_$class", lang => $lang);
-		my $title = $webpage->label (key => "check_$kind", lang => $lang);
-		$html =~ s/ / title="$title_class: $title" /;
+		my $title = $webpage->label (key => "class_$class", lang => $lang);
+		$html =~ s/ / title="$title" /;
 	} else {
 		my $title = $webpage->label (key => "$kind", lang => $lang);
 		$html =~ s/ / title="$title" /;
 	}
-	
+
 	return $html;
 }
 

@@ -1125,7 +1125,7 @@ sub test_aloha_last_missed_round {
 			detail => 'last missed block production round',
 			value_time => $last_missed_round,
 			see1 => "https://www.alohaeos.com/tools/reliability#networkId=$aloha_id&timeframeId=8",
-			class => 'regproducer'
+			class => 'blocks'
 		);
 	} else {
 		$self->{results}{info}{last_missed_round} = undef;
@@ -1135,7 +1135,7 @@ sub test_aloha_last_missed_round {
 			detail => 'last missed block production round',
 			value => 'never',
 			see1 => "https://www.alohaeos.com/tools/reliability#networkId=$aloha_id&timeframeId=8",
-			class => 'regproducer'
+			class => 'blocks'
 		);
 	}
 

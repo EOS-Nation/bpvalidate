@@ -46,42 +46,6 @@ chain_waxtest:
   en: WAX Testnet
   ko: WAX 테스트넷
   zh: WAX测试网
-check_bonus_account:
-  en: OK
-  ko: OK
-  zh: OK
-check_bonus_atomic:
-  en: OK
-  ko: OK
-  zh: OK
-check_bonus_bpjson:
-  en: OK
-  ko: OK
-  zh: OK
-check_bonus_chains:
-  en: OK
-  ko: OK
-  zh: OK
-check_bonus_dfuse:
-  en: OK
-  ko: OK
-  zh: OK
-check_bonus_firehose:
-  en: OK
-  ko: OK
-  zh: OK
-check_bonus_history:
-  en: OK
-  ko: OK
-  zh: OK
-check_bonus_hyperion:
-  en: OK
-  ko: OK
-  zh: OK
-check_bonus_ipv6:
-  en: OK
-  ko: OK
-  zh: OK
 check_crit:
   en: Critical
   ko: 중요
@@ -128,6 +92,14 @@ class_atomic:
   zh: ''
 class_atomic_l:
   en: Atomic Assets Check
+  ko: ''
+  zh: ''
+class_blocks:
+  en: Block Production
+  ko: ''
+  zh: ''
+class_blocks_l:
+  en: Block Production Check
   ko: ''
   zh: ''
 class_bpjson:

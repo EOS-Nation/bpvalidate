@@ -8,23 +8,6 @@ use Date::Format qw(time2str);
 
 binmode(STDOUT, ":utf8");
 
-my %handler;
-$handler{regproducer} = 'regular';
-$handler{org} = 'regular';
-$handler{api_endpoint} = 'regular';
-$handler{p2p_endpoint} = 'regular';
-$handler{bpjson} = 'bonus';
-$handler{history} = 'bonus';
-$handler{hyperion} = 'bonus';
-$handler{dfuse} = 'bonus';
-$handler{firehose} = 'bonus';
-$handler{atomic} = 'bonus';
-$handler{account} = 'bonus';
-$handler{chains} = 'bonus';
-$handler{ipv6} = 'bonus';
-
-my @bonus = (qw (bpjson history hyperion dfuse firehose atomic account chains ipv6));
-
 # --------------------------------------------------------------------------
 # Main
 
@@ -99,16 +82,10 @@ foreach my $lang ($webpage->langs) {
 		my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
 
 		foreach my $key (@classes) {
-			if ($handler{$key} eq 'regular') {
-				$msgsummary{$key} = sev_html (kind => $msgsummary{$key} || 'skip', class => $key, lang => $lang);
-			} elsif ($handler{$key} eq 'bonus') {
-				if (defined $msgsummary{$key} && ($msgsummary{$key} eq 'ok' || $msgsummary{$key} eq 'info')) {
-					$msgsummary{$key} = sev_html (kind => "bonus_$key", class => $key, lang => $lang);
-				} else {
-					$msgsummary{$key} = sev_html (kind => 'none', class => $key, lang => $lang);
-				}
+			if (defined $msgsummary{$key} && ($msgsummary{$key} eq 'ok' || $msgsummary{$key} eq 'info')) {
+				$msgsummary{$key} = sev_html (kind => "class_$key", class => $key, lang => $lang);
 			} else {
-				die "$0: unknown hanndler=<$key>";
+				$msgsummary{$key} = sev_html (kind => 'none', class => $key, lang => $lang);
 			}
 		}
 
@@ -134,13 +111,7 @@ foreach my $lang ($webpage->langs) {
 		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px; height: 32px\">$selected</div>\n");
 		push (@report, "</div>\n");
 		push (@report, "<div>\n");
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{regproducer}</div>\n");
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{org}</div>\n");
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{api_endpoint}</div>\n");
-		push (@report, "  <div style=\"display: inline-block; vertical-align: middle; width: 32px\">$msgsummary{p2p_endpoint}</div>\n");
-		push (@report, "</div>\n");
-		push (@report, "<div>\n");
-		foreach my $key (@bonus) {
+		foreach my $key (@classes) {
 			my $class_key = "class_$key";
 			next if (! $$properties{$class_key});
 			next if (! $msgsummary{$key});
@@ -212,35 +183,14 @@ foreach my $lang ($webpage->langs) {
 		label => sev_html (kind => 'bp_other', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_other', lang => $lang),
 		lang => $lang
 	));
-	push (@form, checkbox (
-		name => 'regproducer',
-		label => sev_html (kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'class_regproducer_l', lang => $lang),
-		lang => $lang
-	));
-	push (@form, checkbox (
-		name => 'org',
-		label => sev_html (kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'class_org_l', lang => $lang),
-		lang => $lang
-	));
-	push (@form, checkbox (
-		name => 'api_endpoint',
-		label => sev_html (kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'class_api_endpoint_l', lang => $lang),
-		lang => $lang
-	));
-	push (@form, checkbox (
-		name => 'p2p_endpoint',
-		label => sev_html (kind => 'check', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'class_p2p_endpoint_l', lang => $lang),
-		lang => $lang
-	));
 
-	foreach my $key (@bonus) {
+	foreach my $key (@classes) {
 		my $class_key = "class_$key";
 		my $classl_key = "class_${key}_l";
-		my $bonus_key = "bonus_$key";
 		next if (! $$properties{$class_key});
 		push (@form, checkbox (
 			name => $key,
-			label => sev_html (kind => $bonus_key, class => undef, lang => $lang, color => 'bw') . ' '. $webpage->label (key => $classl_key, lang => $lang),
+			label => sev_html (kind => $class_key, class => undef, lang => $lang, color => 'bw') . ' '. $webpage->label (key => $classl_key, lang => $lang),
 			lang => $lang
 		));
 	}

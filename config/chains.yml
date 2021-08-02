@@ -5,6 +5,7 @@
 #  class_account: 1
 #  class_api_endpoint: 1
 #  class_atomic: 1
+#  class_blocks: 1
 #  class_bpjson: 1
 #  class_chains: 1
 #  class_dfuse: 1
@@ -48,6 +49,7 @@
 #  class_account: 1
 #  class_api_endpoint: 1
 #  class_atomic: 1
+#  class_blocks: 1
 #  class_bpjson: 1
 #  class_chains: 1
 #  class_dfuse: 1
@@ -91,6 +93,7 @@ eos:
   class_account: 1
   class_api_endpoint: 1
   class_atomic: 1
+  class_blocks: 1
   class_bpjson: 1
   class_chains: 1
   class_dfuse: 1
@@ -134,6 +137,7 @@ jungle:
   class_account: 1
   class_api_endpoint: 1
   class_atomic: 1
+  class_blocks: 1
   class_bpjson: 1
   class_chains: 1
   class_dfuse: 1
@@ -177,6 +181,7 @@ kylin:
   class_account: 1
   class_api_endpoint: 1
   class_atomic: 1
+  class_blocks: 1
   class_bpjson: 1
   class_chains: 1
   class_dfuse: 1
@@ -220,6 +225,7 @@ telos:
   class_account: 1
   class_api_endpoint: 1
   class_atomic: 1
+  class_blocks: 1
   class_bpjson: 1
   class_chains: 1
   class_dfuse: 1
@@ -263,6 +269,7 @@ telostest:
   class_account: 1
   class_api_endpoint: 1
   class_atomic: 1
+  class_blocks: 1
   class_bpjson: 0
   class_chains: 1
   class_dfuse: 1
@@ -306,6 +313,7 @@ wax:
   class_account: 1
   class_api_endpoint: 1
   class_atomic: 1
+  class_blocks: 1
   class_bpjson: 1
   class_chains: 1
   class_dfuse: 1
@@ -349,6 +357,7 @@ waxtest:
   class_account: 1
   class_api_endpoint: 1
   class_atomic: 1
+  class_blocks: 1
   class_bpjson: 1
   class_chains: 1
   class_dfuse: 1
