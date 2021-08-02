@@ -1,23 +1,23 @@
-v2.0.10wax01:
-  api_current: 1
-  hash: v2.0.10wax01
-  name: 2.0.10 (wax)
-v2.0.11wax01:
-  api_current: 1
-  hash: v2.0.11wax01
-  name: 2.0.11 (wax)
-v2.0.12wax01:
-  api_current: 1
-  hash: v2.0.12wax01
-  name: 2.0.12 (wax)
-v2.0.13wax01:
-  api_current: 1
-  hash: v2.0.13wax01
-  name: 2.0.13 (wax)
-v2.0.14wax01:
-  api_current: 1
-  hash: v2.0.14wax01
-  name: 2.0.14 (wax)
+wax-1.8.0-1.0.0:
+  api_current: 0
+  hash: wax-1.8.0-1.0.0
+  name: 1.8.0 (wax)
+wax-1.8.1-1.0.0:
+  api_current: 0
+  hash: wax-1.8.1-1.0.0
+  name: 1.8.1 (wax)
+wax-1.8.2-1.0.0:
+  api_current: 0
+  hash: wax-1.8.2-1.0.0
+  name: 1.8.2 (wax)
+wax-1.8.3-1.0.0:
+  api_current: 0
+  hash: wax-1.8.3-1.0.0
+  name: 1.8.3 (wax)
+wax-1.8.4-1.0.0:
+  api_current: 0
+  hash: wax-1.8.4-1.0.0
+  name: 1.8.4 (wax)
 v2.0.5wax01:
   api_current: 0
   hash: v2.0.5wax01
@@ -46,27 +46,39 @@ v2.0.9wax01:
   api_current: 1
   hash: v2.0.9wax01
   name: 2.0.9 (wax)
+v2.0.10wax01:
+  api_current: 1
+  hash: v2.0.10wax01
+  name: 2.0.10 (wax)
+v2.0.11wax01:
+  api_current: 1
+  hash: v2.0.11wax01
+  name: 2.0.11 (wax)
+v2.0.12wax01:
+  api_current: 1
+  hash: v2.0.12wax01
+  name: 2.0.12 (wax)
+v2.0.13wax01:
+  api_current: 1
+  hash: v2.0.13wax01
+  name: 2.0.13 (wax)
+v2.0.14wax01:
+  api_current: 1
+  hash: v2.0.14wax01
+  name: 2.0.14 (wax)
+v2.0.15wax01:
+  api_current: 1
+  hash: v2.0.15wax01
+  name: 2.0.15 (wax)
 v2.1.0wax01:
   api_current: 1
   hash: v2.1.0wax01
   name: 2.1.0 (wax)
-wax-1.8.0-1.0.0:
-  api_current: 0
-  hash: wax-1.8.0-1.0.0
-  name: 1.8.0 (wax)
-wax-1.8.1-1.0.0:
-  api_current: 0
-  hash: wax-1.8.1-1.0.0
-  name: 1.8.1 (wax)
-wax-1.8.2-1.0.0:
-  api_current: 0
-  hash: wax-1.8.2-1.0.0
-  name: 1.8.2 (wax)
-wax-1.8.3-1.0.0:
-  api_current: 0
-  hash: wax-1.8.3-1.0.0
-  name: 1.8.3 (wax)
-wax-1.8.4-1.0.0:
-  api_current: 0
-  hash: wax-1.8.4-1.0.0
-  name: 1.8.4 (wax)
+v2.1.1wax01:
+  api_current: 1
+  hash: v2.1.1wax01
+  name: 2.1.1 (wax)
+v2.1.2wax01:
+  api_current: 1
+  hash: v2.1.2wax01
+  name: 2.1.2 (wax)
