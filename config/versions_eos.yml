@@ -136,15 +136,15 @@ v2.1.2:
   name: 2.1.2 (eosio)
 v2.2.0-rc1:
   api_current: 1
-  hash: v2.2.0
+  hash: v2.2.0-rc1
   name: 2.2.0 (eosio)
 v2.2.0-rc2:
   api_current: 1
-  hash: v2.2.0
+  hash: v2.2.0-rc2
   name: 2.2.0 (eosio)
 v2.2.0-rc3:
   api_current: 1
-  hash: v2.2.0
+  hash: v2.2.0-rc3
   name: 2.2.0 (eosio)
 v2.2.0:
   api_current: 1
