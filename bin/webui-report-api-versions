@@ -9,9 +9,12 @@ binmode(STDOUT, ":utf8");
 # --------------------------------------------------------------------------
 # Main
 
-my $webpage = webpage ();
-my $data = get_report_options ();
-my $chain = chain ();
+my $report = EOSN::Validate::Report->new;
+$report->get_report_options;
+
+my $webpage = $report->webpage;
+my $data = $report->data;
+my $chain = $report->chain;
 my $properties = $webpage->chain_properties ($chain);
 my %kinds;
 
@@ -32,16 +35,16 @@ foreach my $lang ($webpage->langs) {
 
 			foreach my $entry (@{$$data{producers}}) {
 				my $producer = $$entry{regproducer}{owner};
-				my $important_bp = is_important_bp ($entry);
+				my $important_bp = $report->is_important_bp ($entry);
 
 				foreach my $node_type (sort keys %{$$entry{output}{nodes}}) {
 					next if (($node_type ne 'api_http') && ($node_type ne 'api_https') && ($node_type ne 'api_https2'));
 
 					foreach my $node (@{$$entry{output}{nodes}{$node_type}}) {
 						my ($key, $value) = get_version ($node);
-						my $orgs = whois_org ($node);
-						my $countries = whois_country ($node);
-						my $flags = whois_flag ($node);
+						my $orgs = $report->whois_org ($node);
+						my $countries = $report->whois_country ($node);
+						my $flags = $report->whois_flag ($node);
 						my $link = "<a href=\"$$node{address}\">$$node{address}</a>";
 						next if ($key ne $kind);
 						push (@section, {
@@ -57,7 +60,7 @@ foreach my $lang ($webpage->langs) {
 			push (@report, {name => $kinds{$kind}, rows => \@section}) if (@section);
 		}
 
-		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/api_versions", text => 1, json => 1, html => 1);
+		$report->generate_report (lang => $lang, content_type => $content_type, report => \@report, columns => 1, outfile => "reports/api_versions", text => 1, json => 1, html => 1);
 	}
 }
 

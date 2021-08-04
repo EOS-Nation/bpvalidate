@@ -9,18 +9,18 @@ binmode(STDOUT, ":utf8");
 # --------------------------------------------------------------------------
 # Main
 
-my %map;
-$map{p2p} = 'p2p-peer-address';
-$map{bnet} = 'bnet-connect';
+my $report = EOSN::Validate::Report->new;
+$report->get_report_options;
 
-my $webpage = webpage ();
-my $data = get_report_options ();
-my $chain = chain ();
+my $webpage = $report->webpage;
+my $data = $report->data;
+my $chain = $report->chain;
 my $properties = $webpage->chain_properties ($chain);
 my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {
 	foreach my $kind (sort keys %{$$entry{output}{nodes}}) {
+		next if ($kind ne 'p2p');
 		$kinds{$kind} = 1;
 	}
 }
@@ -29,12 +29,11 @@ foreach my $lang ($webpage->langs) {
 	foreach my $content_type ($webpage->content_types) {
 		my @report;
 		foreach my $kind (sort keys %kinds) {
-			next if (! $map{$kind});
 			my @section;
 
 			foreach my $entry (@{$$data{producers}}) {
 				my $producer = $$entry{regproducer}{owner};
-				my $important_bp = is_important_bp ($entry);
+				my $important_bp = $report->is_important_bp ($entry);
 
 				foreach my $node (@{$$entry{output}{nodes}{$kind}}) {
 					my $location_name = $$node{location}{name} || "Unknown";
@@ -45,7 +44,7 @@ foreach my $lang ($webpage->langs) {
 					});
 					push (@section, {
 						sprintf => "%s = %s",
-						data => [$map{$kind}, $$node{address}]
+						data => ['p2p-peer-address', $$node{address}]
 					});
 					push (@section, {
 						sprintf => "",
@@ -57,6 +56,6 @@ foreach my $lang ($webpage->langs) {
 			push (@report, {name => $kind, rows => \@section, name_prefix => '# ', section_divider => 2});
 		}
 
-		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 0, outfile => "reports/config", text => 1, json => 1, html => 1);
+		$report->generate_report (lang => $lang, content_type => $content_type, report => \@report, columns => 0, outfile => "reports/config", text => 1, json => 1, html => 1);
 	}
 }

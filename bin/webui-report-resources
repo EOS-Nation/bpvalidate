@@ -9,9 +9,12 @@ binmode(STDOUT, ":utf8");
 # --------------------------------------------------------------------------
 # Main
 
-my $webpage = webpage ();
-my $data = get_report_options ();
-my $chain = chain ();
+my $report = EOSN::Validate::Report->new;
+$report->get_report_options;
+
+my $webpage = $report->webpage;
+my $data = $report->data;
+my $chain = $report->chain;
 my $properties = $webpage->chain_properties ($chain);
 my %kinds;
 
@@ -29,7 +32,7 @@ foreach my $lang ($webpage->langs) {
 
 			foreach my $entry (@{$$data{producers}}) {
 				my $producer = $$entry{regproducer}{owner};
-				my $important_bp = is_important_bp ($entry);
+				my $important_bp = $report->is_important_bp ($entry);
 
 				foreach my $resource (@{$$entry{output}{resources}{$kind}}) {
 					next if (! defined $$resource{address});
@@ -45,6 +48,6 @@ foreach my $lang ($webpage->langs) {
 			push (@report, {name => $kind, rows => \@section});
 		}
 
-		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/resources", text => 1, json => 1, html => 1);
+		$report->generate_report (lang => $lang, content_type => $content_type, report => \@report, columns => 1, outfile => "reports/resources", text => 1, json => 1, html => 1);
 	}
 }

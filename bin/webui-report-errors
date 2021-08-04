@@ -9,9 +9,12 @@ binmode(STDOUT, ":utf8");
 # --------------------------------------------------------------------------
 # Main
 
-my $webpage = webpage ();
-my $data = get_report_options ();
-my $chain = chain ();
+my $report = EOSN::Validate::Report->new;
+$report->get_report_options;
+
+my $webpage = $report->webpage;
+my $data = $report->data;
+my $chain = $report->chain;
 my $properties = $webpage->chain_properties ($chain);
 
 foreach my $lang ($webpage->langs) {
@@ -24,13 +27,13 @@ foreach my $lang ($webpage->langs) {
 			foreach my $message (@{$$entry{messages}}) {
 				next if ($$message{kind} eq 'ok');
 
-				my $icon = sev_html (kind => $$message{kind}, class => $$message{class}, lang => $lang);
+				my $icon = $report->sev_html (kind => $$message{kind}, class => $$message{class}, lang => $lang);
 				my $class = $webpage->label (key => 'class_' . $$message{class}, lang => $lang);
 
 				push (@section, {
 					sprintf => "%4s, %11s, %s",
-					data => [$$message{kind}, $$message{class}, generate_message ($message, lang => $lang, content_type => $content_type)],
-					html_data => [$icon, $class, generate_message ($message, lang => $lang, content_type => $content_type)]
+					data => [$$message{kind}, $$message{class}, $report->generate_message ($message, lang => $lang, content_type => $content_type)],
+					html_data => [$icon, $class, $report->generate_message ($message, lang => $lang, content_type => $content_type)]
 				});
 			}
 
@@ -39,6 +42,6 @@ foreach my $lang ($webpage->langs) {
 			}
 		}
 
-		generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => \@report, columns => 1, outfile => "reports/errors", text => 1, json => 1, html => 1);
+		$report->generate_report (lang => $lang, content_type => $content_type, report => \@report, columns => 1, outfile => "reports/errors", text => 1, json => 1, html => 1);
 	}
 }

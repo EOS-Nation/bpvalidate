@@ -5,17 +5,22 @@ use strict;
 use EOSN::Validate::Report;
 use List::Util qw(shuffle);
 use Date::Format qw(time2str);
+use HTML::Entities;
+use JSON qw(to_json);
 
 binmode(STDOUT, ":utf8");
 
 # --------------------------------------------------------------------------
 # Main
 
-my $webpage = webpage ();
-my $data = get_report_options ();
-my $chain = chain ();
+my $report = EOSN::Validate::Report->new;
+$report->get_report_options;
+
+my $webpage = $report->webpage;
+my $data = $report->data;
+my $chain = $report->chain;
 my $properties = $webpage->chain_properties ($chain);
-my @classes = classes ();
+my @classes = $report->classes;
 
 foreach my $lang ($webpage->langs) {
 	foreach my $content_type ($webpage->content_types) {
@@ -25,18 +30,18 @@ foreach my $lang ($webpage->langs) {
 			my $producer = $$entry{regproducer}{owner};
 			my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
 			foreach my $message (@{$$entry{messages}}) {
-				my $icon = sev_html (kind => $$message{kind}, class => $$message{class}, lang => $lang);
+				my $icon = $report->sev_html (kind => $$message{kind}, class => $$message{class}, lang => $lang);
 				my $class = $webpage->label (key => 'class_' . $$message{class}, lang => $lang);
 				push (@section, {
 					sprintf => "%4s, %11s, %s",
-					data => [$$message{kind}, $$message{class}, generate_message ($message, lang => $lang, content_type => $content_type)],
-					html_data => [$icon, $class, generate_message ($message, lang => $lang, content_type => $content_type)]
+					data => [$$message{kind}, $$message{class}, $report->generate_message ($message, lang => $lang, content_type => $content_type)],
+					html_data => [$icon, $class, $report->generate_message ($message, lang => $lang, content_type => $content_type)]
 				});
 			}
 
 			my $title = $webpage->label (key => 'title_producers', lang => $lang);
 			$title =~ s/%producer_name_html%/$producer_name_html/;
-			generate_report (chain => $chain, lang => $lang, content_type => $content_type, data => $data, report => [{rows => \@section}], title => $title, columns => 1, outfile => "producers/$producer", text => 1, json => 1, html => 1);
+			$report->generate_report (lang => $lang, content_type => $content_type, report => [{rows => \@section}], title => $title, columns => 1, outfile => "producers/$producer", text => 1, json => 1, html => 1);
 		}
 	}
 }
@@ -76,31 +81,31 @@ foreach my $lang ($webpage->langs) {
 		my $producer_name_html = encode_entities($$entry{info}{name} || $$entry{regproducer}{owner});
 		my $country = $$entry{info}{country_alpha2};
 
-		my $logo = bp_logo ($entry);
+		my $logo = $report->bp_logo ($entry);
 		my %results;
 
 		my %msgsummary = %{$$entry{message_summary}} if (ref $$entry{message_summary});
 
 		foreach my $key (@classes) {
 			if (defined $msgsummary{$key} && ($msgsummary{$key} eq 'ok' || $msgsummary{$key} eq 'info')) {
-				$msgsummary{$key} = sev_html (kind => "class_$key", class => $key, lang => $lang);
+				$msgsummary{$key} = $report->sev_html (kind => "class_$key", class => $key, lang => $lang);
 			} else {
-				$msgsummary{$key} = sev_html (kind => 'none', class => $key, lang => $lang);
+				$msgsummary{$key} = $report->sev_html (kind => 'none', class => $key, lang => $lang);
 			}
 		}
 
 		my $selected = '';
 		if ($is_top_21) {
-			$selected = sev_html (kind => 'bp_top21', class => undef, lang => $lang);
+			$selected = $report->sev_html (kind => 'bp_top21', class => undef, lang => $lang);
 		} elsif ($is_standby) {
-			$selected = sev_html (kind => 'bp_standby', class => undef, lang => $lang);
+			$selected = $report->sev_html (kind => 'bp_standby', class => undef, lang => $lang);
 		} else {
-			$selected = sev_html (kind => 'bp_other', class => undef, lang => $lang);
+			$selected = $report->sev_html (kind => 'bp_other', class => undef, lang => $lang);
 		}
 
 		my $flag = '';
 		if ($country) {
-			$flag = flag_html($country);
+			$flag = $report->flag_html ($country);
 		}
 
 		push (@report, "<div id=\"bp_$producer\" class=\"scorecard\" onclick=\"window.location.href='$producer.html'\">\n");
@@ -158,7 +163,7 @@ foreach my $lang ($webpage->langs) {
 	}
 
 	my $final_result = to_json ({
-		meta => {generated_at => time2str("%C", time), maintainer => 'matthew@eosnation.io'},
+		meta => {generated_at => time2str ("%C", time), maintainer => 'matthew@eosnation.io'},
 		producers => \@filter
 	}, {
 		pretty => 0,
@@ -170,17 +175,17 @@ foreach my $lang ($webpage->langs) {
 
 	push (@form, checkbox (
 		name => 'top21',
-		label => sev_html (kind => 'bp_top21', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_top21', lang => $lang),
+		label => $report->sev_html (kind => 'bp_top21', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_top21', lang => $lang),
 		lang => $lang
 	));
 	push (@form, checkbox (
 		name => 'paid',
-		label => sev_html (kind => 'bp_standby', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_standby', lang => $lang),
+		label => $report->sev_html (kind => 'bp_standby', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_standby', lang => $lang),
 		lang => $lang
 	));
 	push (@form, checkbox (
 		name => 'other',
-		label => sev_html (kind => 'bp_other', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_other', lang => $lang),
+		label => $report->sev_html (kind => 'bp_other', class => undef, lang => $lang, color => 'bw') . ' ' . $webpage->label (key => 'bp_other', lang => $lang),
 		lang => $lang
 	));
 
@@ -190,7 +195,7 @@ foreach my $lang ($webpage->langs) {
 		next if (! $$properties{$class_key});
 		push (@form, checkbox (
 			name => $key,
-			label => sev_html (kind => $class_key, class => undef, lang => $lang, color => 'bw') . ' '. $webpage->label (key => $classl_key, lang => $lang),
+			label => $report->sev_html (kind => $class_key, class => undef, lang => $lang, color => 'bw') . ' '. $webpage->label (key => $classl_key, lang => $lang),
 			lang => $lang
 		));
 	}
@@ -201,7 +206,7 @@ foreach my $lang ($webpage->langs) {
 
 	push (@report, "<script>\nvar filterData = $final_result\n</script>\n");
 
-	write_report_thtml (chain => $chain, lang => $lang, content => \@report, outfile => "producers/index");
+	$report->write_report_thtml (lang => $lang, content => \@report, outfile => "producers/index");
 }
 
 sub checkbox {

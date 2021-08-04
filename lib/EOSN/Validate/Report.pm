@@ -1,10 +1,12 @@
+package EOSN::Validate::Report;
+
 # --------------------------------------------------------------------------
 # Required modules
 
 use utf8;
 use strict;
 use HTML::Entities;
-use JSON;
+use JSON qw(to_json from_json);
 use File::Slurp qw(read_file);
 use EOSN::File qw(write_file_atomic);
 use YAML qw(LoadFile);
@@ -14,79 +16,73 @@ use Date::Parse;
 use Date::Format;
 use EOSN::Validate::Webpage;
 
-our $webpage = EOSN::Validate::Webpage->new;
-our $chain = undef;
-our $infile = undef;
-our $webdir = $webpage->webdir;
-our $configdir = $webpage->configdir;
+# --------------------------------------------------------------------------
+# Class Methods
 
-our %icons;
-$icons{none} = '<!-- none -->';
-$icons{class_regproducer} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-file-alt"></i></span>';
-$icons{class_org} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-sitemap"></i></span>';
-$icons{class_blocks} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-dice-d6"></i></span>';
-$icons{class_api_endpoint} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-server"></i></span>';
-$icons{class_p2p_endpoint} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-network-wired"></i></span>';
-$icons{class_bpjson} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cog"></i></span>';
-$icons{class_history} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
-$icons{class_hyperion} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
-$icons{class_dfuse} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
-$icons{class_firehose} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
-$icons{class_atomic} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-atom"></i></span>';
-$icons{class_account} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-wallet"></i></span>';
-$icons{class_chains} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-link"></i></span>';
-$icons{class_ipv6} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cloud"></i></span>';
-$icons{skip} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-ban"></i></span>';
-$icons{info} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-info-circle"></i></span>';
-$icons{ok} = '<span class="icon is-medium has-text-success"><i class="fas fa-lg fa-check-square"></i></span>';
-$icons{warn} = '<span class="icon is-medium has-text-warning"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
-$icons{err} = '<span class="icon is-medium has-text-warning2"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
-$icons{crit} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-stop"></i></span>';
-$icons{check} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-check-square"></i></span>';
-$icons{bp_top21} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-battery-full"></i></span>';
-$icons{bp_standby} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-battery-half"></i></span>';
-$icons{bp_other} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-battery-empty"></i></span>';
+sub new {
+	my ($class) = shift;
 
-$icons{none_bw} = '<!-- none -->';
-$icons{class_regproducer_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-file-alt"></i></span>';
-$icons{class_org_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-sitemap"></i></span>';
-$icons{class_blocks_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-dice-d6"></i></span>';
-$icons{class_api_endpoint_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-server"></i></span>';
-$icons{class_p2p_endpoint_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-network-wired"></i></span>';
-$icons{class_bpjson_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cog"></i></span>';
-$icons{class_history_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
-$icons{class_hyperion_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
-$icons{class_dfuse_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
-$icons{class_firehose_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
-$icons{class_atomic_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-atom"></i></span>';
-$icons{class_account_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-wallet"></i></span>';
-$icons{class_chains_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-link"></i></span>';
-$icons{class_ipv6_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cloud"></i></span>';
-$icons{skip_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-ban"></i></span>';
-$icons{info_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-info-circle"></i></span>';
-$icons{ok_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-check-square"></i></span>';
-$icons{warn_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
-$icons{err_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
-$icons{crit_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-stop"></i></span>';
-$icons{check_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-check-square"></i></span>';
-$icons{bp_top21_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-full"></i></span>';
-$icons{bp_standby_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-half"></i></span>';
-$icons{bp_other_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-empty"></i></span>';
+	my ($self) = {};
+	bless $self, $class;
+	return $self->initialize (@_);
+}
 
-our $producers;
+sub DESTROY {
+	my ($self) = @_;
+
+	$self->{webpage} = undef;
+	$self->{chain} = undef;
+	$self->{infile} = undef;
+	$self->{producers} = undef;
+}
 
 # --------------------------------------------------------------------------
-# Getter Subroutines
+# Private Methods
+
+sub initialize {
+        my ($self) = @_;
+
+	$self->{webpage} = EOSN::Validate::Webpage->new;
+	$self->{chain} = undef;
+	$self->{infile} = undef;
+	$self->{producers} = undef;
+
+        return $self;
+}
+
+# --------------------------------------------------------------------------
+# Getter Methods
 
 sub webpage {
-	return $webpage;
+	my ($self) = @_;
+
+	return $self->{webpage};
 }
 
 sub chain {
-	return $chain;
+	my ($self) = @_;
+
+	return $self->{chain};
+}
+
+sub data {
+	my ($self) = @_;
+
+	return $self->{data};
+}
+
+sub producers {
+	my ($self) = @_;
+
+	return $self->{producers};
 }
 
 sub classes {
+	my ($self) = @_;
+
+	my $webpage = $self->webpage;
+	my $chain = $self->chain;
+
 	my @classes_available = (qw (regproducer org blocks api_endpoint p2p_endpoint bpjson history hyperion dfuse firehose atomic account chains ipv6));
 	my @classes_configured = ();
 
@@ -102,52 +98,125 @@ sub classes {
 }
 
 # --------------------------------------------------------------------------
-# Subroutines
+# Public Methods
+
+sub icons {
+	my ($self) = @_;
+
+	my %icons;
+
+	$icons{none} = '<!-- none -->';
+	$icons{class_regproducer} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-file-alt"></i></span>';
+	$icons{class_org} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-sitemap"></i></span>';
+	$icons{class_blocks} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-dice-d6"></i></span>';
+	$icons{class_api_endpoint} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-server"></i></span>';
+	$icons{class_p2p_endpoint} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-network-wired"></i></span>';
+	$icons{class_bpjson} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cog"></i></span>';
+	$icons{class_history} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_hyperion} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_dfuse} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_firehose} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_atomic} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-atom"></i></span>';
+	$icons{class_account} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-wallet"></i></span>';
+	$icons{class_chains} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-link"></i></span>';
+	$icons{class_ipv6} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-cloud"></i></span>';
+	$icons{skip} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-ban"></i></span>';
+	$icons{info} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-info-circle"></i></span>';
+	$icons{ok} = '<span class="icon is-medium has-text-success"><i class="fas fa-lg fa-check-square"></i></span>';
+	$icons{warn} = '<span class="icon is-medium has-text-warning"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
+	$icons{err} = '<span class="icon is-medium has-text-warning2"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
+	$icons{crit} = '<span class="icon is-medium has-text-danger"><i class="fas fa-lg fa-stop"></i></span>';
+	$icons{check} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-check-square"></i></span>';
+	$icons{bp_top21} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-battery-full"></i></span>';
+	$icons{bp_standby} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-battery-half"></i></span>';
+	$icons{bp_other} = '<span class="icon is-medium has-text-grey"><i class="fas fa-lg fa-battery-empty"></i></span>';
+
+	$icons{none_bw} = '<!-- none -->';
+	$icons{class_regproducer_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-file-alt"></i></span>';
+	$icons{class_org_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-sitemap"></i></span>';
+	$icons{class_blocks_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-dice-d6"></i></span>';
+	$icons{class_api_endpoint_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-server"></i></span>';
+	$icons{class_p2p_endpoint_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-network-wired"></i></span>';
+	$icons{class_bpjson_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cog"></i></span>';
+	$icons{class_history_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_hyperion_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_dfuse_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_firehose_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_atomic_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-atom"></i></span>';
+	$icons{class_account_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-wallet"></i></span>';
+	$icons{class_chains_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-link"></i></span>';
+	$icons{class_ipv6_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-cloud"></i></span>';
+	$icons{skip_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-ban"></i></span>';
+	$icons{info_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-info-circle"></i></span>';
+	$icons{ok_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-check-square"></i></span>';
+	$icons{warn_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
+	$icons{err_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-exclamation-triangle"></i></span>';
+	$icons{crit_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-stop"></i></span>';
+	$icons{check_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-check-square"></i></span>';
+	$icons{bp_top21_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-full"></i></span>';
+	$icons{bp_standby_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-half"></i></span>';
+	$icons{bp_other_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-battery-empty"></i></span>';
+
+	return \%icons;
+}
 
 sub get_report_options {
+	my ($self) = @_;
+
+	my $chain;
+	my $infile;
+
 	GetOptions('chain=s' => \$chain, 'input=s' => \$infile) || exit 1;
 
 	confess "$0: chain not given" if (! $chain);
 	confess "$0: input filename not given" if (! $infile);
 
-	return from_json (read_file ($infile, {binmode => ':utf8'}));
+	$self->{chain} = $chain;
+	$self->{infile} = $infile;
+
+	my $data = from_json (read_file ($infile, {binmode => ':utf8'}));
+	my $producers;
+
+	foreach my $entry (@{$$data{producers}}) {
+		my $producer = $$entry{regproducer}{owner};
+		$$producers{$producer} = $entry;
+	}
+
+	$self->{producers} = $producers;
+	$self->{data} = $data;
+
+	return undef;
 }
 
 sub generate_report {
-	my (%options) = @_;
+	my ($self, %options) = @_;
 
 	my $content_type = $options{content_type};
 	delete $options{content_type};
 
 	#print ">> generate report content_type=<$content_type> file=<$options{outfile}> lang=<$options{lang}>\n";
 
-	if (! $producers) {
-		my $data = $options{data};
-		foreach my $entry (@{$$data{producers}}) {
-			my $producer = $$entry{regproducer}{owner};
-			$$producers{$producer} = $entry;
-		}
-	}
-
 	if ($content_type eq 'txt') {
-		generate_report_txt (%options);
+		$self->generate_report_txt (%options);
 	} elsif ($content_type eq 'json') {
-		generate_report_json (%options);
+		$self->generate_report_json (%options);
 	} elsif ($content_type eq 'html') {
-		generate_report_thtml (%options);
+		$self->generate_report_thtml (%options);
 	} else {
 		die "$0: unknown content_type";
 	}
 }
 
 sub generate_report_txt {
-	my (%options) = @_;
+	my ($self, %options) = @_;
 
+	my $data = $self->data;
+	my $webpage = $self->webpage;
+	my $webdir = $webpage->webdir;
+	my $chain = $self->chain;
 	my $lang = $options{lang};
-	my $data = $options{data};
 	my $report = $options{report};
 	my $outfile = $options{outfile};
-	my $chain = $options{chain} || confess "missing chain";
 	my $title = $options{title} || $webpage->label (key => "title_$outfile", lang => $lang);
 	my @out;
 
@@ -193,13 +262,16 @@ sub generate_report_txt {
 }
 
 sub generate_report_json {
-	my (%options) = @_;
+	my ($self, %options) = @_;
 
+	my $data = $self->data;
+	my $producers = $self->producers;
+	my $webpage = $self->webpage;
+	my $webdir = $webpage->webdir;
+	my $chain = $self->chain;
 	my $lang = $options{lang};
-	my $data = $options{data};
 	my $report = $options{report};
 	my $outfile = $options{outfile};
-	my $chain = $options{chain} || confess "missing chain";
 	my $title = $options{title} || $webpage->label (key => "title_$outfile", lang => $lang);
 	my %out;
 
@@ -245,10 +317,13 @@ sub generate_report_json {
 }
 
 sub generate_report_thtml {
-	my (%options) = @_;
+	my ($self, %options) = @_;
 
+	my $data = $self->data;
+	my $producers = $self->producers;
+	my $webpage = $self->webpage;
+	my $chain = $self->chain;
 	my $lang = $options{lang};
-	my $data = $options{data};
 	my $report = $options{report};
 	my $columns = $options{columns};
 	my $outfile = $options{outfile};
@@ -294,7 +369,7 @@ sub generate_report_thtml {
 				if ($producer) {
 					my $producer_name_html = encode_entities($$producers{$producer}{info}{name} || $producer);
 					$formatted .= "<td>$$producers{$producer}{info}{rank}</td>";
-					$formatted .= "<td>" . bp_logo ($$producers{$producer}) . "</td>";
+					$formatted .= "<td>" . $self->bp_logo ($$producers{$producer}) . "</td>";
 					$formatted .= "<td><a href=\"../producers/$producer.html\">$producer_name_html</a></td>";
 				}
 				foreach my $i (1 .. scalar (@$data)) {
@@ -324,16 +399,19 @@ sub generate_report_thtml {
 
 	pop (@out);  # remove trailing <br>
 
-	write_report_thtml (%options, content => \@out);
+	$self->write_report_thtml (%options, content => \@out);
 }
 
 sub write_report_thtml {
-	my %options = @_;
+	my ($self, %options) = @_;
 
+	my $producers = $self->producers;
+	my $webpage = $self->webpage;
+	my $webdir = $webpage->webdir;
+	my $chain = $self->chain;
 	my $lang = $options{lang};
 	my $content = $options{content};
 	my $outfile = $options{outfile};
-	my $chain = $options{chain} || confess "missing chain";
 	my $title = $options{title} || $webpage->label (key => "title_$outfile", lang => $lang);
 	my @out;
 
@@ -347,16 +425,19 @@ sub write_report_thtml {
 }
 
 sub sev_html {
-	my (%options) = @_;
+	my ($self, %options) = @_;
 
+	my $webpage = $self->webpage;
+	my $webdir = $webpage->webdir;
 	my $kind = $options{kind};
 	my $class = $options{class};
 	my $lang = $options{lang};
 	my $color = $options{color};
 
-	my $html = $icons{$kind} || encode_entities ($kind);
+	my $icons = $self->icons;
+	my $html = $$icons{$kind} || encode_entities ($kind);
 	if ($color) {
-		$html = $icons{"${kind}_${color}"} || encode_entities ($kind);
+		$html = $$icons{"${kind}_${color}"} || encode_entities ($kind);
 	}
 
 	if ($class) {
@@ -371,14 +452,16 @@ sub sev_html {
 }
 
 sub flag_html {
-	my ($alpha2) = @_;
+	my ($self, $alpha2) = @_;
 
 	return "<span class=\"flag-icon flag-icon-$alpha2\"></span>";
 }
 
 sub generate_message {
-	my ($options, %params) = @_;
+	my ($self, $options, %params) = @_;
 
+	my $webpage = $self->webpage;
+	my $webdir = $webpage->webdir;
 	my $content_type = $params{content_type} || die;
 	my $lang = $params{lang} || die;
 
@@ -440,48 +523,50 @@ sub generate_message {
 		}
 	}
 
-	$elapsed_time = format_elapsed_time (seconds => $elapsed_time, lang => $lang);
-	$delta_time = format_elapsed_time (seconds => $delta_time, lang => $lang);
+	$elapsed_time = $self->format_elapsed_time (seconds => $elapsed_time, lang => $lang);
+	$delta_time = $self->format_elapsed_time (seconds => $delta_time, lang => $lang);
 
 	# ---------- output
 
-	$detail .= format_message_entry ('msg_service', $service, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_feature', $feature, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_threshold', $threshold, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_count', $count, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_value', $value, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_value_time', $webpage->datetime (timestring => $value_time, lang => $lang), 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_suggested_to_use_value', $suggested_value, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_delta_time', $delta_time, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_field', $field, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_contract', $contract, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_having_node_type', $node_type, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_resource', $resource, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_api_url', $api_url, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_url', $url, 1, $content_type, $lang);
-	$detail .= format_message_entry ('msg_post_data', $post_data, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_redirected_to_response_url', $response_url, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_response_from_host', $response_host, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_host', $host, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_ip', $ip, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_dns', $dns, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_port', $port, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_elapsed_time', $elapsed_time, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_timeout', $request_timeout, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_validated_at', $webpage->datetime (timestring => $check_time, lang => $lang), 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_validated_every', $cache_timeout, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_explanation', $explanation, 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_see', $see1, 1, $content_type, $lang);
-	$detail .= format_message_entry ('msg_see', $see2, 1, $content_type, $lang);
-	$detail .= format_message_entry ('msg_last_updated_at', $webpage->datetime (timestring => $last_update_time, lang => $lang), 0, $content_type, $lang);
-	$detail .= format_message_entry ('msg_diff', $diff, 2, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_service', $service, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_feature', $feature, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_threshold', $threshold, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_count', $count, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_value', $value, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_value_time', $webpage->datetime (timestring => $value_time, lang => $lang), 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_suggested_to_use_value', $suggested_value, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_delta_time', $delta_time, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_field', $field, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_contract', $contract, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_having_node_type', $node_type, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_resource', $resource, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_api_url', $api_url, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_url', $url, 1, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_post_data', $post_data, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_redirected_to_response_url', $response_url, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_response_from_host', $response_host, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_host', $host, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_ip', $ip, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_dns', $dns, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_port', $port, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_elapsed_time', $elapsed_time, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_timeout', $request_timeout, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_validated_at', $webpage->datetime (timestring => $check_time, lang => $lang), 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_validated_every', $cache_timeout, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_explanation', $explanation, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_see', $see1, 1, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_see', $see2, 1, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_last_updated_at', $webpage->datetime (timestring => $last_update_time, lang => $lang), 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_diff', $diff, 2, $content_type, $lang);
 
 	return $detail;
 }
 
 sub format_elapsed_time {
-	my (%options) = @_;
+	my ($self, %options) = @_;
 
+	my $webpage = $self->webpage;
+	my $webdir = $webpage->webdir;
 	my $time = $options{seconds}; # $time is in seconds
 	my $lang = $options{lang};
 
@@ -505,7 +590,10 @@ sub format_elapsed_time {
 }
 
 sub format_message_entry {
-	my ($key, $value, $is_url, $content_type, $lang) = @_;
+	my ($self, $key, $value, $is_url, $content_type, $lang) = @_;
+
+	my $webpage = $self->webpage;
+	my $webdir = $webpage->webdir;
 
 	return '' if (! defined $value);
 	return '' if ($value eq '');
@@ -529,7 +617,7 @@ sub format_message_entry {
 }
 
 sub is_important_bp {
-	my ($entry) = @_;
+	my ($self, $entry) = @_;
 
 	my $rank = $$entry{info}{rank};
 	my $is_standby = $$entry{info}{is_standby};
@@ -546,7 +634,7 @@ sub is_important_bp {
 }
 
 sub bp_logo {
-	my ($entry) = @_;
+	my ($self, $entry) = @_;
 
 	my $logo = $$entry{output}{branding}{logo_256}[0]{address} || '';
 	$logo = '' if ($logo !~ m#https://#);
@@ -561,7 +649,7 @@ sub bp_logo {
 }
 
 sub whois_org {
-	my ($node) = @_;
+	my ($self, $node) = @_;
 
 	my %orgs;
 
@@ -575,7 +663,7 @@ sub whois_org {
 }
 
 sub whois_country {
-	my ($node) = @_;
+	my ($self, $node) = @_;
 
 	my %countries;
 
@@ -589,7 +677,7 @@ sub whois_country {
 }
 
 sub whois_flag {
-	my ($node) = @_;
+	my ($self, $node) = @_;
 
 	my %countries;
 
@@ -599,7 +687,7 @@ sub whois_flag {
 		$countries{$country} = 1;
 	}
 
-	return join (' ', map {flag_html (lc ($_))} sort keys %countries);
+	return join (' ', map {$self->flag_html (lc ($_))} sort keys %countries);
 }
 
 1;
