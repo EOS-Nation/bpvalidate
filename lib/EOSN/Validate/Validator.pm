@@ -2205,7 +2205,7 @@ sub get_tls {
 	$$info{tls_check_time} = time2str ("%C", $clock);
 
 	my $tls_xml = '';
-	run (['nmap', '-oX', '-', '--script', 'ssl-enum-ciphers', '-p', $port, $ip_address], '>', \$tls_xml);
+	$self->do_run (['nmap', '-oX', '-', '--script', 'ssl-enum-ciphers', '-p', $port, $ip_address], '>', \$tls_xml);
 	my $doc = XML::LibXML->load_xml (string => $tls_xml);
 	my $root = $doc->documentElement;
 
@@ -2307,7 +2307,7 @@ sub do_validate_p2p {
 
 	my $url = $self->{chain_properties}{url};
 	my $content = '';
-	run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 10], '>', \$content);
+	$self->do_run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 10], '>', \$content);
 
 	my $result = $self->get_json ($content, %options) || return undef;
 
@@ -2616,7 +2616,7 @@ sub validate_basic_api_extra_check {
 	if ($ssl eq 'on') {
 		# LWP doesn't seem to support HTTP2, so make an extra call
 		my $check_http2 = '';
-		run (['curl', "$url$url_ext", '--verbose', '--max-time', 3, '--stderr', '-'], '>', \$check_http2);
+		$self->do_run (['curl', "$url$url_ext", '--verbose', '--max-time', 3, '--stderr', '-'], '>', \$check_http2);
 		if ($check_http2 =~ m#HTTP/2 200#) {
 			$$options{add_to_list} .= '2';
 		} else {
@@ -3047,7 +3047,7 @@ sub get_whois {
 	my $clock = time;
 
 	my $data;
-	run (['whois', $ip_address], '>', \$data);
+	$self->do_run (['whois', $ip_address], '>', \$data);
 
 	my $whois = {};
 	foreach my $line (split (/\n/, $data)) {
@@ -4859,7 +4859,7 @@ sub test_firehose_grpc {
 	$hostname =~ s#:.*$##;
 
 	my $status;
-	run (['grpc_health_probe', '-addr', "$hostname:9000", '-tls'], '2>', \$status);
+	$self->do_run (['grpc_health_probe', '-addr', "$hostname:9000", '-tls'], '2>', \$status);
 
 	if (! defined $status) {
 		$self->add_message (
@@ -5186,7 +5186,14 @@ sub write_timestamp_log {
 	my $log_prefix = $self->log_prefix || '';
 	$log_prefix .= ' ' if ($log_prefix);
 
-	EOSN::Log::write_timestamp_log ($self->log_prefix . $message);
+	EOSN::Log::write_timestamp_log ($self->log_prefix, $message);
+}
+
+sub do_run {
+	my ($self, @args) = @_;
+
+	$self->write_timestamp_log ('Run command: ' . join (' ', @{$args[0]}));
+	run (@args);
 }
 
 1;
