@@ -2195,6 +2195,7 @@ sub get_tls {
 	if ($$cache{checked_at} && ($$cache{checked_at} > time - $cache_timeout)) {
 		$$info{tls_cache_timeout} = $cache_timeout;
 		$$info{tls_check_time} = time2str ("%C", $$cache{checked_at});
+		#$self->write_timestamp_log ("NMAP cache [$url $ip_address $port]: $$cache{response_content}");
 		return from_json ($$cache{response_content});
 	}
 
@@ -2223,12 +2224,15 @@ sub get_tls {
 		}
 	}
 
+	my $result = to_json (\@tls_enabled);
+	$self->write_timestamp_log ("NMAP result [$url $ip_address $port]: $result");
+
 	# ---------- update the database
 
 	if ($$cache{id}) {
-		$update->execute ($clock, to_json (\@tls_enabled), $$cache{id});
+		$update->execute ($clock, $result, $$cache{id});
 	} else {
-		$insert->execute ($md5, $clock, $url, $ip_address, $port, to_json (\@tls_enabled));
+		$insert->execute ($md5, $clock, $url, $ip_address, $port, $result);
 	}
 
 	# make sure we don't run too many requests too fast
