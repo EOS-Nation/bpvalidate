@@ -7,7 +7,7 @@ use EOSN::Log qw(write_timestamp_log);
 use EOSN::File qw(write_file_atomic);
 use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::SQL qw(do_connect_mysql);
-use EOSN::Validate::Webpage;
+use EOSN::Validate::Config;
 use EOSN::UA qw(eosn_normal_ua eosn_cache_ua);
 use EOSN::BlockchainAPI qw(get_info get_table);
 use Time::HiRes qw(usleep);
@@ -37,10 +37,10 @@ $stats_config{count_stale} = {query => 'sum(if(unix_timestamp() - regproducer_at
 
 write_timestamp_log ('starting');
 
-my $webpage = EOSN::Validate::Webpage->new;
+my $config = EOSN::Validate::Config->new;
 my @pids;
 
-foreach my $chain ($webpage->chains) {
+foreach my $chain ($config->chains) {
 	fork_children ($chain);
 }
 
@@ -62,7 +62,7 @@ foreach my $pid (@pids) {
 sub fork_children {
 	my ($chain) = @_;
 
-	my $properties = $webpage->chain_properties ($chain);
+	my $properties = $config->chain_properties ($chain);
 
 	# ---------- update database
 
@@ -218,7 +218,7 @@ sub run_stats_counter {
 	my $dbh = do_connect_mysql ('bpvalidate');
 
 	my %stats_query;
-	foreach my $chain ($webpage->chains) {
+	foreach my $chain ($config->chains) {
 		$stats_query{$chain} = generate_stats_query ($chain);
 	}
 
@@ -226,7 +226,7 @@ sub run_stats_counter {
 		exit if (getppid () == 1);
 		exit if (! $dbh->ping);
 
-		foreach my $chain ($webpage->chains) {
+		foreach my $chain ($config->chains) {
 			update_stats ($chain, $stats_query{$chain}, $dbh);
 		}
 
@@ -318,12 +318,12 @@ sub dispatch_chain {
 sub update_chain {
 	my ($chain) = @_;
 
-	my $properties = $webpage->chain_properties ($chain);
+	my $properties = $config->chain_properties ($chain);
 	my $base_url = $$properties{url};
 	my $ua = eosn_normal_ua ();
 	my $dbh = do_connect_mysql ('bpvalidate');
 	my $wait_time = 300;
-	my $versionsfile = $webpage->configdir . "/versions_$chain.yml";
+	my $versionsfile = $config->configdir . "/versions_$chain.yml";
 	my $versions = LoadFile ($versionsfile);
 
 	write_timestamp_log ("[update $chain] read from url=<$base_url>");
@@ -437,7 +437,7 @@ sub get_chain_bpjson_list {
 	my $ua = $$options{ua};
 	my $onchain = $$options{onchain};
 	my $query_limit = $$options{query_limit};
-	my $properties = $webpage->chain_properties ($chain);
+	my $properties = $config->chain_properties ($chain);
 
 	my $onchain_bpjson_list = [];
 
@@ -531,7 +531,7 @@ sub update_db {
 	my $producer_list = $$options{producer_list};
 	my $onchain_bpjson_list = $$options{onchain_bpjson_list};
 	my $vote_total = $$options{vote_total};
-	my $properties = $webpage->chain_properties ($chain);
+	my $properties = $config->chain_properties ($chain);
 	my $max_producers = $$properties{max_producers};
 	my $versions = $$options{versions};
 	my $records_updated = 0;
@@ -555,7 +555,7 @@ sub update_db {
 			$$data{$producer}{id} = $id;
 		}
 
-		my $properties = $webpage->chain_properties ($chain);
+		my $properties = $config->chain_properties ($chain);
 		my %request_data = (
 			regproducer_data => $entry,
 			meta => $$onchain{meta}{$producer},

@@ -5,7 +5,7 @@ use strict;
 use JSON;
 use EOSN::Log qw(write_timestamp_log);
 use EOSN::File qw(write_file_atomic);
-use EOSN::Validate::Webpage;
+use EOSN::Validate::Config;
 use EOSN::SQL qw(do_connect_mysql);
 use File::Slurp qw(read_dir read_file);
 use Time::HiRes qw(usleep);
@@ -20,16 +20,16 @@ binmode(STDOUT, ":utf8");
 # --------------------------------------------------------------------------
 # Main
 
-my $webpage = EOSN::Validate::Webpage->new;
-my $configdir = $webpage->configdir;
-my $webdir = $webpage->webdir;
+my $config = EOSN::Validate::Config->new;
+my $configdir = $config->configdir;
+my $webdir = $config->webdir;
 
 write_timestamp_log ('starting');
 
 my @pids;
 my $delay = 10;
 
-foreach my $chain ($webpage->chains) {
+foreach my $chain ($config->chains) {
 	fork_chain ($chain);
 	sleep ($delay);
 }
@@ -49,7 +49,7 @@ foreach my $pid (@pids) {
 sub fork_chain {
 	my ($chain) = @_;
 
-	my $properties = $webpage->chain_properties ($chain);
+	my $properties = $config->chain_properties ($chain);
 
 	my $pid1 = fork;
 	if (! defined $pid1) {
@@ -136,7 +136,7 @@ sub write_results {
 sub run_reports {
 	my ($chain) = @_;
 
-	my $properties = $webpage->chain_properties ($chain);
+	my $properties = $config->chain_properties ($chain);
 
 	foreach my $property (keys %$properties) {
 		next if ($property !~ /^report_/);

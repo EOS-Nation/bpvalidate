@@ -14,7 +14,7 @@ use Carp qw(confess);
 use Getopt::Long;
 use Date::Parse;
 use Date::Format;
-use EOSN::Validate::Webpage;
+use EOSN::Validate::Config;
 
 # --------------------------------------------------------------------------
 # Class Methods
@@ -30,7 +30,7 @@ sub new {
 sub DESTROY {
 	my ($self) = @_;
 
-	$self->{webpage} = undef;
+	$self->{config} = undef;
 	$self->{chain} = undef;
 	$self->{infile} = undef;
 	$self->{producers} = undef;
@@ -42,7 +42,7 @@ sub DESTROY {
 sub initialize {
         my ($self) = @_;
 
-	$self->{webpage} = EOSN::Validate::Webpage->new;
+	$self->{config} = EOSN::Validate::Config->new;
 	$self->{chain} = undef;
 	$self->{infile} = undef;
 	$self->{producers} = undef;
@@ -53,10 +53,10 @@ sub initialize {
 # --------------------------------------------------------------------------
 # Getter Methods
 
-sub webpage {
+sub config {
 	my ($self) = @_;
 
-	return $self->{webpage};
+	return $self->{config};
 }
 
 sub chain {
@@ -80,14 +80,14 @@ sub producers {
 sub classes {
 	my ($self) = @_;
 
-	my $webpage = $self->webpage;
+	my $config = $self->config;
 	my $chain = $self->chain;
 
 	my @classes_available = (qw (regproducer org blocks api_endpoint p2p_endpoint bpjson history hyperion dfuse firehose atomic account chains ipv6));
 	my @classes_configured = ();
 
 	foreach my $class (@classes_available) {
-		my $properties = $webpage->chain_properties ($chain);
+		my $properties = $config->chain_properties ($chain);
 
 		next if (! exists $$properties{"class_$class"});
 		next if (! $$properties{"class_$class"});
@@ -211,24 +211,24 @@ sub generate_report_txt {
 	my ($self, %options) = @_;
 
 	my $data = $self->data;
-	my $webpage = $self->webpage;
-	my $webdir = $webpage->webdir;
+	my $config = $self->config;
+	my $webdir = $config->webdir;
 	my $chain = $self->chain;
 	my $lang = $options{lang};
 	my $report = $options{report};
 	my $outfile = $options{outfile};
-	my $title = $options{title} || $webpage->label (key => "title_$outfile", lang => $lang);
+	my $title = $options{title} || $config->label (key => "title_$outfile", lang => $lang);
 	my @out;
 
 	push (@out, "# $title\n");
-	push (@out, "# " . $webpage->label (key => 'txt_chain', lang => $lang) . ' ' . $webpage->label (key => 'chain_' . $chain, lang => $lang) . "\n");
-	push (@out, "# " . $webpage->label (key => 'txt_update', lang => $lang) . ' ' . $webpage->datetime (timestring => $$data{meta}{generated_at}, lang => $lang) . "\n");
-	push (@out, "# " . $webpage->label (key => 'txt_about', lang => $lang) . "\n");
+	push (@out, "# " . $config->label (key => 'txt_chain', lang => $lang) . ' ' . $config->label (key => 'chain_' . $chain, lang => $lang) . "\n");
+	push (@out, "# " . $config->label (key => 'txt_update', lang => $lang) . ' ' . $config->datetime (timestring => $$data{meta}{generated_at}, lang => $lang) . "\n");
+	push (@out, "# " . $config->label (key => 'txt_about', lang => $lang) . "\n");
 	push (@out, "\n");
 
 	foreach my $section (@$report) {
 		my $name = $$section{name};
-		$name = $webpage->label (key => 'unknown', lang => $lang) if (defined $name && $name eq 'zzunknown');
+		$name = $config->label (key => 'unknown', lang => $lang) if (defined $name && $name eq 'zzunknown');
 		my $rows = $$section{rows};
 		my $prefix = $$section{name_prefix} || '';
 		my $divider = $$section{section_divider} || 1;
@@ -266,25 +266,25 @@ sub generate_report_json {
 
 	my $data = $self->data;
 	my $producers = $self->producers;
-	my $webpage = $self->webpage;
-	my $webdir = $webpage->webdir;
+	my $config = $self->config;
+	my $webdir = $config->webdir;
 	my $chain = $self->chain;
 	my $lang = $options{lang};
 	my $report = $options{report};
 	my $outfile = $options{outfile};
-	my $title = $options{title} || $webpage->label (key => "title_$outfile", lang => $lang);
+	my $title = $options{title} || $config->label (key => "title_$outfile", lang => $lang);
 	my %out;
 
 	$out{meta}{title}{value} = $title;
-	$out{meta}{network}{label} = $webpage->label (key => 'txt_chain', lang => $lang);
-	$out{meta}{network}{value} = $webpage->label (key => 'chain_' . $chain, lang => $lang);
-	$out{meta}{update}{label} = $webpage->label (key => 'txt_update', lang => $lang);
-	$out{meta}{update}{value} = $webpage->datetime (timestring => $$data{meta}{generated_at}, lang => $lang);
-	$out{meta}{details}{value} = $webpage->label (key => 'txt_about', lang => $lang);
+	$out{meta}{network}{label} = $config->label (key => 'txt_chain', lang => $lang);
+	$out{meta}{network}{value} = $config->label (key => 'chain_' . $chain, lang => $lang);
+	$out{meta}{update}{label} = $config->label (key => 'txt_update', lang => $lang);
+	$out{meta}{update}{value} = $config->datetime (timestring => $$data{meta}{generated_at}, lang => $lang);
+	$out{meta}{details}{value} = $config->label (key => 'txt_about', lang => $lang);
 
 	foreach my $section (@$report) {
 		my $name = $$section{name};
-		$name = $webpage->label (key => 'unknown', lang => $lang) if (defined $name && $name eq 'zzunknown');
+		$name = $config->label (key => 'unknown', lang => $lang) if (defined $name && $name eq 'zzunknown');
 		my $rows = $$section{rows};
 		my $prefix = $$section{name_prefix} || '';
 		my $divider = $$section{section_divider} || 1;
@@ -321,7 +321,7 @@ sub generate_report_thtml {
 
 	my $data = $self->data;
 	my $producers = $self->producers;
-	my $webpage = $self->webpage;
+	my $config = $self->config;
 	my $chain = $self->chain;
 	my $lang = $options{lang};
 	my $report = $options{report};
@@ -332,10 +332,10 @@ sub generate_report_thtml {
 	my @out;
 
 	if ($text) {
-		push (@out, "<p><a href=\"../$outfile.txt\">" . $webpage->label (key => 'label_text_version', lang => $lang) . "</a></p>");
+		push (@out, "<p><a href=\"../$outfile.txt\">" . $config->label (key => 'label_text_version', lang => $lang) . "</a></p>");
 	}
 	if ($json) {
-		push (@out, "<p><a href=\"../$outfile.json\">" . $webpage->label (key => 'label_json_version', lang => $lang) . "</a></p>");
+		push (@out, "<p><a href=\"../$outfile.json\">" . $config->label (key => 'label_json_version', lang => $lang) . "</a></p>");
 	}
 	if ($text || $json) {
 		push (@out, "<br>\n");
@@ -343,7 +343,7 @@ sub generate_report_thtml {
 
 	foreach my $section (@$report) {
 		my $name = $$section{title} || $$section{name};
-		$name = $webpage->label (key => 'unknown', lang => $lang) if (defined $name && $name eq 'zzunknown');
+		$name = $config->label (key => 'unknown', lang => $lang) if (defined $name && $name eq 'zzunknown');
 		my $rows = $$section{rows};
 
 		if ($$section{name}) {
@@ -406,13 +406,13 @@ sub write_report_thtml {
 	my ($self, %options) = @_;
 
 	my $producers = $self->producers;
-	my $webpage = $self->webpage;
-	my $webdir = $webpage->webdir;
+	my $config = $self->config;
+	my $webdir = $config->webdir;
 	my $chain = $self->chain;
 	my $lang = $options{lang};
 	my $content = $options{content};
 	my $outfile = $options{outfile};
-	my $title = $options{title} || $webpage->label (key => "title_$outfile", lang => $lang);
+	my $title = $options{title} || $config->label (key => "title_$outfile", lang => $lang);
 	my @out;
 
 	push (@out, "chain = $chain\n");
@@ -427,8 +427,8 @@ sub write_report_thtml {
 sub sev_html {
 	my ($self, %options) = @_;
 
-	my $webpage = $self->webpage;
-	my $webdir = $webpage->webdir;
+	my $config = $self->config;
+	my $webdir = $config->webdir;
 	my $kind = $options{kind};
 	my $class = $options{class};
 	my $lang = $options{lang};
@@ -441,10 +441,10 @@ sub sev_html {
 	}
 
 	if ($class) {
-		my $title = $webpage->label (key => "class_$class", lang => $lang);
+		my $title = $config->label (key => "class_$class", lang => $lang);
 		$html =~ s/ / title="$title" /;
 	} else {
-		my $title = $webpage->label (key => "$kind", lang => $lang);
+		my $title = $config->label (key => "$kind", lang => $lang);
 		$html =~ s/ / title="$title" /;
 	}
 
@@ -460,8 +460,8 @@ sub flag_html {
 sub generate_message {
 	my ($self, $options, %params) = @_;
 
-	my $webpage = $self->webpage;
-	my $webdir = $webpage->webdir;
+	my $config = $self->config;
+	my $webdir = $config->webdir;
 	my $content_type = $params{content_type} || die;
 	my $lang = $params{lang} || die;
 
@@ -508,7 +508,7 @@ sub generate_message {
 		$response_url = undef if ($url eq $response_url);
 	}
 
-	$request_timeout .= ' ' . $webpage->label (key => 'time_s', lang => $lang) if ($request_timeout);
+	$request_timeout .= ' ' . $config->label (key => 'time_s', lang => $lang) if ($request_timeout);
 
 	if ($cache_timeout) {
 		$cache_timeout = undef if ($cache_timeout < 1800);
@@ -516,10 +516,10 @@ sub generate_message {
 	if ($cache_timeout) {
 		if ($cache_timeout > 3600) {
 			$cache_timeout = int ($cache_timeout / 3600);
-			$cache_timeout .= ' ' . $webpage->label (key => 'time_h', lang => $lang);
+			$cache_timeout .= ' ' . $config->label (key => 'time_h', lang => $lang);
 		} else {
 			$cache_timeout = int ($cache_timeout / 60);
-			$cache_timeout .= ' ' . $webpage->label (key => 'time_m', lang => $lang);
+			$cache_timeout .= ' ' . $config->label (key => 'time_m', lang => $lang);
 		}
 	}
 
@@ -533,7 +533,7 @@ sub generate_message {
 	$detail .= $self->format_message_entry ('msg_threshold', $threshold, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_count', $count, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_value', $value, 0, $content_type, $lang);
-	$detail .= $self->format_message_entry ('msg_value_time', $webpage->datetime (timestring => $value_time, lang => $lang), 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_value_time', $config->datetime (timestring => $value_time, lang => $lang), 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_suggested_to_use_value', $suggested_value, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_delta_time', $delta_time, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_field', $field, 0, $content_type, $lang);
@@ -551,12 +551,12 @@ sub generate_message {
 	$detail .= $self->format_message_entry ('msg_port', $port, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_elapsed_time', $elapsed_time, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_timeout', $request_timeout, 0, $content_type, $lang);
-	$detail .= $self->format_message_entry ('msg_validated_at', $webpage->datetime (timestring => $check_time, lang => $lang), 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_validated_at', $config->datetime (timestring => $check_time, lang => $lang), 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_validated_every', $cache_timeout, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_explanation', $explanation, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_see', $see1, 1, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_see', $see2, 1, $content_type, $lang);
-	$detail .= $self->format_message_entry ('msg_last_updated_at', $webpage->datetime (timestring => $last_update_time, lang => $lang), 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_last_updated_at', $config->datetime (timestring => $last_update_time, lang => $lang), 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_diff', $diff, 2, $content_type, $lang);
 
 	return $detail;
@@ -565,8 +565,8 @@ sub generate_message {
 sub format_elapsed_time {
 	my ($self, %options) = @_;
 
-	my $webpage = $self->webpage;
-	my $webdir = $webpage->webdir;
+	my $config = $self->config;
+	my $webdir = $config->webdir;
 	my $time = $options{seconds}; # $time is in seconds
 	my $lang = $options{lang};
 
@@ -578,22 +578,22 @@ sub format_elapsed_time {
 	my $s = $time % 60;
 
 	if ($time > 3600) {
-		return $h . ' ' . $webpage->label (key => 'time_h', lang => $lang) .  ' '
-			. $m . ' ' . $webpage->label (key => 'time_m', lang => $lang) .  ' '
-			. $s . ' ' . $webpage->label (key => 'time_s', lang => $lang);
+		return $h . ' ' . $config->label (key => 'time_h', lang => $lang) .  ' '
+			. $m . ' ' . $config->label (key => 'time_m', lang => $lang) .  ' '
+			. $s . ' ' . $config->label (key => 'time_s', lang => $lang);
 	} elsif ($time > 60) {
-		return $m . ' ' . $webpage->label (key => 'time_m', lang => $lang) .  ' '
-			. $s . ' ' . $webpage->label (key => 'time_s', lang => $lang);
+		return $m . ' ' . $config->label (key => 'time_m', lang => $lang) .  ' '
+			. $s . ' ' . $config->label (key => 'time_s', lang => $lang);
 	} else {
-		return $time . ' ' . $webpage->label (key => 'time_s', lang => $lang);
+		return $time . ' ' . $config->label (key => 'time_s', lang => $lang);
 	}
 }
 
 sub format_message_entry {
 	my ($self, $key, $value, $is_url, $content_type, $lang) = @_;
 
-	my $webpage = $self->webpage;
-	my $webdir = $webpage->webdir;
+	my $config = $self->config;
+	my $webdir = $config->webdir;
 
 	return '' if (! defined $value);
 	return '' if ($value eq '');
@@ -606,12 +606,12 @@ sub format_message_entry {
 		} else {
 			$value = encode_entities ($value);
 		}
-		return ', ' . $webpage->label (key => $key, lang => $lang) . '=&lt;' . $value . '&gt;';
+		return ', ' . $config->label (key => $key, lang => $lang) . '=&lt;' . $value . '&gt;';
 	} else {
 		if ($is_url == 2) {
 			return "";
 		} else {
-			return ', ' . $webpage->label (key => $key, lang => $lang) . '=<' . $value .'>';
+			return ', ' . $config->label (key => $key, lang => $lang) . '=<' . $value .'>';
 		}
 	}
 }

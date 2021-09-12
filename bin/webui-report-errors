@@ -12,13 +12,13 @@ binmode(STDOUT, ":utf8");
 my $report = EOSN::Validate::Report->new;
 $report->get_report_options;
 
-my $webpage = $report->webpage;
+my $config = $report->config;
 my $data = $report->data;
 my $chain = $report->chain;
-my $properties = $webpage->chain_properties ($chain);
+my $properties = $config->chain_properties ($chain);
 
-foreach my $lang ($webpage->langs) {
-	foreach my $content_type ($webpage->content_types) {
+foreach my $lang ($config->langs) {
+	foreach my $content_type ($config->content_types) {
 		my @report;
 		foreach my $entry (@{$$data{producers}}) {
 			my @section;
@@ -28,7 +28,7 @@ foreach my $lang ($webpage->langs) {
 				next if ($$message{kind} eq 'ok');
 
 				my $icon = $report->sev_html (kind => $$message{kind}, class => $$message{class}, lang => $lang);
-				my $class = $webpage->label (key => 'class_' . $$message{class}, lang => $lang);
+				my $class = $config->label (key => 'class_' . $$message{class}, lang => $lang);
 
 				push (@section, {
 					sprintf => "%4s, %11s, %s",

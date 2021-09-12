@@ -12,10 +12,10 @@ binmode(STDOUT, ":utf8");
 my $report = EOSN::Validate::Report->new;
 $report->get_report_options;
 
-my $webpage = $report->webpage;
+my $config = $report->config;
 my $data = $report->data;
 my $chain = $report->chain;
-my $properties = $webpage->chain_properties ($chain);
+my $properties = $config->chain_properties ($chain);
 my %kinds;
 
 foreach my $entry (@{$$data{producers}}) {
@@ -27,8 +27,8 @@ foreach my $entry (@{$$data{producers}}) {
 	}
 }
 
-foreach my $lang ($webpage->langs) {
-	foreach my $content_type ($webpage->content_types) {
+foreach my $lang ($config->langs) {
+	foreach my $content_type ($config->content_types) {
 		my @report;
 		foreach my $kind (reverse sort keys %kinds) {
 			my @section;
