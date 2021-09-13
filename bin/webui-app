@@ -8,7 +8,6 @@ use strict;
 use warnings;
 use Plack::Builder;
 use EOSN::App::Validate;
-use Plack::App::File;
 
 binmode(STDOUT, ":utf8");
 
@@ -16,6 +15,7 @@ binmode(STDOUT, ":utf8");
 # App
 
 builder {
-	mount '/res' => Plack::App::File->new (root => $ENV{EOSN_WEBPAGE_WEB} . '/res/')->to_app;
+	enable '+EOSN::Middleware::Setup::Validate';
+	enable '+EOSN::Middleware::Resources';
 	mount '/' => EOSN::App::Validate->new->to_app;
 };
