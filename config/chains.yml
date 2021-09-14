@@ -128,7 +128,7 @@ eos:
   test_bpjson_table: producerjson
   test_public_key: EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
   test_transaction: 1bc395276f4bdde15a7992e50e61938457673e861d9480b51762b6e4457e5b79
-  url: http://mainnet.eosn.io
+  url: http://eos.eosn.io
 
 jungle:
   aloha_id: 17
