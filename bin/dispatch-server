@@ -327,6 +327,7 @@ sub update_chain {
 	my $versions = LoadFile ($versionsfile);
 	my $stats = {};
 
+	$$stats{chain} = $chain;
 	$$stats{start_time} = time;
 	$$stats{update_count} = 0;
 
