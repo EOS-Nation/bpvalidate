@@ -325,6 +325,10 @@ sub update_chain {
 	my $wait_time = 300;
 	my $versionsfile = $config->configdir . "/versions_$chain.yml";
 	my $versions = LoadFile ($versionsfile);
+	my $stats = {};
+
+	$$stats{start_time} = time;
+	$$stats{update_count} = 0;
 
 	write_timestamp_log ("[update $chain] read from url=<$base_url>");
 	
@@ -345,6 +349,7 @@ sub update_chain {
 		$$chain_data{max_producers} = $$properties{max_producers} || die;
 		$$chain_data{dbh} = $dbh;
 		$$chain_data{versions} = $versions;
+		$$chain_data{errors} = [];
 
 		get_chain_info ($chain_data);
 		get_chain_globals ($chain_data);
@@ -352,7 +357,7 @@ sub update_chain {
 		get_chain_bpjson_list ($chain_data);
 
 		my $records_updated = 0;
-		if ($$chain_data{errors}) {
+		if (scalar (@{$$chain_data{errors}}) > 0) {
 			write_timestamp_log ("[update $chain] skipped due to errors");
 		} else {
 			tabulate_votes ($chain_data);
@@ -365,7 +370,17 @@ sub update_chain {
 		my $sleep_time = $wait_time - $process_time;
 		$sleep_time = 0 if ($sleep_time < 0);
 
+		$$stats{update_time} = time;
+		$$stats{errors} = $$chain_data{errors};
+		$$stats{update_count}++;
+		$$stats{records_updated} = $records_updated;
+		$$stats{max_producers} = $$chain_data{max_producers};
+		$$stats{process_time} = $process_time;
+		$$stats{sleep_time} = $sleep_time;
+
 		write_timestamp_log ("[update $chain] processed records=<$records_updated>/max=<$$chain_data{max_producers}> in time=<$process_time s> sleep=<$sleep_time s>");
+		write_file_atomic ("/run/bpvalidate/chain_$chain.json", to_json($stats));
+
 		sleep ($sleep_time);
 	}
 }
@@ -383,7 +398,7 @@ sub get_chain_info {
 
 	if (! $info) {
 		write_timestamp_log ("[update $chain] cannot get info");
-		$$options{errors}++;
+		push (@{$$options{errors}}, 'cannot get info');
 	}
 
 	$$options{info} = $info;
@@ -402,7 +417,7 @@ sub get_chain_globals {
 
 	if (! $globals) {
 		write_timestamp_log ("[update $chain] cannot get global list");
-		$$options{errors}++;
+		push (@{$$options{errors}}, 'cannot get global list');
 	}
 	$globals = $$globals[0];
 
@@ -423,7 +438,7 @@ sub get_chain_regproducer {
 
 	if (! $producer_list) {
 		write_timestamp_log ("[update $chain] cannot get producer list");
-		$$options{errors}++;
+		push (@{$$options{errors}}, 'cannot get producer list');
 	}
 
 	$$options{producer_list} = $producer_list;
@@ -450,7 +465,7 @@ sub get_chain_bpjson_list {
 
 		if (! $onchain_bpjson_list) {
 			write_timestamp_log ("[update $chain] cannot get onchainbpjson list");
-			$$options{errors}++;
+			push (@{$$options{errors}}, 'cannot get onchainbpjson list');
 		}
 
 		foreach my $obj (@$onchain_bpjson_list) {
@@ -476,7 +491,7 @@ sub tabulate_votes {
 	}
 	if ($vote_total == 0) {
 		write_timestamp_log ("[update $chain] total votes is zero");
-		$$options{errors}++;
+		push (@{$$options{errors}}, 'total votes is zero');
 	}
 
 	$$options{vote_total} = $vote_total;
