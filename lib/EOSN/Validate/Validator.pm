@@ -5,6 +5,7 @@ package EOSN::Validate::Validator;
 
 use utf8;
 use strict;
+use warnings;
 use JSON;
 use Locale::Country;
 use List::Util qw(maxstr);

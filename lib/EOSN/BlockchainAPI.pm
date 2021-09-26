@@ -1,7 +1,11 @@
 package EOSN::BlockchainAPI;
 
+# --------------------------------------------------------------------------
+# Required modules
+
 use utf8;
 use strict;
+use warnings;
 use Exporter;
 use JSON qw(from_json to_json);
 

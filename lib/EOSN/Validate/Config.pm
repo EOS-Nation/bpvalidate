@@ -5,6 +5,7 @@ package EOSN::Validate::Config;
 
 use utf8;
 use strict;
+use warnings;
 use Carp qw(confess);
 use YAML qw(LoadFile);
 use Date::Format qw(time2str);

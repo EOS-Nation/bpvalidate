@@ -1,7 +1,11 @@
 package EOSN::UA;
 
+# --------------------------------------------------------------------------
+# Required modules
+
 use utf8;
 use strict;
+use warnings;
 use Exporter;
 use LWPx::ParanoidAgent;
 use EOSN::CachingAgent;

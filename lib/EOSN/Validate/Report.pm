@@ -5,6 +5,7 @@ package EOSN::Validate::Report;
 
 use utf8;
 use strict;
+use warnings;
 use HTML::Entities;
 use JSON qw(to_json from_json);
 use File::Slurp qw(read_file);

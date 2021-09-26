@@ -1,7 +1,11 @@
 package EOSN::CachingAgent;
 
+# --------------------------------------------------------------------------
+# Required modules
+
 use utf8;
 use strict;
+use warnings;
 use Carp qw(confess);
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes qw(time);
