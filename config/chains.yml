@@ -61,7 +61,7 @@ jungle3:
   class_p2p_endpoint: 1
   class_regproducer: 1
   core_symbol: EOS
-  filename: jungle.json
+  filename: jungle3.json
   location_check: timezone100
   maintainer: matthew
   max_producers: 150
@@ -105,7 +105,7 @@ jungle4:
   class_p2p_endpoint: 1
   class_regproducer: 1
   core_symbol: EOS
-  filename: jungle.json
+  filename: jungle4.json
   location_check: timezone100
   maintainer: matthew
   max_producers: 150
