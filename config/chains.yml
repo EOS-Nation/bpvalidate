@@ -1,91 +1,3 @@
-#bos:
-#  aloha_id: 7
-#  big_block_transactions: 404
-#  chain_id: d5a3d18fbb3c084e3b1f3fa98c21014b5f3db536cc15d08f9f6479517c6a3d86
-#  class_account: 1
-#  class_api_endpoint: 1
-#  class_atomic: 1
-#  class_blocks: 1
-#  class_bpjson: 1
-#  class_chains: 1
-#  class_dfuse: 1
-#  class_firehose: 1
-#  class_history: 1
-#  class_hyperion: 1
-#  class_ipv6: 0
-#  class_org: 1
-#  class_p2p_endpoint: 1
-#  class_regproducer: 1
-#  core_symbol: BOS
-#  filename: bos.json
-#  location_check: timezone
-#  maintainer: matthew
-#  max_producers: 150
-#  name: bos
-#  report_api_versions: 150
-#  report_branding: 140
-#  report_config: 190
-#  report_country: 170
-#  report_endpoints: 110
-#  report_errors: 200
-#  report_p2p_speed: 0
-#  report_resources: 120
-#  report_socials: 130
-#  report_timezone: 180
-#  sort_order: 102
-#  test_account: bosnationftw
-#  test_big_block: 196058
-#  test_bpjson_code: producerjson
-#  test_bpjson_scope: producerjson
-#  test_bpjson_table: producerjson
-#  test_public_key: EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
-#  test_transaction: c4a2ef620464e3b199996a6b50a35771be39b50f2d6f6a5781ff0bbf850917a2
-#  url: http://bos.eosn.io
-
-#bostest:
-#  aloha_id: 6
-#  big_block_transactions: 634
-#  chain_id: 33cc2426f1b258ef8c798c34c0360b31732ea27a2d7e35a65797850a86d1ba85
-#  class_account: 1
-#  class_api_endpoint: 1
-#  class_atomic: 1
-#  class_blocks: 1
-#  class_bpjson: 1
-#  class_chains: 1
-#  class_dfuse: 1
-#  class_firehose: 1
-#  class_history: 1
-#  class_hyperion: 1
-#  class_ipv6: 0
-#  class_org: 1
-#  class_p2p_endpoint: 1
-#  class_regproducer: 1
-#  core_symbol: BOS
-#  filename: bostest.json
-#  location_check: timezone
-#  maintainer: matthew
-#  max_producers: 150
-#  name: bostest
-#  report_api_versions: 150
-#  report_branding: 140
-#  report_config: 190
-#  report_country: 170
-#  report_endpoints: 110
-#  report_errors: 200
-#  report_p2p_speed: 0
-#  report_resources: 120
-#  report_socials: 130
-#  report_timezone: 180
-#  sort_order: 904
-#  test_account: bosnationftw
-#  test_big_block: 33122611
-#  test_bpjson_code: producerjson
-#  test_bpjson_scope: producerjson
-#  test_bpjson_table: producerjson
-#  test_public_key: EOS4uP4oHhtVyZAQze1qMY7ZKqof3y26L6bvnr2FfpMJhhvAnEr1v
-#  test_transaction: 3bb563d8512ffc11c6c1f21d0e552a513d06f7e2adecff00b3fc261c193feb16
-#  url: http://bostest.eosn.io
-
 eos:
   aloha_id: 1
   big_block_transactions: 1759
@@ -128,9 +40,9 @@ eos:
   test_bpjson_table: producerjson
   test_public_key: EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
   test_transaction: 1bc395276f4bdde15a7992e50e61938457673e861d9480b51762b6e4457e5b79
-  url: http://eos.eosn.io
+  url: http://eos.api.eosnation.io
 
-jungle:
+jungle3:
   aloha_id: 17
   big_block_transactions: ''
   chain_id: 2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840
@@ -153,7 +65,7 @@ jungle:
   location_check: timezone100
   maintainer: matthew
   max_producers: 150
-  name: jungle
+  name: jungle3
   report_api_versions: 150
   report_branding: 140
   report_config: 190
@@ -172,7 +84,51 @@ jungle:
   test_bpjson_table: producerjson
   test_public_key: EOS4uP4oHhtVyZAQze1qMY7ZKqof3y26L6bvnr2FfpMJhhvAnEr1v
   test_transaction: 4d458e04a592656b1ff572c8584723106a433c12d96aaca7caec6f20bad251c9
-  url: http://jungle.eosn.io
+  url: http://jungle3.api.eosnation.io
+
+jungle4:
+  aloha_id: ''
+  big_block_transactions: ''
+  chain_id: 73e4385a2708e6d7048834fbc1079f2fabb17b3c125b146af438971e90716c4d
+  class_account: 1
+  class_api_endpoint: 1
+  class_atomic: 1
+  class_blocks: 1
+  class_bpjson: 1
+  class_chains: 1
+  class_dfuse: 1
+  class_firehose: 1
+  class_history: 1
+  class_hyperion: 1
+  class_ipv6: 0
+  class_org: 1
+  class_p2p_endpoint: 1
+  class_regproducer: 1
+  core_symbol: EOS
+  filename: jungle.json
+  location_check: timezone100
+  maintainer: matthew
+  max_producers: 150
+  name: jungle4
+  report_api_versions: 150
+  report_branding: 140
+  report_config: 190
+  report_country: 170
+  report_endpoints: 110
+  report_errors: 200
+  report_p2p_speed: 0
+  report_resources: 120
+  report_socials: 130
+  report_timezone: 180
+  sort_order: 900
+  test_account: eosnationftw
+  test_big_block: 1025382
+  test_bpjson_code: producerjson
+  test_bpjson_scope: producerjson
+  test_bpjson_table: producerjson
+  test_public_key: EOS4uP4oHhtVyZAQze1qMY7ZKqof3y26L6bvnr2FfpMJhhvAnEr1v
+  test_transaction: 4d458e04a592656b1ff572c8584723106a433c12d96aaca7caec6f20bad251c9
+  url: http://jungle4.api.eosnation.io
 
 kylin:
   aloha_id: 3
@@ -216,7 +172,7 @@ kylin:
   test_bpjson_table: producerjson
   test_public_key: EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
   test_transaction: f680f985421df7e04edba774b82f90b58ea7cf2479015eaed6d04c05634323ac
-  url: http://kylin.eosn.io
+  url: http://kylin.api.eosnation.io
 
 telos:
   aloha_id: 5
@@ -260,7 +216,7 @@ telos:
   test_bpjson_table: producerjson
   test_public_key: EOS7avuePJFiLEaKbziUBs21CyVJn6hN3KHiEjeMnSKGiT3VvMvzz
   test_transaction: f3b8bc689d97d9e9ec89881c471f73dcba8287b64046f74d1aeded17de83b43e
-  url: http://mainnet.telosusa.io
+  url: http://telos.api.eosnation.io
 
 telostest:
   aloha_id: 13
@@ -348,7 +304,7 @@ wax:
   test_bpjson_table: producerjson
   test_public_key: EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
   test_transaction: 26ca258e963137625375197becb6160450cfc4b58f26775ebf273cb83e47f6b8
-  url: http://wax.eosn.io
+  url: http://wax.api.eosnation.io
 
 waxtest:
   aloha_id: 16
@@ -392,4 +348,4 @@ waxtest:
   test_bpjson_table: producerjson
   test_public_key: EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
   test_transaction: 4ccaf948d717e2d705ba23079ce77676bcf32daa9f98317f112f9011414a61d3
-  url: http://waxtest.eosn.io
+  url: http://waxtest.api.eosnation.io
