@@ -25,7 +25,7 @@ h1 = Network Information
 <li> Chain ID: %config_chain_id%
 <li> Core Symbol: %config_core_symbol%
 <li> Filename: %config_filename%
-<li> Valid eosio versions: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.csv">GitHub</a>.
+<li> Valid eosio versions: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.yml">GitHub</a>.
 </ul>
   </div>
 </div>

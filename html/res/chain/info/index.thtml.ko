@@ -25,7 +25,7 @@ h1 = 네트워크 정보
 <li> 체인 ID: %config_chain_id%
 <li> 코어특징: %config_core_symbol%
 <li> 파일명: %config_filename%
-<li> 유효eosio버전: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.csv">GitHub</a>.
+<li> 유효eosio버전: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.yml">GitHub</a>.
 </ul>
   </div>
 </div>

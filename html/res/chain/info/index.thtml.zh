@@ -25,7 +25,7 @@ h1 = Network Information
 <li> 链ID: %config_chain_id%
 <li> 核心特征: %config_core_symbol%
 <li> 文件名: %config_filename%
-<li> 有效eosio版本: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.csv">GitHub</a>.
+<li> 有效eosio版本: <a href="https://github.com/EOS-Nation/bpvalidate/blob/master/config/versions_%chain_plain%.yml">GitHub</a>.
 </ul>
   </div>
 </div>
