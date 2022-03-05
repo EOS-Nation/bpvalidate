@@ -10,22 +10,18 @@ bp_top21:
   en: Top 21 BP
   ko: 탑 21BP
   zh: 前21名BP
-chain_bos:
-  en: BOS
-  ko: BOS
-  zh: BOS
-chain_bostest:
-  en: BOS Testnet
-  ko: BOS 테스트넷
-  zh: BOS测试网
 chain_eos:
   en: EOS
   ko: EOS
   zh: 主网
-chain_jungle:
-  en: Jungle Testnet
+chain_jungle3:
+  en: Jungle 3 Testnet
   ko: 정글 테스트넷
-  zh: Jungle测试网
+  zh: Jungle3测试网
+chain_jungle4:
+  en: Jungle 4 Testnet
+  ko: 정글 테스트넷
+  zh: Jungle4测试网
 chain_kylin:
   en: Kylin Testnet
   ko: Kylin 테스트넷
