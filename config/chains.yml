@@ -94,7 +94,7 @@ jungle4:
   class_api_endpoint: 1
   class_atomic: 1
   class_blocks: 1
-  class_bpjson: 1
+  class_bpjson: 0
   class_chains: 1
   class_dfuse: 1
   class_firehose: 1
