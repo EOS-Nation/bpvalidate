@@ -1433,6 +1433,16 @@ sub check_node {
 			);
 		}
 
+		if ($is_feature_history && ! $is_feature_chain) {
+			$self->add_message (
+				kind => 'err',
+				detail => 'mismatch feature error, chain-api is required with history-v1',
+				field => "node[$$counters{node_number}]",
+				node_type => 'query',
+				class => 'org'
+			);
+		}
+
 		if ($is_feature_chain && (defined $$node{api_endpoint}) && ($$node{api_endpoint} ne '')) {
 			$found_nodeos_api_endpoint++;
 			my $result = $self->validate_basic_api (
