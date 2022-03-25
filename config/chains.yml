@@ -260,7 +260,7 @@ telostest:
   test_bpjson_table: ''
   test_public_key: EOS5NibtcPBxeCs6qMRgjs6ixxT6QMtjWmifYHwM5srhL2f3oknbd
   test_transaction: f3b8bc689d97d9e9ec89881c471f73dcba8287b64046f74d1aeded17de83b43e
-  url: http://testnet.telosusa.io
+  url: http://telostest.api.eosnation.io
 
 wax:
   aloha_id: 11
