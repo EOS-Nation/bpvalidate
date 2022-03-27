@@ -4204,7 +4204,7 @@ sub check_hyperion_health_health {
 
 	my $last_indexed_block = int ($services{Elasticsearch}{service_data}{last_indexed_block} || 0) || 0;
 	my $total_indexed_blocks = int ($services{Elasticsearch}{service_data}{total_indexed_blocks} || 0) || 0;
-	if ($last_indexed_block != $total_indexed_blocks) {
+	if ($last_indexed_block < $total_indexed_blocks - 1) {
 		$self->add_message (
 			kind => 'err',
 			detail => 'elastic search last_indexed_block != total_indexed_blocks',
