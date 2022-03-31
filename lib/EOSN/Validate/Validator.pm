@@ -978,10 +978,19 @@ sub check_org_social {
 	my $valid = 0;
 	foreach my $key (sort keys %social) {
 		next if (! exists $$json{org}{social}{$key});
-		next if ($$json{org}{social}{$key} eq '');
 		my $value = $$json{org}{social}{$key};
 		my $url_prefix = $social{$key};
 
+		if ($value eq "") {
+			$self->add_message (
+				kind => 'err',
+				detail => 'social references must not be empty',
+				field => "org.social.$key",
+				class => 'org'
+			);
+			next;
+
+		}
 		if ($value =~ m#^https?://#) {
 			$self->add_message (
 				kind => 'err',
