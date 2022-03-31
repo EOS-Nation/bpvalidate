@@ -37,6 +37,7 @@ $bad_urls{'https://www.yahoo.com'} = {value => 'not a BP specific web site'};
 $bad_urls{'https://pbs.twimg.com'} = {value => 'does not load when tracking protection is enabled', see1 => 'https://developer.mozilla.org/en-US/Firefox/Privacy/Tracking_Protection'};
 
 our %social;
+$social{'discord'} = 'https://discord.gg/';
 $social{'medium'} = 'https://medium.com/@';
 $social{'steemit'} = 'https://steemit.com/@';
 $social{'hive'} = 'https://hive.blog/@';
