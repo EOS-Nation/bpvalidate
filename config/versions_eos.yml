@@ -150,3 +150,7 @@ v2.2.0:
   api_current: 1
   hash: v2.2.0
   name: 2.2.0 (eosio)
+v3.0.5-rc1
+  api_current: 1
+  hash: v3.0.5
+  name: 3.0.5 (mandel)
