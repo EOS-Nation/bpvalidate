@@ -2342,7 +2342,7 @@ sub do_validate_p2p {
 
 	my $url = $self->{chain_properties}{url};
 	my $content = '';
-	$self->do_run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 10], '>', \$content);
+	$self->do_run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 20, '-t', 3000], '>', \$content);
 
 	my $result = $self->get_json ($content, %options) || return undef;
 
