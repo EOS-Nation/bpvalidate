@@ -2968,9 +2968,11 @@ sub validate_account_api_extra_check {
 	my %info;
 	my $errors;
 
-	if (! $self->test_account_account (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
-		$errors++;
-	}
+# this test is not really providing any new information, so disable it
+#
+#	if (! $self->test_account_account (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+#		$errors++;
+#	}
 	if (! $self->test_account_key (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
