@@ -2775,9 +2775,10 @@ sub validate_basic_api_extra_check {
 	if (! $self->test_block_one (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
-	if (! $self->test_patreonous (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
-		$errors++;
-	}
+#	patreonous is no longer used, so disable this test 2022-04-29
+#	if (! $self->test_patreonous (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+#		$errors++;
+#	}
 	if (! $self->test_error_message (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 		$errors++;
 	}
@@ -2968,8 +2969,7 @@ sub validate_account_api_extra_check {
 	my %info;
 	my $errors;
 
-# this test is not really providing any new information, so disable it
-#
+# this test is not really providing any new information, so disable it 2022-04-29
 #	if (! $self->test_account_account (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
 #		$errors++;
 #	}
