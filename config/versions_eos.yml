@@ -70,26 +70,6 @@ v2.0.1:
   api_current: 0
   hash: v2.0.1
   name: 2.0.1 (eosio)
-v2.0.10:
-  api_current: 1
-  hash: v2.0.10
-  name: 2.0.10 (eosio)
-v2.0.11:
-  api_current: 1
-  hash: v2.0.11
-  name: 2.0.11 (eosio)
-v2.0.12:
-  api_current: 1
-  hash: v2.0.12
-  name: 2.0.12 (eosio)
-v2.0.13:
-  api_current: 1
-  hash: v2.0.13
-  name: 2.0.13 (eosio)
-v2.0.14:
-  api_current: 1
-  hash: v2.0.14
-  name: 2.0.14 (eosio)
 v2.0.2:
   api_current: 0
   hash: v2.0.2
@@ -115,13 +95,33 @@ v2.0.7:
   hash: v2.0.7
   name: 2.0.7 (eosio)
 v2.0.8:
-  api_current: 1
+  api_current: 0
   hash: v2.0.8
   name: 2.0.8 (eosio)
 v2.0.9:
-  api_current: 1
+  api_current: 0
   hash: v2.0.9
   name: 2.0.9 (eosio)
+v2.0.10:
+  api_current: 0
+  hash: v2.0.10
+  name: 2.0.10 (eosio)
+v2.0.11:
+  api_current: 0
+  hash: v2.0.11
+  name: 2.0.11 (eosio)
+v2.0.12:
+  api_current: 1
+  hash: v2.0.12
+  name: 2.0.12 (eosio)
+v2.0.13:
+  api_current: 1
+  hash: v2.0.13
+  name: 2.0.13 (eosio)
+v2.0.14:
+  api_current: 1
+  hash: v2.0.14
+  name: 2.0.14 (eosio)
 v2.1.0:
   api_current: 1
   hash: v2.1.0
