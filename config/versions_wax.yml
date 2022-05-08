@@ -58,6 +58,10 @@ v2.0.12wax01:
   api_current: 1
   hash: v2.0.12wax01
   name: 2.0.12 (wax)
+v2.0.12wax02:
+  api_current: 1
+  hash: v2.0.12wax02
+  name: 2.0.12 (wax)
 v2.0.13wax01:
   api_current: 1
   hash: v2.0.13wax01
