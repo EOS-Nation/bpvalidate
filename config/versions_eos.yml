@@ -154,3 +154,7 @@ v3.0.5-rc1:
   api_current: 1
   hash: v3.0.5-rc1
   name: 3.0.5 (mandel)
+v3.1.0-dev:
+  api_current: 1
+  hash: v3.1.0-dev
+  name: 3.1.0 (mandel)
