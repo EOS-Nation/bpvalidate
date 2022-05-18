@@ -194,7 +194,7 @@ telos:
   class_regproducer: 1
   core_symbol: TLOS
   filename: bp.json
-  location_check: country
+  location_check: none
   maintainer: michael
   max_producers: 150
   name: telos
@@ -238,7 +238,7 @@ telostest:
   class_regproducer: 1
   core_symbol: TLOS
   filename: bp.json
-  location_check: country
+  location_check: none
   maintainer: michael
   max_producers: 150
   name: telostest
