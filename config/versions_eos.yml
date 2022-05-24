@@ -121,7 +121,11 @@ v2.0.13:
 v2.0.14:
   api_current: 1
   hash: v2.0.14
-  name: 2.0.14 (eosio)
+  name: 2.0.14 (mandel)
+v2.0.15:
+  api_current: 1
+  hash: v2.0.15
+  name: 2.0.15 (mandel)
 v2.1.0:
   api_current: 1
   hash: v2.1.0
