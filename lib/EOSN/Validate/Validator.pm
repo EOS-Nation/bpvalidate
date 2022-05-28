@@ -5191,7 +5191,7 @@ sub version_cleanup {
 
 	$version =~ s/-dirty//;
 	$version =~ s/-\d\d-[a-z0-9]*$//;
-	$version =~ s/-[a-z]*$//;
+#	$version =~ s/-[a-z]*$//;
 
 	return $version;
 }
