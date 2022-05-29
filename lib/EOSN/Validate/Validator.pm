@@ -1123,8 +1123,10 @@ sub test_aloha_last_missed_round {
 			$self->write_timestamp_log ("aloha error cannot parse time: $$json{producer}{last_missed_round}");
 			return undef;
 		}
-		if (time - $last_round_time < 60 * 60 * 24 * 30) {
+		if (time - $last_round_time < 60 * 60 * 24 * 15) {
 			$kind = 'warn';
+		} elsif (time - $last_round_time < 60 * 60 * 24 * 30) {
+			$kind = 'info';
 		}
 
 		$last_missed_round = time2str ("%C", $last_round_time);
