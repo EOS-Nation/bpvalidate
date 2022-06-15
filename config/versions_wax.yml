@@ -98,3 +98,11 @@ v2.1.2wax01:
   api_current: 1
   hash: v2.1.2wax01
   name: 2.1.2 (wax)
+v3.1.0wax01-rc1
+  api_current: 1
+  hash: v3.1.0wax01-rc1
+  name: 3.1.0
+v3.1.0wax01-rc2
+  api_current: 1
+  hash: v3.1.0wax01-rc2
+  name: 3.1.0
