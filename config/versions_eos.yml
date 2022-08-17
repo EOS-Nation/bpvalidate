@@ -174,3 +174,11 @@ v3.1.0-rc3:
   api_current: 1
   hash: v3.1.0-rc3
   name: 3.1.0 (mandel)
+v3.1.0-rc4:
+  api_current: 1
+  hash: v3.1.0-rc4
+  name: 3.1.0 (leap)
+v3.1.0:
+  api_current: 1
+  hash: v3.1.0
+  name: 3.1.0 (leap)

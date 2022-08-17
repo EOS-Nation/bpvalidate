@@ -110,3 +110,11 @@ v3.1.0wax01-rc3:
   api_current: 1
   hash: v3.1.0wax01-rc3
   name: 3.1.0
+v3.1.0wax01-rc4:
+  api_current: 1
+  hash: v3.1.0wax01-rc4
+  name: 3.1.0
+v3.1.0wax01:
+  api_current: 1
+  hash: v3.1.0wax01
+  name: 3.1.0
