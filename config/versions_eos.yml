@@ -182,3 +182,15 @@ v3.1.0:
   api_current: 1
   hash: v3.1.0
   name: 3.1.0 (leap)
+v3.1.1:
+  api_current: 1
+  hash: v3.1.1
+  name: 3.1.1 (leap)
+v3.1.2:
+  api_current: 1
+  hash: v3.1.2
+  name: 3.1.2 (leap)
+v3.2.0-rc1:
+  api_current: 1
+  hash: v3.2.0-rc1
+  name: 3.2.0 (leap)

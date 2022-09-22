@@ -118,3 +118,11 @@ v3.1.0wax01:
   api_current: 1
   hash: v3.1.0wax01
   name: 3.1.0
+v3.1.1wax01:
+  api_current: 1
+  hash: v3.1.1wax01
+  name: 3.1.1
+v3.1.2wax01:
+  api_current: 1
+  hash: v3.1.2wax01
+  name: 3.1.2
