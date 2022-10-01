@@ -111,7 +111,7 @@ v2.0.11:
   hash: v2.0.11
   name: 2.0.11 (eosio)
 v2.0.12:
-  api_current: 1
+  api_current: 0
   hash: v2.0.12
   name: 2.0.12 (eosio)
 v2.0.13:
@@ -127,55 +127,51 @@ v2.0.15:
   hash: v2.0.15
   name: 2.0.15 (mandel)
 v2.1.0:
-  api_current: 1
+  api_current: 0
   hash: v2.1.0
   name: 2.1.0 (eosio)
 v2.1.1:
-  api_current: 1
+  api_current: 0
   hash: v2.1.1
   name: 2.1.1 (eosio)
 v2.1.2:
-  api_current: 1
+  api_current: 0
   hash: v2.1.2
   name: 2.1.2 (eosio)
 v2.2.0-rc1:
-  api_current: 1
+  api_current: 0
   hash: v2.2.0-rc1
   name: 2.2.0 (eosio)
 v2.2.0-rc2:
-  api_current: 1
+  api_current: 0
   hash: v2.2.0-rc2
   name: 2.2.0 (eosio)
 v2.2.0-rc3:
-  api_current: 1
+  api_current: 0
   hash: v2.2.0-rc3
   name: 2.2.0 (eosio)
 v2.2.0:
-  api_current: 1
+  api_current: 0
   hash: v2.2.0
   name: 2.2.0 (eosio)
 v3.0.5-rc1:
-  api_current: 1
+  api_current: 0
   hash: v3.0.5-rc1
   name: 3.0.5 (mandel)
-v3.1.0-dev:
-  api_current: 1
-  hash: v3.1.0-dev
-  name: 3.1.0 (mandel)
 v3.1.0-rc1:
-  api_current: 1
+  api_current: 0
   hash: v3.1.0-rc1
   name: 3.1.0 (mandel)
 v3.1.0-rc2:
-  api_current: 1
+  api_current: 0
   hash: v3.1.0-rc2
   name: 3.1.0 (mandel)
 v3.1.0-rc3:
-  api_current: 1
+  api_current: 0
   hash: v3.1.0-rc3
   name: 3.1.0 (mandel)
 v3.1.0-rc4:
-  api_current: 1
+  api_current: 0
   hash: v3.1.0-rc4
   name: 3.1.0 (leap)
 v3.1.0:
@@ -190,7 +186,15 @@ v3.1.2:
   api_current: 1
   hash: v3.1.2
   name: 3.1.2 (leap)
+v3.2.0-dev:
+  api_current: 1
+  hash: v3.2.0-dev
+  name: 3.2.0 (leap)
 v3.2.0-rc1:
   api_current: 1
   hash: v3.2.0-rc1
+  name: 3.2.0 (leap)
+v3.2.0-rc2:
+  api_current: 1
+  hash: v3.2.0-rc2
   name: 3.2.0 (leap)

@@ -91,31 +91,31 @@ v2.0.15wax01:
   hash: v2.0.15wax01
   name: 2.0.15 (wax)
 v2.1.0wax01:
-  api_current: 1
+  api_current: 0
   hash: v2.1.0wax01
   name: 2.1.0 (wax)
 v2.1.1wax01:
-  api_current: 1
+  api_current: 0
   hash: v2.1.1wax01
   name: 2.1.1 (wax)
 v2.1.2wax01:
-  api_current: 1
+  api_current: 0
   hash: v2.1.2wax01
   name: 2.1.2 (wax)
 v3.1.0wax01-rc1:
-  api_current: 1
+  api_current: 0
   hash: v3.1.0wax01-rc1
   name: 3.1.0
 v3.1.0wax01-rc2:
-  api_current: 1
+  api_current: 0
   hash: v3.1.0wax01-rc2
   name: 3.1.0
 v3.1.0wax01-rc3:
-  api_current: 1
+  api_current: 0
   hash: v3.1.0wax01-rc3
   name: 3.1.0
 v3.1.0wax01-rc4:
-  api_current: 1
+  api_current: 0
   hash: v3.1.0wax01-rc4
   name: 3.1.0
 v3.1.0wax01:
@@ -130,3 +130,7 @@ v3.1.2wax01:
   api_current: 1
   hash: v3.1.2wax01
   name: 3.1.2
+v3.2.0wax01-rc1:
+  api_current: 1
+  hash: v3.2.0wax01-rc1
+  name: 3.2.0
