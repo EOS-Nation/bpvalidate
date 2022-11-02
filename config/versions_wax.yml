@@ -130,7 +130,15 @@ v3.1.2wax01:
   api_current: 1
   hash: v3.1.2wax01
   name: 3.1.2
-v3.2.0wax01-rc1:
+v3.1.3wax01:
   api_current: 1
-  hash: v3.2.0wax01-rc1
+  hash: v3.1.3wax01
+  name: 3.1.3
+v3.2.0wax00-rc1
+  api_current: 1
+  hash: v3.2.0wax00-rc1
+  name: 3.2.0
+v3.2.0wax00-rc2
+  api_current: 1
+  hash: v3.2.0wax00-rc2
   name: 3.2.0
