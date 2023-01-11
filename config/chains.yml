@@ -42,50 +42,6 @@ eos:
   test_transaction: 1bc395276f4bdde15a7992e50e61938457673e861d9480b51762b6e4457e5b79
   url: http://eos.api.eosnation.io
 
-jungle3:
-  aloha_id: 17
-  big_block_transactions: ''
-  chain_id: 2a02a0053e5a8cf73a56ba0fda11e4d92e0238a4a2aa74fccf46d5a910746840
-  class_account: 1
-  class_api_endpoint: 1
-  class_atomic: 1
-  class_blocks: 1
-  class_bpjson: 1
-  class_chains: 1
-  class_dfuse: 1
-  class_firehose: 1
-  class_history: 1
-  class_hyperion: 1
-  class_ipv6: 0
-  class_org: 1
-  class_p2p_endpoint: 1
-  class_regproducer: 1
-  core_symbol: EOS
-  filename: jungle3.json
-  location_check: timezone100
-  maintainer: matthew
-  max_producers: 150
-  name: jungle3
-  report_api_versions: 150
-  report_branding: 140
-  report_config: 190
-  report_country: 170
-  report_endpoints: 110
-  report_errors: 200
-  report_p2p_speed: 0
-  report_resources: 120
-  report_socials: 130
-  report_timezone: 180
-  sort_order: 900
-  test_account: eosnationftw
-  test_big_block: 1025382
-  test_bpjson_code: producerjson
-  test_bpjson_scope: producerjson
-  test_bpjson_table: producerjson
-  test_public_key: EOS4uP4oHhtVyZAQze1qMY7ZKqof3y26L6bvnr2FfpMJhhvAnEr1v
-  test_transaction: 4d458e04a592656b1ff572c8584723106a433c12d96aaca7caec6f20bad251c9
-  url: http://jungle3.api.eosnation.io
-
 jungle4:
   aloha_id: ''
   big_block_transactions: ''

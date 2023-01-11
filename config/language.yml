@@ -14,10 +14,6 @@ chain_eos:
   en: EOS
   ko: EOS
   zh: 主网
-chain_jungle3:
-  en: Jungle 3 Testnet
-  ko: 정글 테스트넷
-  zh: Jungle3测试网
 chain_jungle4:
   en: Jungle 4 Testnet
   ko: 정글 테스트넷
