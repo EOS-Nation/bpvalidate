@@ -2344,7 +2344,7 @@ sub do_validate_p2p {
 
 	my $url = $self->{chain_properties}{url};
 	my $content = '';
-	$self->do_run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 20, '-t', 3000], '>', \$content);
+	$self->do_run (['p2ptest', '-a', $url, '-h', $host, '-p', $port, '-b', 20, '-t', 10000], '>', \$content);
 
 	my $result = $self->get_json ($content, %options) || return undef;
 
@@ -2745,7 +2745,7 @@ sub validate_basic_api_extra_check {
 				url => $url,
 				field => $field,
 				class => $class,
-				see1 => 'https://validate.eosnation.io/faq/#versions'
+				see1 => 'https://validate.eosnation.io/about/#versions'
 			);
 		} else {
 			my $name = $$versions{$server_version}{name};
@@ -2759,7 +2759,7 @@ sub validate_basic_api_extra_check {
 					url => $url,
 					field => $field,
 					class => $class,
-					see1 => 'https://validate.eosnation.io/faq/#versions'
+					see1 => 'https://validate.eosnation.io/about/#versions'
 				);
 			} else {
 				$self->add_message (
