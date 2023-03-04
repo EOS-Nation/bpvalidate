@@ -47,7 +47,7 @@ $social{'facebook'} = 'https://www.facebook.com/';
 $social{'github'} = 'https://github.com/';
 #$social{'reddit'} = 'https://www.reddit.com/user/';
 $social{'reddit'} = undef;
-$social{'keybase'} = 'https://keybase.pub/';
+$social{'keybase'} = undef;
 $social{'telegram'} = 'https://t.me/';
 $social{'wechat'} = undef;
 
@@ -1011,9 +1011,36 @@ sub check_org_social {
 			next;
 		}
 
-		if ($url_prefix) {
+		if ($key eq 'keybase') {
+			if ($value =~ /,/) {
+				$self->add_message (
+					type => 'err',
+					detail => 'invalid social reference',
+					value => $value,
+					field => "org.social.$key",
+					class => 'org'
+				);
+				next;
+			}
+			my $url = "https://keybase.io/_/api/1.0/user/lookup.json?usernames=$value";
+			if (! $self->validate_url (
+				url => $url,
+				field => "org.social.$key",
+				failure_code => 'err',
+				class => 'org',
+				content_type => 'json',
+				add_to_list => "socials/$key",
+				dupe => 'warn',
+				request_timeout => 10,
+				cache_timeout => 7 * 24 * 3600,
+				cache_fast_fail => 1,
+				extra_check => 'validate_keybase_extra_check'
+			)) {
+				next;
+			}
+		} elsif ($url_prefix) {
 			my $url = $url_prefix . $value;
-			$url .= '/' if ($key eq 'keybase');
+
 			if (! $self->validate_url (
 				url => $url,
 				field => "org.social.$key",
@@ -1059,6 +1086,55 @@ sub check_org_social {
 			class => 'org'
 		);
 	}
+}
+
+sub validate_keybase_extra_check {
+	my ($self, $result, $res, $options) = @_;
+
+	my %options = %$options;
+	my %info;
+	my $errors;
+
+	my $content = $res->content;
+
+	my $json = $self->get_json ($content, %options);
+
+	if (! $$json{them}) {
+		$options{kind} = 'err';
+		$options{detail} = 'keybase user not found';
+		$self->add_message (%options);
+		$errors++;
+	}
+
+	my $full_name = $$json{them}[0]{profile}{full_name};
+	if ($full_name) {
+		$options{kind} = 'info';
+		$options{keybase_full_name} = $full_name;
+		$options{detail} = "Keybase info";
+		$self->add_message (%options);
+	}
+
+	my $location = $$json{them}[0]{profile}{location};
+	if ($location) {
+		$options{kind} = 'info';
+		$options{keybase_location} = $location;
+		$options{detail} = "Keybase info";
+		$self->add_message (%options);
+	}
+
+	my $bio = $$json{them}[0]{profile}{bio};
+	if ($bio) {
+		$options{kind} = 'info';
+		$options{keybase_bio} = $bio;
+		$options{detail} = "Keybase info";
+		$self->add_message (%options);
+	}
+
+	if ($errors) {
+		return undef;
+	}
+
+	return \%info;
 }
 
 sub check_aloha {

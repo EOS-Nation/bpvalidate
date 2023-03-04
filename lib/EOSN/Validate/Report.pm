@@ -493,6 +493,7 @@ sub generate_message {
 	my $ip = $$options{ip};
 	my $dns = $$options{dns};
 	my $port = $$options{port};
+	my $keybase_full_name = $$options{keybase_full_name};
 	my $explanation = $$options{explanation};
 	my $see1 = $$options{see1};
 	my $see2 = $$options{see2};
@@ -550,6 +551,9 @@ sub generate_message {
 	$detail .= $self->format_message_entry ('msg_ip', $ip, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_dns', $dns, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_port', $port, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_keybase_full_name', $keybase_full_name, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_keybase_location', $keybase_location, 0, $content_type, $lang);
+	$detail .= $self->format_message_entry ('msg_keybase_bio', $keybase_bio, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_elapsed_time', $elapsed_time, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_timeout', $request_timeout, 0, $content_type, $lang);
 	$detail .= $self->format_message_entry ('msg_validated_at', $config->datetime (timestring => $check_time, lang => $lang), 0, $content_type, $lang);
