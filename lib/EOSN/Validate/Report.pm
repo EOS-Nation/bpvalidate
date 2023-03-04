@@ -494,6 +494,8 @@ sub generate_message {
 	my $dns = $$options{dns};
 	my $port = $$options{port};
 	my $keybase_full_name = $$options{keybase_full_name};
+	my $keybase_location = $$options{keybase_location};
+	my $keybase_bio = $$options{keybase_bio};
 	my $explanation = $$options{explanation};
 	my $see1 = $$options{see1};
 	my $see2 = $$options{see2};
