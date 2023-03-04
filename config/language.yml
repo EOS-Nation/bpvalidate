@@ -342,6 +342,18 @@ msg_value_time:
   en: value
   ko: 수치
   zh: 数值
+msg_keybase_full_name:
+  en: Full Name
+  ko: Full Name
+  zh: Full Name
+msg_keybase_location:
+  en: Location
+  ko: Location
+  zh: Location
+msg_keybase_bio:
+  en: Bio
+  ko: Bio
+  zh: Bio
 nav_about:
   en: About
   ko: About

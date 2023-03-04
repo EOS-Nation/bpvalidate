@@ -1094,6 +1094,7 @@ sub validate_keybase_extra_check {
 	my %options = %$options;
 	my %info;
 	my $errors;
+	my $extra;
 
 	my $content = $res->content;
 
@@ -1111,7 +1112,7 @@ sub validate_keybase_extra_check {
 		$options{kind} = 'info';
 		$options{keybase_full_name} = $full_name;
 		$options{detail} = "Keybase info";
-		$self->add_message (%options);
+		$extra++;
 	}
 
 	my $location = $$json{them}[0]{profile}{location};
@@ -1119,7 +1120,7 @@ sub validate_keybase_extra_check {
 		$options{kind} = 'info';
 		$options{keybase_location} = $location;
 		$options{detail} = "Keybase info";
-		$self->add_message (%options);
+		$extra++;
 	}
 
 	my $bio = $$json{them}[0]{profile}{bio};
@@ -1127,6 +1128,10 @@ sub validate_keybase_extra_check {
 		$options{kind} = 'info';
 		$options{keybase_bio} = $bio;
 		$options{detail} = "Keybase info";
+		$extra++;
+	}
+
+	if ($extra) {
 		$self->add_message (%options);
 	}
 
