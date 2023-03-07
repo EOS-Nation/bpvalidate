@@ -6,7 +6,7 @@ package EOSN::Validate::Validator;
 use utf8;
 use strict;
 use warnings;
-use JSON;
+use JSON::MaybeXS qw(from_json to_json);
 use Locale::Country;
 use List::Util qw(maxstr);
 use Data::Validate qw(is_integer is_numeric is_between);
