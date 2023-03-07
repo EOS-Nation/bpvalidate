@@ -5181,7 +5181,7 @@ sub get_json {
 	if ($@) {
 		my $message = $@;
 		chomp ($message);
-		$message =~ s# at /usr/share/perl5/JSON.pm.*$##;
+		$message =~ s# at /usr/share/perl5/.*$##;
 		$self->add_message (
 			kind => 'crit',
 			detail => 'invalid JSON error',
