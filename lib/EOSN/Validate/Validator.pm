@@ -3735,7 +3735,8 @@ sub test_abi_serializer {
 			detail => 'error retriving large block',
 			value => $status_message,
 			response_host => $response_host,
-			explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher)',
+			explanation => 'edit config.ini to set abi-serializer-max-time-ms = 2000 (or higher) and http-max-response-time-ms = 2500 (or higher)',
+			see1 => 'https://github.com/AntelopeIO/leap/issues/677',
 			%options
 		);
 		return undef;
