@@ -218,6 +218,50 @@ telostest:
   test_transaction: f3b8bc689d97d9e9ec89881c471f73dcba8287b64046f74d1aeded17de83b43e
   url: http://telostest.api.eosnation.io
 
+ux:
+  aloha_id: ''
+  big_block_transactions: ''
+  chain_id: 8fc6dce7942189f842170de953932b1f66693ad3788f766e777b6f9d22335c02
+  class_account: 1
+  class_api_endpoint: 1
+  class_atomic: 1
+  class_blocks: 1
+  class_bpjson: 1
+  class_chains: 1
+  class_dfuse: 1
+  class_firehose: 1
+  class_history: 1
+  class_hyperion: 1
+  class_ipv6: 0
+  class_org: 1
+  class_p2p_endpoint: 1
+  class_regproducer: 1
+  core_symbol: UTX
+  filename: ux.json
+  location_check: none
+  maintainer: matthew
+  max_producers: 150
+  name: ux
+  report_api_versions: 150
+  report_branding: 140
+  report_config: 190
+  report_country: 170
+  report_endpoints: 110
+  report_errors: 200
+  report_p2p_speed: 0
+  report_resources: 120
+  report_socials: 130
+  report_timezone: 0
+  sort_order: 103
+  test_account: nation.ux
+  test_big_block: 999999
+  test_bpjson_code: producerjson
+  test_bpjson_scope: producerjson
+  test_bpjson_table: producerjson
+  test_public_key: EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
+  test_transaction: 26ca258e963137625375197becb6160450cfc4b58f26775ebf273cb83e47f6b8
+  url: http://ux.api.eosnation.io
+
 wax:
   aloha_id: 11
   big_block_transactions: 76
