@@ -30,6 +30,10 @@ chain_telostest:
   en: Telos Testnet
   ko: ''
   zh: ''
+chain_ux:
+  en: UX
+  ko: UX
+  zh: UX
 chain_wax:
   en: WAX
   ko: WAX
