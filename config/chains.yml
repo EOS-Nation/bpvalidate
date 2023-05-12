@@ -252,7 +252,7 @@ ux:
   report_resources: 120
   report_socials: 130
   report_timezone: 0
-  sort_order: 103
+  sort_order: 120
   test_account: nation.ux
   test_big_block: 999999
   test_bpjson_code: producerjson
