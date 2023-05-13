@@ -1,1 +1,200 @@
-versions_eos.yml
+v1.8.0:
+  api_current: 0
+  hash: v1.8.0
+  name: 1.8.0 (eosio)
+v1.8.1:
+  api_current: 0
+  hash: v1.8.1
+  name: 1.8.1 (eosio)
+v1.8.2:
+  api_current: 0
+  hash: v1.8.2
+  name: 1.8.2 (eosio)
+v1.8.3:
+  api_current: 0
+  hash: v1.8.3
+  name: 1.8.3 (eosio)
+v1.8.4:
+  api_current: 0
+  hash: v1.8.4
+  name: 1.8.4 (eosio)
+v1.8.5:
+  api_current: 0
+  hash: v1.8.5
+  name: 1.8.5 (eosio)
+v1.8.6:
+  api_current: 0
+  hash: v1.8.6
+  name: 1.8.6 (eosio)
+v1.8.7:
+  api_current: 0
+  hash: v1.8.7
+  name: 1.8.7 (eosio)
+v1.8.8:
+  api_current: 0
+  hash: v1.8.8
+  name: 1.8.8 (eosio)
+v1.8.9:
+  api_current: 0
+  hash: v1.8.9
+  name: 1.8.9 (eosio)
+v1.8.10:
+  api_current: 0
+  hash: v1.8.10
+  name: 1.8.10 (eosio)
+v1.8.11:
+  api_current: 0
+  hash: v1.8.11
+  name: 1.8.11 (eosio)
+v1.8.12:
+  api_current: 0
+  hash: v1.8.12
+  name: 1.8.12 (eosio)
+v1.8.13:
+  api_current: 0
+  hash: v1.8.13
+  name: 1.8.13 (eosio)
+v1.8.14:
+  api_current: 0
+  hash: v1.8.14
+  name: 1.8.14 (eosio)
+v1.8.15:
+  api_current: 0
+  hash: v1.8.15
+  name: 1.8.15 (eosio)
+v2.0.0:
+  api_current: 0
+  hash: v2.0.0
+  name: 2.0.0 (eosio)
+v2.0.1:
+  api_current: 0
+  hash: v2.0.1
+  name: 2.0.1 (eosio)
+v2.0.2:
+  api_current: 0
+  hash: v2.0.2
+  name: 2.0.2 (eosio)
+v2.0.3:
+  api_current: 0
+  hash: v2.0.3
+  name: 2.0.3 (eosio)
+v2.0.4:
+  api_current: 0
+  hash: v2.0.4
+  name: 2.0.4 (eosio)
+v2.0.5:
+  api_current: 0
+  hash: v2.0.5
+  name: 2.0.5 (eosio)
+v2.0.6:
+  api_current: 1
+  hash: v2.0.6
+  name: 2.0.6 (eosio)
+v2.0.7:
+  api_current: 0
+  hash: v2.0.7
+  name: 2.0.7 (eosio)
+v2.0.8:
+  api_current: 0
+  hash: v2.0.8
+  name: 2.0.8 (eosio)
+v2.0.9:
+  api_current: 0
+  hash: v2.0.9
+  name: 2.0.9 (eosio)
+v2.0.10:
+  api_current: 0
+  hash: v2.0.10
+  name: 2.0.10 (eosio)
+v2.0.11:
+  api_current: 0
+  hash: v2.0.11
+  name: 2.0.11 (eosio)
+v2.0.12:
+  api_current: 0
+  hash: v2.0.12
+  name: 2.0.12 (eosio)
+v2.0.13:
+  api_current: 1
+  hash: v2.0.13
+  name: 2.0.13 (eosio)
+v2.0.14:
+  api_current: 1
+  hash: v2.0.14
+  name: 2.0.14 (mandel)
+v2.0.15:
+  api_current: 1
+  hash: v2.0.15
+  name: 2.0.15 (mandel)
+v2.1.0:
+  api_current: 0
+  hash: v2.1.0
+  name: 2.1.0 (eosio)
+v2.1.1:
+  api_current: 0
+  hash: v2.1.1
+  name: 2.1.1 (eosio)
+v2.1.2:
+  api_current: 0
+  hash: v2.1.2
+  name: 2.1.2 (eosio)
+v2.2.0:
+  api_current: 0
+  hash: v2.2.0
+  name: 2.2.0 (eosio)
+v3.1.0:
+  api_current: 0
+  hash: v3.1.0
+  name: 3.1.0 (leap)
+v3.1.1:
+  api_current: 1
+  hash: v3.1.1
+  name: 3.1.1 (leap)
+v3.1.2:
+  api_current: 1
+  hash: v3.1.2
+  name: 3.1.2 (leap)
+v3.1.3:
+  api_current: 1
+  hash: v3.1.3
+  name: 3.1.3 (leap)
+v3.1.4:
+  api_current: 1
+  hash: v3.1.4
+  name: 3.1.4 (leap)
+v3.1.5:
+  api_current: 1
+  hash: v3.1.5
+  name: 3.1.5 (leap)
+v3.2.0:
+  api_current: 0
+  hash: v3.2.0
+  name: 3.2.0 (leap)
+v3.2.1:
+  api_current: 1
+  hash: v3.2.1
+  name: 3.2.1 (leap)
+v3.2.2:
+  api_current: 1
+  hash: v3.2.2
+  name: 3.2.2 (leap)
+v3.2.3:
+  api_current: 1
+  hash: v3.2.3
+  name: 3.2.3 (leap)
+v3.2.4:
+  api_current: 1
+  hash: v3.2.4
+  name: 3.2.4 (leap)
+v4.0.0-rc3:
+  api_current: 1
+  hash: v4.0.0-rc3
+  name: 4.0.0-rc3 (leap)
+v4.0.0:
+  api_current: 1
+  hash: v4.0.0
+  name: 4.0.0 (leap)
+v4.0.1:
+  api_current: 1
+  hash: v4.0.1
+  name: 4.0.1 (leap)
