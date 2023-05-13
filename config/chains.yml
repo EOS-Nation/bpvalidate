@@ -224,7 +224,7 @@ ux:
   chain_id: 8fc6dce7942189f842170de953932b1f66693ad3788f766e777b6f9d22335c02
   class_account: 1
   class_api_endpoint: 1
-  class_atomic: 1
+  class_atomic: 0
   class_blocks: 1
   class_bpjson: 0
   class_chains: 1
@@ -258,7 +258,7 @@ ux:
   test_bpjson_code: producerjson
   test_bpjson_scope: producerjson
   test_bpjson_table: producerjson
-  test_public_key: EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
+  test_public_key: EOS5uMMtMvBp4pPEBiUsfdBR9LVnJnzUonGFvQtwnh1eoXzZZKN8U
   test_transaction: 26ca258e963137625375197becb6160450cfc4b58f26775ebf273cb83e47f6b8
   url: http://ux.api.eosnation.io
 
