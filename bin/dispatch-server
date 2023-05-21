@@ -5,18 +5,24 @@ use strict;
 use JSON;
 use EOSN::Log qw(write_timestamp_log);
 use EOSN::File qw(write_file_atomic);
-use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::SQL qw(do_connect_mysql);
 use EOSN::Validate::Config;
 use EOSN::UA qw(eosn_normal_ua eosn_cache_ua);
 use EOSN::BlockchainAPI qw(get_info get_table);
 use Time::HiRes qw(usleep);
 use YAML qw(LoadFile);
+use Plack::Builder;
+use Plack::Request;
+use HTTP::Server::PSGI;
+use File::Slurp qw(read_file);
 
 binmode(STDOUT, ":utf8");
 
 # --------------------------------------------------------------------------
 # Config
+
+my $listen_port = 8081;
+my $status_file = '/run/bpvalidate/dispatch_stats.json';
 
 my %stats_config;
 $stats_config{max_regproducer_at} = {query => 'min(regproducer_at)', sort_order => 1};
@@ -44,7 +50,8 @@ foreach my $chain ($config->chains) {
 	fork_children ($chain);
 }
 
-fork_message_receiver ();
+fork_stale_cleanup ();
+fork_web_server ();
 fork_stats_counter ();
 
 wait ();
@@ -95,14 +102,29 @@ sub fork_children {
 	}
 }
 
-sub fork_message_receiver {
+sub fork_stale_cleanup {
 	my $pid = fork;
 	if (! defined $pid) {
 		die "$0: could not fork";
 		next;
 	} elsif (! $pid) {
 		write_timestamp_log ("run message receiver");
-		run_message_receiver ();
+		run_stale_cleanup ();
+		write_timestamp_log ("abnormal exit message receiver");
+		die "$0: message receiver exited abmormally";
+	} else {
+		push (@pids, $pid);
+	}
+}
+
+sub fork_web_server {
+	my $pid = fork;
+	if (! defined $pid) {
+		die "$0: could not fork";
+		next;
+	} elsif (! $pid) {
+		write_timestamp_log ("run message receiver");
+		run_web_server ();
 		write_timestamp_log ("abnormal exit message receiver");
 		die "$0: message receiver exited abmormally";
 	} else {
@@ -125,49 +147,163 @@ sub fork_stats_counter {
 	}
 }
 
-sub run_message_receiver {
-	my $stomp = do_connect_stomp ('bpvalidate');
-
-	$stomp->subscribe ({
-		destination => '/queue/response',
-		'ack' => 'client',
-		'activemq.prefetchSize' => 1
-	});
-
+sub run_stale_cleanup {
 	my $dbh = do_connect_mysql ('bpvalidate');
 
 	while (1) {
 		exit if (getppid () == 1);
+		exit if (! $dbh->ping);
+		my $query_time = time - 300;
+		my $data = $dbh->selectall_hashref ("select * from control_request where message_time < $query_time", 'message_key');
+		foreach my $key (keys %$data) {
+			my $message_id = $$data{$key}{id};
+			my $message_details = from_json ($$data{$key}{message_details});
 
-		my $frame = $stomp->receive_frame ({timeout => 30});
-		if (! defined $frame) {
-			write_timestamp_log ('[receiver] no messages received');
-			$dbh->ping;
-			next; # will reconnect automatically
+			$dbh->do ("delete from control_request where id = ?", {}, $message_id);
+
+			my $chain = $$message_details{chain};
+			my $id = $$message_details{id};
+			my $producer = $$message_details{producer};
+
+			my $modified_records = $dbh->do ("update producer_$chain set dispatched_at = ? where id = ?", {}, undef, $id);
+			my $flag = ($modified_records eq '0E0') ? 'OLD TIMEOUT' : 'TIMEOUT';
+			write_timestamp_log ("[receiver $chain] received $flag for producer=<$producer>");
 		}
 
-		my $body = $frame->body;
-		utf8::decode ($body);
-		handle_message ($body, $dbh);
-
-		$stomp->ack ({
-			frame => $frame
-		});
+		sleep (10);
 	}
-
-	$dbh->disconnect;
-	$stomp->disconnect;
 }
 
-sub handle_message {
-	my ($message, $dbh) = @_;
+sub run_web_server {
+	my $dbh = do_connect_mysql ('bpvalidate');
+	my $app = builder {
+		mount "/status" => sub {
+			handle_web_status ($dbh, @_);
+		},
+		mount "/schema" => sub {
+			handle_web_schema ($dbh, @_);
+		},
+		mount "/request" => sub {
+			handle_web_request ($dbh, @_);
+		},
+		mount "/response" => sub {
+			handle_web_response ($dbh, @_);
+		}
+	};
 
+	my $server = HTTP::Server::PSGI->new (
+		host => '0',
+		port => $listen_port,
+		timeout => 120,
+		ipv6 => 1
+	);
+
+	$server->run ($app);
+	$dbh->disconnect;
+}
+
+sub handle_web_status {
+	my ($dbh, $env) = @_;
+
+	my $method = $env->{REQUEST_METHOD};
+
+	$method eq "GET" or return [
+		405,
+		[ "Content-Type" => "text/plain" ],
+		[ "Method $method not supported" ]
+	];
+
+	my $content = '';
+
+	eval {
+		$content = read_file ($status_file);
+	};
+	if ($@) {
+		write_timestamp_log ($@);
+	}
+
+	return [
+		200,
+		[ "Content-Type" => "application/json; charset=utf-8" ],
+		[ $content ]
+	];
+}
+
+sub handle_web_schema {
+	my ($dbh, $env) = @_;
+
+	my $method = $env->{REQUEST_METHOD};
+
+	$method eq "GET" or return [
+		405,
+		[ "Content-Type" => "text/plain" ],
+		[ "Method $method not supported" ]
+	];
+
+	my $content = '';
+
+	eval {
+		$content = read_file ($config->configdir . '/schema.json');
+	};
+	if ($@) {
+		write_timestamp_log ($@);
+	}
+
+	return [
+		200,
+		[ "Content-Type" => "application/json; charset=utf-8" ],
+		[ $content ]
+	];
+}
+
+sub handle_web_request {
+	my ($dbh, $env) = @_;
+
+	my $method = $env->{REQUEST_METHOD};
+
+	$method eq "GET" or return [
+		405,
+		[ "Content-Type" => "text/plain" ],
+		[ "Method $method not supported" ]
+	];
+
+	my $query_time = time - 280;
+	my $data = $dbh->selectrow_hashref ('select message_key, message_details from control_request where message_time > ? order by message_time asc limit 1', {}, $query_time);
+	if ($$data{message_key}) {
+		$dbh->do (sprintf ('delete from control_request where message_key = %s', $dbh->quote ($$data{message_key})));
+		return [
+			200,
+			[ "Content-Type" => "application/json; charset=utf-8" ],
+			[ $$data{message_details} ]
+		];
+	} else {
+		return [
+			204,
+			[ "Content-Type" => "application/json; charset=utf-8" ],
+			[ to_json ({}) ]
+		];
+	}
+}
+
+sub handle_web_response {
+	my ($dbh, $env) = @_;
+
+	my $method = $env->{REQUEST_METHOD};
+	my $r = Plack::Request->new ($env);
+
+	$method eq "POST" or return [
+		405,
+		[ "Content-Type" => "text/plain" ],
+		[ "Method $method not supported" ]
+	];
+
+	my $message =  $r->content;
 	my $time = time;
-        my $response;
+	my $response;
 
-        eval {
-                $response = from_json ($message);
-        };
+	eval {
+		$response = from_json ($message);
+	};
 
 	my $results = $$response{results};
 	my $chain = $$response{chain};
@@ -176,7 +312,12 @@ sub handle_message {
 
 	if (! defined $chain || ! defined $id || ! defined $producer) {
 		write_timestamp_log ("[receiver $chain] invalid message for producer=<$producer>");
-		return;
+
+		return [
+			422,
+			[ "Content-Type" => "application/json; charset=utf-8" ],
+			[ "invalid message received" ]
+		];
 	}
 
 	my $dispatch_time = $$response{dispatch_time};
@@ -190,13 +331,24 @@ sub handle_message {
 		my $flag = ($modified_records eq '0E0') ? 'OLD TIMEOUT' : 'TIMEOUT';
 		my @deltas = time_deltas ($dispatch_time, $receive_time, $processed_time, $complete_time);
 		write_timestamp_log ("[receiver $chain] received $flag for producer=<$producer> times=<" . join (' | ', @deltas) . '>');
-		return;
+
+		return [
+			422,
+			[ "Content-Type" => "application/json; charset=utf-8" ],
+			[ "$flag message received" ]
+		];
 	}
 
 	$dbh->do ("update producer_$chain set checked_at = ?, results_data = ? where id = ?", {}, $processed_time, to_json ($results), $id);
 
 	my @deltas = time_deltas ($dispatch_time, $receive_time, $processed_time, $complete_time);
 	write_timestamp_log ("[receiver $chain] received producer=<$producer> times=<" . join (' | ', @deltas) . '>');
+
+	return [
+		202,
+		[ "Content-Type" => "application/json; charset=utf-8" ],
+		[ "message received" ]
+	];
 }
 
 sub time_deltas {
@@ -237,7 +389,6 @@ sub run_stats_counter {
 sub dispatch_chain {
 	my ($chain) = @_;
 
-	my $stomp = do_connect_stomp ('bpvalidate');
 	my $dbh = do_connect_mysql ('bpvalidate');
 	my $wait_time = 30;
 	my $max_producers_per_round = 20;
@@ -297,9 +448,12 @@ sub dispatch_chain {
 			$$request{data} = $request_data;
 
 			my $body = to_json ($request);
-			utf8::encode ($body);
-			$stomp->send ({destination => '/queue/request', body => $body});
-			sleep (1);
+			$dbh->do (sprintf ('replace into control_request set message_key = %s, message_time = %s, message_details = %s',
+				$dbh->quote ($chain . '_' . $producer),
+				$dbh->quote ($time),
+				$dbh->quote ($body)
+			));
+			usleep (500);
 		}
 
 		my $end_time = time;
@@ -312,7 +466,6 @@ sub dispatch_chain {
 	}
 
 	$dbh->disconnect;
-	$stomp->disconnect;
 }
 
 sub update_chain {
@@ -587,7 +740,7 @@ sub update_db {
 		$dbh->do ("update producer_$chain set
 			regproducer_at = ?, request_data = ?
 			where id = ?",
-			{}, 
+			{},
 			time, to_json (\%request_data),
 			$$data{$producer}{id}
 		);
@@ -639,5 +792,5 @@ sub update_stats {
 		write_timestamp_log ("[stats $chain] " . join (' ', @message));
 	}
 
-	write_file_atomic ('/run/bpvalidate/dispatch_stats.json', to_json($stats));
+	write_file_atomic ($status_file, to_json ($stats));
 }

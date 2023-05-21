@@ -1,7 +1,6 @@
 Tools to validate that Block Producers and Standby Block Producers have set up their public configuration in a usable fashion.
 
 The validator has multiple parts which need to be installed:
-- rabbitmq
 - mariadb
 - webui
 - dispatch
@@ -10,14 +9,6 @@ The validator has multiple parts which need to be installed:
 All parts can be installed on the same server, or each on its own server. Adjust usernames and passwords listed in the instructions to suit.
 
 Installation Instructions (for ubuntu/debian):
-
-rabbitmq:
-- run: apt install rabbitmq-server
-- run: rabbitmq-plugins enable rabbitmq_management
-- run: rabbitmq-plugins enable rabbitmq_stomp
-- run: rabbitmqctl add_vhost bpvalidate
-- run: rabbitmqctl add_user bpvalidate bpvalidate
-- run: rabbitmqctl set_permissions -p bpvalidate bpvalidate '.*' '.*' '.*'
 
 mariadb:
 - run: apt install mariadb-server
@@ -42,10 +33,12 @@ probe:
 - install grpc-health-probe from https://github.com/grpc-ecosystem/grpc-health-probe/
 - run: apt install libjson-validator-perl libdbd-sqlite3-perl libnet-stomp-perl libdata-validate-ip-perl libjson-perl liblwpx-paranoidagent-perl libnet-whois-ip-perl libtext-diff-perl libipc-run-perl libxml-libxml-perl nmap
 
-
 Environment Variables:
 
 - EOSN_WEBPAGE_DOMAIN=localhost
 - EOSN_WEBPAGE_WEB=/var/www/bpvalidate
 - EOSN_WEBPAGE_CONFIG=/somewhere/bpvalidate/config/config
 - EOSN_WEBPAGE_LANG=en
+
+probe:
+- DISPATCH_SERVER=http://localhost:8081

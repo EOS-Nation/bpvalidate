@@ -16,16 +16,27 @@ my $dbh = do_connect_mysql ('bpvalidate');
 
 foreach my $chain ($config->chains) {
 	write_timestamp_log ("configure table=<producer_$chain>");
-	my $prefix_producer = "alter table producer_$chain add column if not exists";
+	my $sql_prefix = "alter table producer_$chain add column if not exists";
 	#$dbh->do ("drop table producer");
 	$dbh->do ("create table if not exists producer_$chain (id int(11) unsigned not null primary key auto_increment) character set utf8mb4");
-	$dbh->do ("$prefix_producer producer varchar(20)");
-	$dbh->do ("$prefix_producer request_data mediumtext");
-	$dbh->do ("$prefix_producer results_data mediumtext");
-	$dbh->do ("$prefix_producer regproducer_at int(11)");
-	$dbh->do ("$prefix_producer checked_at int(11)");
-	$dbh->do ("$prefix_producer dispatched_at int(11)");
+	$dbh->do ("$sql_prefix producer varchar(20)");
+	$dbh->do ("$sql_prefix request_data mediumtext");
+	$dbh->do ("$sql_prefix results_data mediumtext");
+	$dbh->do ("$sql_prefix regproducer_at int(11) unsigned");
+	$dbh->do ("$sql_prefix checked_at int(11) unsigned");
+	$dbh->do ("$sql_prefix dispatched_at int(11) unsigned");
 	$dbh->do ("create unique index if not exists i_producer on producer_$chain (producer)");
+}
+
+foreach my $table ('control_request') {
+	write_timestamp_log ("configure table=<$table>");
+	$dbh->do ("create table if not exists $table (id int(11) unsigned not null primary key auto_increment) character set utf8mb4");
+	my $sql_prefix = "alter table $table add column if not exists";
+	$dbh->do ("$sql_prefix message_key varchar(50)");
+	$dbh->do ("$sql_prefix message_time int(11) unsigned");
+	$dbh->do ("$sql_prefix message_details mediumtext");
+	$dbh->do ("create unique index if not exists i_message_key on $table (message_key)");
+	$dbh->do ("create index if not exists i_message_time on $table (message_time)");
 }
 
 write_timestamp_log ('done');

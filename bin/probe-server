@@ -3,13 +3,11 @@
 use utf8;
 use strict;
 use JSON qw(from_json to_json);
-use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::Log qw(write_timestamp_log);
 use EOSN::UA qw(eosn_cache_ua);
 use EOSN::SQL qw(do_connect_sqlite);
-use File::Slurp qw(read_file);
-use Getopt::Long;
 use EOSN::Validate::Validator;
+use LWP::UserAgent;
 
 binmode(STDOUT, ":utf8");
 
@@ -17,18 +15,15 @@ binmode(STDOUT, ":utf8");
 # Config
 
 my $max_processes = 20;
+my $dispatch_server = $ENV{DISPATCH_SERVER} || 'http://localhost:8081';
+my $schema_url = $dispatch_server . '/schema';
+my $request_url = $dispatch_server . '/request';
+my $response_url = $dispatch_server . '/response';
 
 # --------------------------------------------------------------------------
 # Main
 
-my $configdir = undef;
-GetOptions ('config=s' => \$configdir) || exit 1;
-$configdir || die "$0: config dir not provided";
-
-my $schemafile = "$configdir/schema.json";
-if (! -e $schemafile) {
-        die "$0: schema file not found: $schemafile";
-}
+my $schema = get_schema ();
 
 my @pids;
 
@@ -62,6 +57,26 @@ exit 1;
 # --------------------------------------------------------------------------
 # Subroutines
 
+sub get_schema {
+	my $thread_id = 0;
+	my $ua = LWP::UserAgent->new;
+	$ua->timeout (10);
+
+	my $shema = undef;
+	while (! $schema) {
+		my $req = HTTP::Request->new ('GET', $schema_url);
+		my $res = $ua->request ($req);
+		write_timestamp_log ("[$thread_id] " . sprintf ("request url=<%s>, reponse_code=<%s>\n", $schema_url, $res->code));
+		if ($res->is_success) {
+			$schema = from_json ($res->content);
+		} else {
+			sleep (10);
+		}
+	}
+
+	return $schema;
+}
+
 sub run_cleanup {
 	my $thread_id = 0;
 	my $pid = fork;
@@ -89,105 +104,81 @@ sub run_cleanup {
 sub run_main_loop {
 	my ($thread_id) = @_;
 
-	my $stomp_response = do_connect_stomp ('bpvalidate');
-	my $stomp_request = do_connect_stomp ('bpvalidate');
-	my $dbh = do_connect_sqlite ('bpvalidate');
-
-	$stomp_request->subscribe ({
-		destination => '/queue/request',
-		'ack' => 'client',
-		'activemq.prefetchSize' => 1
-	});
+	my $ua = LWP::UserAgent->new;
+	$ua->timeout (10);
 
 	while (1) {
 		exit if (getppid() == 1);
 
-		my $frame = $stomp_request->receive_frame ({timeout => 30});
-
-		if (! defined $frame) {
-			write_timestamp_log ("[$thread_id] no messages received");
-			next;
-		}
-
-		my $body = $frame->body;
-		utf8::decode ($body);
-		handle_message ($thread_id, $stomp_response, $body);
-
-		$stomp_request->ack ({
-			frame => $frame
-		});
+		handle_request ($thread_id, $ua);
+		sleep (1);
 	}
 }
 
-sub handle_message {
-	my ($thread_id, $stomp_response, $message) = @_;
+sub handle_request {
+	my ($thread_id, $ua) = @_;
 
-	my $request;
+	my $request_req = HTTP::Request->new ('GET', $request_url);
+	my $request_res = $ua->request ($request_req);
+	write_timestamp_log ("[$thread_id] " . sprintf ("request url=<%s>, reponse_code=<%s>\n", $request_url, $request_res->code));
+
+	if ($request_res->code != 200) {
+		sleep (10);
+		return;
+	}
+
+	my $message;
 	eval {
-		$request = from_json ($message);
+		$message = from_json ($request_res->content);
 	};
 
 	my $receive_time = time;
 
-	my $chain = $$request{chain};
+	my $chain = $$message{chain};
 	if (! $chain) {
 		write_timestamp_log ("[$thread_id] message missing chain");
 		return;
 	}
 
-	my $producer = $$request{producer};
+	my $producer = $$message{producer};
 	if (! $producer) {
 		write_timestamp_log ("[$thread_id] message missing producer");
 		return;
 	}
 
-	my $dispatch_time = $$request{dispatch_time};
+	my $dispatch_time = $$message{dispatch_time};
 	if (! $dispatch_time) {
 		write_timestamp_log ("[$thread_id] message missing dispatch_time");
 		return;
 	}
 
-	my $expire_time = $$request{expire_time};
+	my $expire_time = $$message{expire_time};
 	if (! $expire_time) {
 		write_timestamp_log ("[$thread_id] message missing expire_time");
 		return;
 	}
 
-	$$request{receive_time} = $receive_time;
+	$$message{receive_time} = $receive_time;
 	my $dispatch_delta = $receive_time - $dispatch_time;
-	my $expire_delta = $expire_time - $receive_time;
 
-	write_timestamp_log ("[$thread_id] received chain=<$chain> producer=<$producer> dispatch_delta=<$dispatch_delta s> expire_delta=<$expire_delta s>");
+	write_timestamp_log ("[$thread_id] received chain=<$chain> producer=<$producer> dispatch_delta=<$dispatch_delta s>");
 
-	if ($expire_delta < 0) {
-		# write_timestamp_log ("[$thread_id] message too old age=<$expire_delta s>");
-		delete $$request{data};
-		$$request{timeout} = JSON::true;
-	} else {
-		handle_request ($request, $thread_id, $chain, $producer);
-	}
-
-	$$request{processed_time} = time;
-
-	my $body = to_json ($request);
-	utf8::encode ($body);
-	$stomp_response->send ({
-		destination => '/queue/response',
-		body => $body
-	});
-}
-
-sub handle_request {
-	my ($request, $thread_id, $chain, $producer) = @_;
-
-	my $data = $$request{data};
-	delete $$request{data};
+	my $data = $$message{data};
+	delete $$message{data};
 
 	$$data{log_prefix} = "[$thread_id/$chain/$producer]";
 	$$data{ua} = eosn_cache_ua ();
 	$$data{dbh} = do_connect_sqlite ('bpvalidate');
-	$$data{schema} = from_json (read_file ($schemafile));
+	$$data{schema} = $schema;
 
 	my $validator = EOSN::Validate::Validator->new (%$data);
-	$$request{results} = $validator->validate;
+	$$message{results} = $validator->validate;
+	$$message{processed_time} = time;
+
+	my $body = to_json ($message);
+	utf8::encode ($body);
+
+	my $response_req = HTTP::Request->new ('POST', $response_url, undef, $body);
+	my $response_res = $ua->request ($response_req);
+	write_timestamp_log ("[$thread_id] " . sprintf ("response url=<%s>, reponse_code=<%s>\n", $response_url, $response_res->code));
 }
