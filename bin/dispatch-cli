@@ -4,7 +4,6 @@ use utf8;
 use strict;
 use JSON;
 use EOSN::Log qw(write_timestamp_log);
-use EOSN::STOMP qw(do_connect_stomp);
 use EOSN::SQL qw(do_connect_mysql);
 use Getopt::Long;
 
@@ -27,7 +26,6 @@ dispatch_producer ($chain, $producer);
 sub dispatch_producer {
 	my ($chain, $producer) = @_;
 
-	my $stomp = do_connect_stomp ('bpvalidate');
 	my $dbh = do_connect_mysql ('bpvalidate');
 	my $wait_time = 30;
 	my $max_producers_per_round = 20;
@@ -59,9 +57,7 @@ sub dispatch_producer {
 		$$request{producer} = $producer;
 		$$request{data} = $request_data;
 
-		my $body = to_json ($request);
-		utf8::encode ($body);
-		$stomp->send ({destination => '/queue/request', body => $body});
+		# fixme
 	}
 
 	$dbh->disconnect;

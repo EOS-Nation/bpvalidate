@@ -123,13 +123,15 @@ sub handle_request {
 	write_timestamp_log ("[$thread_id] " . sprintf ("request url=<%s>, reponse_code=<%s>\n", $request_url, $request_res->code));
 
 	if ($request_res->code != 200) {
-		sleep (10);
+		sleep ($max_processes * 2);
 		return;
 	}
 
+	my $request_body = $request_res->content;
+	utf8::decode ($request_body);
 	my $message;
 	eval {
-		$message = from_json ($request_res->content);
+		$message = from_json ($request_body);
 	};
 
 	my $receive_time = time;
@@ -175,10 +177,10 @@ sub handle_request {
 	$$message{results} = $validator->validate;
 	$$message{processed_time} = time;
 
-	my $body = to_json ($message);
-	utf8::encode ($body);
+	my $response_body = to_json ($message);
+	utf8::encode ($response_body);
 
-	my $response_req = HTTP::Request->new ('POST', $response_url, undef, $body);
+	my $response_req = HTTP::Request->new ('POST', $response_url, [ 'Content-Type' => 'application/json; charset=utf-8' ], $response_body);
 	my $response_res = $ua->request ($response_req);
 	write_timestamp_log ("[$thread_id] " . sprintf ("response url=<%s>, reponse_code=<%s>\n", $response_url, $response_res->code));
 }

@@ -269,12 +269,15 @@ sub handle_web_request {
 
 	my $query_time = time - 280;
 	my $data = $dbh->selectrow_hashref ('select message_key, message_details from control_request where message_time > ? order by message_time asc limit 1', {}, $query_time);
+
 	if ($$data{message_key}) {
 		$dbh->do (sprintf ('delete from control_request where message_key = %s', $dbh->quote ($$data{message_key})));
+		my $body = $$data{message_details};
+		utf8::encode ($body);
 		return [
 			200,
 			[ "Content-Type" => "application/json; charset=utf-8" ],
-			[ $$data{message_details} ]
+			[ $body ]
 		];
 	} else {
 		return [
@@ -297,7 +300,8 @@ sub handle_web_response {
 		[ "Method $method not supported" ]
 	];
 
-	my $message =  $r->content;
+	my $message = $r->content;
+	utf8::decode ($message);
 	my $time = time;
 	my $response;
 
