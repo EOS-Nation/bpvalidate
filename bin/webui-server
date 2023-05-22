@@ -1,7 +1,11 @@
 #!/usr/bin/perl -w
 
+# --------------------------------------------------------------------------
+# Required modules
+
 use utf8;
 use strict;
+use warnings;
 use JSON;
 use EOSN::Log qw(write_timestamp_log);
 use EOSN::File qw(write_file_atomic);
