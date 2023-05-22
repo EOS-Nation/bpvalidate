@@ -1,7 +1,11 @@
 #!/usr/bin/perl -w
 
+# --------------------------------------------------------------------------
+# Required modules
+
 use utf8;
 use strict;
+use warnings;
 use JSON;
 use EOSN::Log qw(write_timestamp_log);
 use EOSN::File qw(write_file_atomic);
@@ -188,6 +192,9 @@ sub run_web_server {
 		},
 		mount "/response" => sub {
 			handle_web_response ($dbh, @_);
+		},
+		mount "/schedule" => sub {
+			handle_web_schedule ($dbh, @_);
 		}
 	};
 
@@ -319,8 +326,8 @@ sub handle_web_response {
 
 		return [
 			422,
-			[ "Content-Type" => "application/json; charset=utf-8" ],
-			[ "invalid message received" ]
+			[ "Content-Type" => "text/plain" ],
+			[ "Invalid message received" ]
 		];
 	}
 
@@ -328,20 +335,6 @@ sub handle_web_response {
 	my $receive_time = $$response{receive_time};
 	my $processed_time = $$response{processed_time};
 	my $complete_time = $time;
-	my $timeout = $$response{timeout};
-
-	if ($timeout) {
-		my $modified_records = $dbh->do ("update producer_$chain set dispatched_at = ? where id = ? and dispatched_at = $dispatch_time", {}, undef, $id);
-		my $flag = ($modified_records eq '0E0') ? 'OLD TIMEOUT' : 'TIMEOUT';
-		my @deltas = time_deltas ($dispatch_time, $receive_time, $processed_time, $complete_time);
-		write_timestamp_log ("[receiver $chain] received $flag for producer=<$producer> times=<" . join (' | ', @deltas) . '>');
-
-		return [
-			422,
-			[ "Content-Type" => "application/json; charset=utf-8" ],
-			[ "$flag message received" ]
-		];
-	}
 
 	$dbh->do ("update producer_$chain set checked_at = ?, results_data = ? where id = ?", {}, $processed_time, to_json ($results), $id);
 
@@ -350,8 +343,84 @@ sub handle_web_response {
 
 	return [
 		202,
-		[ "Content-Type" => "application/json; charset=utf-8" ],
-		[ "message received" ]
+		[ "Content-Type" => "text/plain" ],
+		[ "Message received" ]
+	];
+}
+
+sub handle_web_schedule {
+	my ($dbh, $env) = @_;
+
+	my $method = $env->{REQUEST_METHOD};
+	my $r = Plack::Request->new ($env);
+
+	$method eq "POST" or return [
+		405,
+		[ "Content-Type" => "text/plain" ],
+		[ "Method $method not supported" ]
+	];
+
+	my $message = $r->content;
+	utf8::decode ($message);
+	my $schedule;
+
+	eval {
+		$schedule = from_json ($message);
+	};
+
+	my $chain = $$schedule{chain};
+	my $producer = $$schedule{producer};
+
+	if (! $chain || ! $producer) {
+		return [
+			422,
+			[ "Content-Type" => "text/plain" ],
+			[ "Missing details" ]
+		];
+	}
+
+	my $wait_time = 30;
+	my $max_producers_per_round = 20;
+	my $dispatch_expire_time = 120;
+
+	my $data = $dbh->selectall_hashref ("select * from producer_$chain where producer = " . $dbh->quote($producer), 'producer');
+
+	foreach my $producer (sort {($$data{$a}{checked_at} || 0) <=> ($$data{$b}{checked_at} || 0)} keys %$data) {
+		my $entry = $$data{$producer};
+		my $time = time;
+		my $id = $$data{$producer}{id};
+		my $expire_time = $time + $dispatch_expire_time;
+		my $regproducer_delta = $time - ($$entry{regproducer_at} || 0);
+		my $checked_delta = $time - ($$entry{checked_at} || 0);
+		my $dispatch_delta = $time - ($$entry{dispatched_at} || 0);
+
+		my $request_data = from_json ($$entry{request_data});
+		my $rank = $$request_data{meta}{rank};
+		my $is_paid = $$request_data{meta}{is_paid};
+
+		write_timestamp_log ("[dispatch $chain] dispatch producer=<$producer> rank=<$rank> is_paid=<$is_paid> checked_delta=<$checked_delta s> dispatch_delta=<$dispatch_delta s>");
+		$dbh->do ("update producer_$chain set dispatched_at = ? where id = ?", {}, $time, $id);
+
+		my $request;
+		$$request{chain} = $chain;
+		$$request{dispatch_time} = $time;
+		$$request{expire_time} = $expire_time;
+		$$request{id} = $$data{$producer}{id};
+		$$request{producer} = $producer;
+		$$request{data} = $request_data;
+
+		my $body = to_json ($request);
+		$dbh->do (sprintf ('replace into control_request set message_key = %s, message_time = %s, message_details = %s',
+			$dbh->quote ($chain . '_' . $producer),
+			$dbh->quote ($time),
+			$dbh->quote ($body)
+		));
+	}
+
+	return [
+		202,
+		[ "Content-Type" => "application/plain" ],
+		[ "Message received" ]
 	];
 }
 
