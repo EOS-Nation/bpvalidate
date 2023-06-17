@@ -162,3 +162,11 @@ v4.0.1wax01:
   api_current: 1
   hash: v4.0.1wax01
   name: 4.0.1
+v4.0.2wax01:
+  api_current: 1
+  hash: v4.0.2wax01
+  name: 4.0.2
+v4.0.3wax01:
+  api_current: 1
+  hash: v4.0.3wax01
+  name: 4.0.3

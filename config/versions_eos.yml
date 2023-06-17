@@ -198,3 +198,11 @@ v4.0.1:
   api_current: 1
   hash: v4.0.1
   name: 4.0.1 (leap)
+v4.0.2:
+  api_current: 1
+  hash: v4.0.2
+  name: 4.0.2 (leap)
+v4.0.3:
+  api_current: 1
+  hash: v4.0.3
+  name: 4.0.3 (leap)
