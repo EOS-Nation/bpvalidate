@@ -18,49 +18,65 @@ v3.1.4:
   api_current: 0
   hash: v3.1.4
   name: 3.1.4 (leap)
+v3.1.4-hotfix:
+  api_current: 0
+  hash: v3.1.4-hotfix
+  name: 3.1.4 (leap)
 v3.1.5:
   api_current: 0
   hash: v3.1.5
   name: 3.1.5 (leap)
+v3.1.6:
+  api_current: 0
+  hash: v3.1.6
+  name: 3.1.6 (leap)
 v3.2.0:
   api_current: 0
   hash: v3.2.0
   name: 3.2.0 (leap)
 v3.2.1:
-  api_current: 1
+  api_current: 0
   hash: v3.2.1
   name: 3.2.1 (leap)
 v3.2.2:
-  api_current: 1
+  api_current: 0
   hash: v3.2.2
   name: 3.2.2 (leap)
 v3.2.3:
-  api_current: 1
+  api_current: 0
   hash: v3.2.3
+  name: 3.2.3 (leap)
+v3.2.3-hotfix:
+  api_current: 1
+  hash: v3.2.3-hotfix
   name: 3.2.3 (leap)
 v3.2.4:
   api_current: 1
   hash: v3.2.4
   name: 3.2.4 (leap)
-v4.0.0-rc3:
+v3.2.5:
   api_current: 1
-  hash: v4.0.0-rc3
-  name: 4.0.0-rc3 (leap)
+  hash: v3.2.5
+  name: 3.2.5 (leap)
 v4.0.0:
-  api_current: 1
+  api_current: 0
   hash: v4.0.0
   name: 4.0.0 (leap)
 v4.0.1:
-  api_current: 1
+  api_current: 0
   hash: v4.0.1
   name: 4.0.1 (leap)
 v4.0.2:
-  api_current: 1
+  api_current: 0
   hash: v4.0.2
   name: 4.0.2 (leap)
 v4.0.3:
-  api_current: 1
+  api_current: 0
   hash: v4.0.3
+  name: 4.0.3 (leap)
+v4.0.3-hotfix:
+  api_current: 1
+  hash: v4.0.3-hotfix
   name: 4.0.3 (leap)
 v4.0.4:
   api_current: 1
@@ -70,3 +86,7 @@ v4.0.5:
   api_current: 1
   hash: v4.0.5
   name: 4.0.5 (leap)
+v4.0.6:
+  api_current: 1
+  hash: v4.0.6
+  name: 4.0.6 (leap)
