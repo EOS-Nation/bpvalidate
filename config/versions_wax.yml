@@ -22,6 +22,10 @@ v3.1.4wax02:
   api_current: 0
   hash: v3.1.4wax02
   name: 3.1.4
+v3.1.4wax02-hotfix:
+  api_current: 0
+  hash: v3.1.4wax02-hotfix
+  name: 3.1.4
 v3.1.4:
   api_current: 0
   hash: v3.1.4
@@ -30,40 +34,56 @@ v3.1.5wax01:
   api_current: 0
   hash: v3.1.5wax01
   name: 3.1.5
+v3.1.6wax01:
+  api_current: 0
+  hash: v3.1.6wax01
+  name: 3.1.6
 v3.2.0wax01:
   api_current: 0
   hash: v3.2.0wax01
   name: 3.2.0
 v3.2.1wax01:
-  api_current: 1
+  api_current: 0
   hash: v3.2.1wax01
   name: 3.2.1
 v3.2.2wax01:
-  api_current: 1
+  api_current: 0
   hash: v3.2.2wax01
   name: 3.2.2
 v3.2.3wax01:
-  api_current: 1
+  api_current: 0
   hash: v3.2.3wax01
+  name: 3.2.3
+v3.2.3wax01-hotfix:
+  api_current: 1
+  hash: v3.2.3wax01-hotfix
   name: 3.2.3
 v3.2.4wax01:
   api_current: 1
   hash: v3.2.4wax01
   name: 3.2.4
-v4.0.0wax01:
+v3.2.5wax01:
   api_current: 1
+  hash: v3.2.5wax01
+  name: 3.2.5
+v4.0.0wax01:
+  api_current: 0
   hash: v4.0.0wax01
   name: 4.0.0
 v4.0.1wax01:
-  api_current: 1
+  api_current: 0
   hash: v4.0.1wax01
   name: 4.0.1
-v4.0.2wax01:
+v4.0.1wax01-hotfix:
   api_current: 1
+  hash: v4.0.1wax01-hotfix
+  name: 4.0.1
+v4.0.2wax01:
+  api_current: 0
   hash: v4.0.2wax01
   name: 4.0.2
 v4.0.3wax01:
-  api_current: 1
+  api_current: 0
   hash: v4.0.3wax01
   name: 4.0.3
 v4.0.4wax01:
@@ -74,3 +94,7 @@ v4.0.5wax01:
   api_current: 1
   hash: v4.0.5wax01
   name: 4.0.5
+v4.0.6 wax01:
+  api_current: 1
+  hash: v4.0.6wax01
+  name: 4.0.6
