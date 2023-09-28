@@ -122,31 +122,7 @@ v3.2.4:
   api_current: 1
   hash: v3.2.4
   name: 3.2.4 (leap)
-v4.0.0-rc3:
+v4.0.4-bls:
   api_current: 1
-  hash: v4.0.0-rc3
-  name: 4.0.0-rc3 (leap)
-v4.0.0:
-  api_current: 1
-  hash: v4.0.0
-  name: 4.0.0 (leap)
-v4.0.1:
-  api_current: 1
-  hash: v4.0.1
-  name: 4.0.1 (leap)
-v4.0.2:
-  api_current: 1
-  hash: v4.0.2
-  name: 4.0.2 (leap)
-v4.0.3:
-  api_current: 1
-  hash: v4.0.3
-  name: 4.0.3 (leap)
-v4.0.4:
-  api_current: 1
-  hash: v4.0.4
-  name: 4.0.4 (leap)
-v4.0.5:
-  api_current: 1
-  hash: v4.0.5
-  name: 4.0.5 (leap)
+  hash: v4.0.4-bls
+  name: 4.0.4-bls (leap)
