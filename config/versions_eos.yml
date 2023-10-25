@@ -90,3 +90,19 @@ v4.0.6:
   api_current: 1
   hash: v4.0.6
   name: 4.0.6 (leap)
+v5.0.0-rc2:
+  api_current: 1
+  hash: v5.0.0-rc2
+  name: 5.0.0 (leap)
+v5.0.0-rc3:
+  api_current: 1
+  hash: v5.0.0-rc3
+  name: 5.0.0 (leap)
+v5.0.0:
+  api_current: 1
+  hash: v5.0.0
+  name: 5.0.0 (leap)
+v5.0.1:
+  api_current: 1
+  hash: v5.0.1
+  name: 5.0.1 (leap)
