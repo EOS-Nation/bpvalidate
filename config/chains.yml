@@ -10,6 +10,7 @@ eos:
   class_chains: 1
   class_dfuse: 1
   class_firehose: 1
+  class_substreams: 1
   class_history: 1
   class_hyperion: 1
   class_ipv6: 0
@@ -54,6 +55,7 @@ jungle4:
   class_chains: 1
   class_dfuse: 1
   class_firehose: 1
+  class_substreams: 1
   class_history: 1
   class_hyperion: 1
   class_ipv6: 0
@@ -98,6 +100,7 @@ kylin:
   class_chains: 1
   class_dfuse: 1
   class_firehose: 1
+  class_substreams: 1
   class_history: 1
   class_hyperion: 1
   class_ipv6: 0
@@ -142,6 +145,7 @@ telos:
   class_chains: 1
   class_dfuse: 1
   class_firehose: 1
+  class_substreams: 1
   class_history: 1
   class_hyperion: 1
   class_ipv6: 0
@@ -186,6 +190,7 @@ telostest:
   class_chains: 1
   class_dfuse: 1
   class_firehose: 1
+  class_substreams: 1
   class_history: 1
   class_hyperion: 1
   class_ipv6: 0
@@ -230,6 +235,7 @@ ux:
   class_chains: 1
   class_dfuse: 1
   class_firehose: 1
+  class_substreams: 1
   class_history: 1
   class_hyperion: 1
   class_ipv6: 0
@@ -274,6 +280,7 @@ wax:
   class_chains: 1
   class_dfuse: 1
   class_firehose: 1
+  class_substreams: 1
   class_history: 1
   class_hyperion: 1
   class_ipv6: 0
@@ -318,6 +325,7 @@ waxtest:
   class_chains: 1
   class_dfuse: 1
   class_firehose: 1
+  class_substreams: 1
   class_history: 1
   class_hyperion: 1
   class_ipv6: 0

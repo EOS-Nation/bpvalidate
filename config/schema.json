@@ -284,6 +284,7 @@
                 "dsp-api",
                 "atomic-assets-api",
                 "firehose",
+                "substreams",
                 "light-api",
                 "ipfs"
               ]

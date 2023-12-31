@@ -130,6 +130,14 @@ class_firehose_l:
   en: Firehose Check
   ko: ''
   zh: ''
+class_substreams:
+  en: Substreams
+  ko: ''
+  zh: ''
+class_substreams_l:
+  en: Substreams Check
+  ko: ''
+  zh: ''
 class_general:
   en: General Info
   ko: 기본정보

@@ -1437,6 +1437,7 @@ sub check_node {
 		my $is_feature_hyperion = 0;
 		my $is_feature_dfuse = 0;
 		my $is_feature_firehose = 0;
+		my $is_feature_substreams = 0;
 		my $is_feature_fio = 0;  # not implemented
 		my $is_feature_snapshot = 0; # not implemented
 		my $is_feature_dsp = 0; # not implemented
@@ -1482,6 +1483,9 @@ sub check_node {
 				} elsif ($feature eq 'firehose') {
 					$valid = 1;
 					$is_feature_firehose = 1;
+				} elsif ($feature eq 'substreams') {
+					$valid = 1;
+					$is_feature_substreams = 1;
 				} elsif ($feature eq 'fio-api') {
 					$valid = 1;
 					$is_feature_fio = 1;
@@ -1610,6 +1614,18 @@ sub check_node {
 				$valid_other_endpoint++;
 			}
 
+			my $result_substreams = $self->validate_substreams_api (
+				class => 'substreams',
+				api_url => $$node{api_endpoint},
+				field => "node[$$counters{node_number}].api_endpoint",
+				ssl => 'off',
+				add_to_list => 'nodes/substreams_http',
+				location => $location
+			) if ($is_feature_substreams);
+			if ($result_substreams) {
+				$valid_other_endpoint++;
+			}
+
 			my $result_atomic = $self->validate_atomic_api (
 				class => 'atomic',
 				api_url => $$node{api_endpoint},
@@ -1689,6 +1705,19 @@ sub check_node {
 				location => $location
 			) if ($is_feature_firehose);
 			if ($result_firehose) {
+				$valid_other_endpoint++;
+			}
+
+			my $result_substreams = $self->validate_substreams_api (
+				class => 'substreams',
+				api_url => $$node{ssl_endpoint},
+				field => "node[$$counters{node_number}].ssl_endpoint",
+				ssl => 'on',
+				modern_tls_version => 1,
+				add_to_list => 'nodes/substreams_https',
+				location => $location
+			) if ($is_feature_substreams);
+			if ($result_substreams) {
 				$valid_other_endpoint++;
 			}
 
@@ -2663,6 +2692,34 @@ sub validate_firehose_api {
 	);
 }
 
+sub validate_substreams_api {
+	my ($self, %options) = @_;
+
+	return if (! $self->{chain_properties}{class_substreams});
+
+	my $api_url = $options{api_url};
+	my $field = $options{field};
+	my $class = $options{class} || confess "class not provided";
+
+	return $self->validate_url (
+		api_url => $api_url,
+		field => $field,
+		class => $class,
+		url_ext => '',
+		content_type => 'html',
+#		cors_origin => 'on',
+#		cors_headers => 'on',
+		non_standard_port => 1,
+		extra_check => 'validate_substreams_api_extra_check',
+		add_result_to_list => 'response',
+		add_info_to_list => 'info',
+		dupe => 'info',
+		request_timeout => 2,
+		cache_timeout => 300,
+		%options
+	);
+}
+
 sub validate_atomic_api {
 	my ($self, %options) = @_;
 
@@ -3001,9 +3058,34 @@ sub validate_firehose_api_extra_check {
 	my %info;
 	my $errors;
 
-	if (! $self->test_firehose_grpc (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
-		$errors++;
+# cannot handle authentication
+#	if (! $self->test_firehose_grpc (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+#		$errors++;
+#	}
+
+	if ($errors) {
+		return undef;
 	}
+
+	return \%info;
+}
+
+sub validate_substreams_api_extra_check {
+	my ($self, $result, $res, $options) = @_;
+
+	my $url = $$options{api_url};
+	my $field = $$options{field};
+	my $class = $$options{class};
+	my $ssl = $$options{ssl} || 'either'; # either, on, off
+	my $url_ext = $$options{url_ext} || '';
+
+	my %info;
+	my $errors;
+
+# cannot handle authentication
+#	if (! $self->test_firehose_grpc (api_url => $url, request_timeout => 10, cache_timeout => 300, field => $field, class => $class, info => \%info)) {
+#		$errors++;
+#	}
 
 	if ($errors) {
 		return undef;

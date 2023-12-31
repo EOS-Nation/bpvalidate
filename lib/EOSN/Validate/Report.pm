@@ -84,7 +84,7 @@ sub classes {
 	my $config = $self->config;
 	my $chain = $self->chain;
 
-	my @classes_available = (qw (regproducer org blocks api_endpoint p2p_endpoint bpjson history hyperion dfuse firehose atomic account chains ipv6));
+	my @classes_available = (qw (regproducer org blocks api_endpoint p2p_endpoint bpjson history hyperion dfuse firehose substreams atomic account chains ipv6));
 	my @classes_configured = ();
 
 	foreach my $class (@classes_available) {
@@ -117,6 +117,7 @@ sub icons {
 	$icons{class_hyperion} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
 	$icons{class_dfuse} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
 	$icons{class_firehose} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_substreams} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-database"></i></span>';
 	$icons{class_atomic} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-atom"></i></span>';
 	$icons{class_account} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-wallet"></i></span>';
 	$icons{class_chains} = '<span class="icon is-medium has-text-info"><i class="fas fa-lg fa-link"></i></span>';
@@ -143,6 +144,7 @@ sub icons {
 	$icons{class_hyperion_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
 	$icons{class_dfuse_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
 	$icons{class_firehose_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
+	$icons{class_substreams_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-database"></i></span>';
 	$icons{class_atomic_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-atom"></i></span>';
 	$icons{class_account_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-wallet"></i></span>';
 	$icons{class_chains_bw} = '<span class="icon is-medium"><i class="fas fa-lg fa-link"></i></span>';
