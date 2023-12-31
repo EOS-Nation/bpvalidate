@@ -4972,7 +4972,7 @@ sub test_dfuse_blocks {
 sub test_firehose_grpc {
 	my ($self, %options) = @_;
 
-	# grpc_health_probe -addr eos.firehose.eosnation.io:9000 -tls
+	# grpc_health_probe -addr eos.firehose.pinax.network:443 -tls
 	# status: SERVING
 
 	my $hostname = $options{api_url};
@@ -4981,7 +4981,7 @@ sub test_firehose_grpc {
 	$hostname =~ s#:.*$##;
 
 	my $status;
-	$self->do_run (['grpc_health_probe', '-addr', "$hostname:9000", '-tls'], '2>', \$status);
+	$self->do_run (['grpc_health_probe', '-addr', "$hostname:443", '-tls'], '2>', \$status);
 
 	if (! defined $status) {
 		$self->add_message (
