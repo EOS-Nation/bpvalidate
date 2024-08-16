@@ -114,3 +114,16 @@ v5.0.3:
   api_current: 1
   hash: v5.0.3
   name: 5.0.3 (leap)
+################### Spring ###################
+v1.0.0-rc1:
+  api_current: 1
+  hash: v1.0.0-rc1
+  name: 1.0.0 (spring)
+v1.0.0-rc2:
+  api_current: 1
+  hash: v1.0.0-rc2
+  name: 1.0.0 (spring)
+v1.0.0:
+  api_current: 1
+  hash: v1.0.0
+  name: 1.0.0 (spring)
