@@ -123,6 +123,10 @@ v1.0.0-rc2:
   api_current: 1
   hash: v1.0.0-rc2
   name: 1.0.0 (spring)
+v1.0.0-rc3:
+  api_current: 1
+  hash: v1.0.0-rc3
+  name: 1.0.0 (spring)
 v1.0.0:
   api_current: 1
   hash: v1.0.0
