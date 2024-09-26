@@ -131,3 +131,11 @@ v1.0.0:
   api_current: 1
   hash: v1.0.0
   name: 1.0.0 (spring)
+v1.0.1:
+  api_current: 1
+  hash: v1.0.1
+  name: 1.0.1 (spring)
+v1.0.2:
+  api_current: 1
+  hash: v1.0.2
+  name: 1.0.2 (spring)
