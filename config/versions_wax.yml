@@ -122,3 +122,11 @@ v5.0.3wax01:
   api_current: 1
   hash: v5.0.3wax01
   name: 5.0.3
+v5.0.4wax01:
+  api_current: 1
+  hash: v5.0.4wax01
+  name: 5.0.4
+v5.0.5wax01:
+  api_current: 1
+  hash: v5.0.5wax01
+  name: 5.0.5

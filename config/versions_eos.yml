@@ -114,17 +114,25 @@ v5.0.3:
   api_current: 1
   hash: v5.0.3
   name: 5.0.3 (leap)
+v5.0.4:
+  api_current: 1
+  hash: v5.0.4
+  name: 5.0.4 (leap)
+v5.0.5:
+  api_current: 1
+  hash: v5.0.5
+  name: 5.0.5 (leap)
 ################### Spring ###################
 v1.0.0-rc1:
-  api_current: 1
+  api_current: 0
   hash: v1.0.0-rc1
   name: 1.0.0 (spring)
 v1.0.0-rc2:
-  api_current: 1
+  api_current: 0
   hash: v1.0.0-rc2
   name: 1.0.0 (spring)
 v1.0.0-rc3:
-  api_current: 1
+  api_current: 0
   hash: v1.0.0-rc3
   name: 1.0.0 (spring)
 v1.0.0:
@@ -139,3 +147,15 @@ v1.0.2:
   api_current: 1
   hash: v1.0.2
   name: 1.0.2 (spring)
+v1.0.3:
+  api_current: 1
+  hash: v1.0.3
+  name: 1.0.3 (spring)
+v1.0.4:
+  api_current: 1
+  hash: v1.0.4
+  name: 1.0.4 (spring)
+v1.0.5:
+  api_current: 1
+  hash: v1.0.5
+  name: 1.0.5 (spring)
