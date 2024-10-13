@@ -4877,7 +4877,7 @@ sub test_db_size_api {
 
 	if (($res->is_success) && ($response_url eq $options{api_url}))  {
 		$self->add_message (
-			kind => 'err',
+			kind => 'warn',
 			detail => 'db_size api is enabled',
 			value => $status_message,
 			%options
