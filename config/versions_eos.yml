@@ -159,15 +159,15 @@ v1.0.5:
   api_current: 1
   hash: v1.0.5
   name: 1.0.5 (spring)
-v1.1.0-rc1
+v1.1.0-rc1:
   api_current: 1
   hash: v1.1.0-rc1
   name: 1.1.0 (spring)
-v1.1.0-rc2
+v1.1.0-rc2:
   api_current: 1
   hash: v1.1.0-rc2
   name: 1.1.0 (spring)
-v1.1.0
+v1.1.0:
   api_current: 1
   hash: v1.1.0
   name: 1.1.0 (spring)
