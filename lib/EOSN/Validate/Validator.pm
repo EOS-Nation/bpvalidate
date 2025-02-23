@@ -4882,14 +4882,13 @@ sub test_db_size_api {
 			value => $status_message,
 			%options
 		);
-		return undef;
+	} else {
+		$self->add_message (
+			kind => 'ok',
+			detail => 'db_size api disabled',
+			%options
+		);
 	}
-
-	$self->add_message (
-		kind => 'ok',
-		detail => 'db_size api disabled',
-		%options
-	);
 
 	return 1;
 }
