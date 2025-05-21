@@ -11,9 +11,9 @@ bp_top21:
   ko: 탑 21BP
   zh: 前21名BP
 chain_eos:
-  en: EOS
-  ko: EOS
-  zh: 主网
+  en: Vaulta
+  ko: Vaulta
+  zh: Vaulta
 chain_jungle4:
   en: Jungle 4 Testnet
   ko: 정글 테스트넷
