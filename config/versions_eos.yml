@@ -208,6 +208,14 @@ v1.2.0-rc2:
   hash: v1.2.0-rc2
   name: 1.2.0 (spring)
 v1.2.0:
-  api_current: 0
+  api_current: 1
   hash: v1.2.0
   name: 1.2.0 (spring)
+v1.2.1:
+  api_current: 1
+  hash: v1.2.1
+  name: 1.2.1 (spring)
+v1.2.2:
+  api_current: 1
+  hash: v1.2.2
+  name: 1.2.2 (spring)
