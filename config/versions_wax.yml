@@ -130,3 +130,7 @@ v5.0.5wax01:
   api_current: 1
   hash: v5.0.5wax01
   name: 5.0.5
+v1.3.0wax01:
+  api_current: 1
+  hash: v1.3.0wax01
+  name: v1.3.0
