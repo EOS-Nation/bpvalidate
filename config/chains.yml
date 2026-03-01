@@ -88,51 +88,6 @@ jungle4:
   test_transaction: 4d458e04a592656b1ff572c8584723106a433c12d96aaca7caec6f20bad251c9
   url: http://jungle4.api.eosnation.io
 
-kylin:
-  aloha_id: 3
-  big_block_transactions: 1506
-  chain_id: 5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191
-  class_account: 1
-  class_api_endpoint: 1
-  class_atomic: 1
-  class_blocks: 1
-  class_bpjson: 1
-  class_chains: 1
-  class_dfuse: 1
-  class_firehose: 1
-  class_substreams: 1
-  class_history: 1
-  class_hyperion: 1
-  class_ipv6: 0
-  class_org: 1
-  class_p2p_endpoint: 1
-  class_regproducer: 1
-  core_symbol: EOS
-  filename: kylin.json
-  location_check: country
-  maintainer: matthew
-  max_producers: 150
-  name: kylin
-  report_api_versions: 150
-  report_branding: 140
-  report_config: 190
-  report_country: 170
-  report_endpoints: 110
-  report_errors: 200
-  report_p2p_speed: 0
-  report_resources: 120
-  report_socials: 130
-  report_timezone: 0
-  sort_order: 902
-  test_account: eosnationftw
-  test_big_block: 29763179
-  test_bpjson_code: producerjson
-  test_bpjson_scope: producerjson
-  test_bpjson_table: producerjson
-  test_public_key: EOS7w5aJCv5B7y3a6f4WCwPSvs6TpCAoRGnGpiLMsSWbmxaZdKigd
-  test_transaction: f680f985421df7e04edba774b82f90b58ea7cf2479015eaed6d04c05634323ac
-  url: http://kylin.api.eosnation.io
-
 telos:
   aloha_id: 5
   big_block_transactions: 778
